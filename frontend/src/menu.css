@@ -1,0 +1,284 @@
+/* Định dạng thanh điều hướng */
+.nav {
+  width: 100vw;
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 1000;
+  min-height: 50px;  /* Đảm bảo tối thiểu 50px */
+  height: auto; /* Cho phép mở rộng nếu nội dung nhiều */
+  background-color: white;
+  border-bottom: 1px solid #ddd;  /* Đường viền nhẹ */
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 30 0px;  /* Khoảng cách lề trái/phải */
+
+  /* box-shadow: none */
+}
+
+
+/* ##################### LOGO ############################ */
+/* Logo */
+.logo {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 20px;
+}
+
+.logo img {
+  height: 30px;
+  margin-right: 10px;
+  margin-left: 10px;
+}
+
+/* ##################### MENU ############################ */
+/* Menu items */
+.nav-menu {
+  display: flex;
+  justify-content: center;
+  gap: 30px; /* Khoảng cách giữa các tab */
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.nav-menu li {
+  cursor: pointer;
+  font-weight: bold;
+  padding: 10px 15px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  background-color: white; /* ✅ Nền mặc định */
+  border-radius: 20px; /* Bo tròn nhẹ */
+}
+.nav-menu li a {
+  color: black;
+  text-decoration: none; /* Xóa gạch chân */
+}
+
+.nav-menu li:hover {
+  background-color: #f3eef4; /* ✅ Nền tím nhạt */
+  color: black; /* ✅ Chữ vẫn màu đen */
+}
+
+/* Khi chọn tab */
+.nav-menu li.active {
+  background-color: #6f3e76; /* ✅ Nền tím đậm */
+}
+/* Khi tab được chọn, đổi màu chữ trong <a> thành trắng */
+.nav-menu li.active a { /*chỉ ảnh hưởng đến chữ (vì nó là link hehe)*/
+  color: white !important;
+}
+
+/* Mũi tên submenu */
+.dropdown-icon {
+  display: inline-block;
+  margin-left: 0px;
+  width: 0;
+  height: 0;
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-top: 5px solid black;
+  transition: transform 0.3s ease;
+  vertical-align: middle;
+}
+
+/* ##################### USER SECTION ############################ */
+/* Phần User Section (Tìm kiếm, Thông báo, Avatar) */
+.user-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-right: 10px;
+}
+
+/* Button icon */
+.icon-button {
+  background: none;
+  border: 0.5px solid black;
+  cursor: pointer;
+  padding: 8px;
+  border-radius: 20px; /* Làm bo góc để đẹp hơn */
+  transition: background 0.3s ease; /* Hiệu ứng mượt */
+}
+
+.icon-button img {
+  height: 20px;
+}
+
+/* Khi hover, làm nền tối hơn */
+.icon-button:hover {
+  background-color: #f3eef4;/* Màu nền tím nhạt */
+}
+
+/*Button login - signup*/
+/* Button Đăng ký */
+.signup-button {
+  background-color: #6f3e76; /* Màu tím */
+  color: white; /* Chữ trắng */
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.signup-button:hover {
+  background-color: #572e5a; /* Màu tím đậm hơn khi hover */
+}
+
+/* Button Đăng nhập */
+.login-button {
+  background-color: white; /* Nền trắng */
+  color: black; /* Chữ đen */
+  padding: 10px 15px;
+  border: none;
+  border-radius: 20px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+}
+
+.login-button:hover {
+  background-color: #f3eef4; /* Nền tím nhạt khi hover */
+  color: black;
+}
+
+/* Profile avatar */
+.profile {
+  width: 35px;
+  height: 35px;
+  background-color: #f3eef4; /* Để kiểm tra */
+  color: white;
+  border-radius: 50%; /* Bo tròn */
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.user-icon {
+  width: 100%;
+  height: 100%;
+  border-radius: 50%; /* Giữ hình tròn */
+}
+
+.content {
+  margin-top: 30px; /* chỉnh độ cao của nội dung */
+  padding: 20px;
+}
+
+/* ##################### MENU DROPDOWN ############################ */
+/* Khi hover vào tab cha */
+.has-submenu {
+  position: relative;
+  padding: 10px 15px;
+  border-radius: 20px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.has-submenu:hover {
+  background-color: #f3eef4; /* ✅ Nền tím nhạt */
+  color: black; /* ✅ Chữ vẫn màu đen */ 
+}
+
+/* Submenu */
+.submenu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  width: 150px;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  padding: 5px 5px;
+  list-style: none;
+  display: none;
+}
+
+.submenu.open {
+  display: block;
+}
+
+/* Tab con trong submenu */
+.submenu li {
+  padding: 10px 15px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  border-radius: 10px;
+}
+
+.submenu li a {
+  text-decoration: none;
+  color: black;
+  display: block;
+}
+
+/* Khi hover vào tab con */
+.submenu li:hover {
+  background-color: #f3eef4;
+  color: black;
+}
+
+/* Khi tab con được chọn */
+.submenu li.submenu-active {
+  background-color: white;
+}
+
+.submenu li.submenu-active a {
+  color: #6f3e76; /* Màu tím đậm */
+  font-weight: bold;
+}
+
+/* Khi tab con được chọn, tab cha đổi nền tím đậm và chữ trắng */
+.has-submenu.submenu-active {
+  background-color: #6f3e76 !important;
+  color: white !important;
+}
+
+/* Màu chữ của tab cha khi active */
+.has-submenu.submenu-active > .menu-link {
+  color: white !important;
+}
+
+/* Mũi tên submenu đổi màu trắng */
+.has-submenu.submenu-active .dropdown-icon {
+  border-top-color: white;
+}
+
+/*##################### thanh tìm kiếm ############################*/
+.search-container {
+  display: flex;
+  align-items: center;
+  border: 1px solid #ccc; /* Viền xám */
+  border-radius: 20px; /* Bo góc cho đẹp */
+  padding: 5px 10px;
+  transition: width 0.3s ease;
+  width: 25px; /*độ rộng của button */
+  overflow: hidden;
+  background: white;
+}
+
+.search-container.expanded {
+  width: 200px; /* Kích thước mở rộng */
+}
+
+.search-input {
+  border: none;
+  outline: none;
+  padding: 5px;
+  width: 100%;
+  transition: opacity 0.3s ease;
+  opacity: 0;
+  background: transparent;
+}
+
+.search-container.expanded .search-input {
+  opacity: 1;
+}
+
+.search-icon {
+  width: 24px;
+  height: 24px;
+}
