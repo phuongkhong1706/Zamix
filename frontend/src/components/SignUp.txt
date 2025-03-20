@@ -195,3 +195,314 @@ const buttonStyle = {
 };
 
 export default Signup;
+
+###############################################################
+// nền trang web
+const outerContainerStyle = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100vh",
+  backgroundColor: "#f1f1f1",
+};
+
+const formContainerStyle = {
+  width: "500px",
+  padding: "30px",
+  backgroundColor: "#fff",
+  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+  borderRadius: "10px",
+};
+
+const titleStyle = {
+  textAlign: "center",
+  textTransform: "uppercase",
+  fontWeight: "bold",
+  marginBottom: "20px",
+};
+
+const formStyle = {
+  display: "flex",
+  flexDirection: "column",
+};
+
+// Nút đăng ký
+const buttonStyle = {
+  width: "100%",
+  padding: "10px",
+  backgroundColor: "#6f3e76",
+  color: "white",
+  border: "none",
+  borderRadius: "5px",
+  cursor: "pointer",
+  fontSize: "16px",
+  fontWeight: "bold",
+  textTransform: "uppercase",
+  marginTop: "15px",
+};
+
+// Hàng chứa dropdown list
+const rowStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "10px",
+  marginBottom: "20px",
+};
+
+// Container cho dropdown
+const dropdownContainerStyle = {
+  flex: 1,
+};
+
+// Style của dropdown
+const dropdownStyle = {
+  width: "100%",
+  padding: "12px",
+  border: "2px solid #ccc",
+  borderRadius: "5px",
+  fontSize: "16px",
+  outline: "none",
+  background: "white",
+  cursor: "pointer",
+  transition: "border-color 0.3s ease",
+};
+
+####################################################################
+import React, { useState } from "react";  
+
+function Signup() {   
+  const [formData, setFormData] = useState({     
+    gender: "",     
+    full_name: "",     
+    email: "",     
+    phone: "",     
+    user_type: "",     
+    user_name: "",     
+    password: "",     
+    confirmPassword: "",   
+  });    
+
+  const [focusedField, setFocusedField] = useState(null);
+  const [errors, setErrors] = useState({});
+  const [loading, setLoading] = useState(false);
+
+  const handleChange = (e) => {     
+    const { name, value } = e.target;     
+    setFormData({ ...formData, [name]: value });   
+  };
+
+  // Hàm kiểm tra email hợp lệ
+  const validateEmail = (email) => {
+    return /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/.test(email);
+  };
+
+  // Hàm kiểm tra số điện thoại hợp lệ (10 chữ số)
+  const validatePhone = (phone) => {
+    return /^[0-9]{10}$/.test(phone);
+  };
+
+  // Hàm kiểm tra dữ liệu trước khi gửi
+  const validateForm = () => {
+    let newErrors = {};
+    if (!formData.full_name) newErrors.full_name = "Họ và tên không được để trống.";
+    if (!formData.email || !validateEmail(formData.email)) newErrors.email = "Email không hợp lệ.";
+    if (!formData.phone || !validatePhone(formData.phone)) newErrors.phone = "Số điện thoại phải có 10 chữ số.";
+    if (!formData.user_name) newErrors.user_name = "Tên đăng nhập không được để trống.";
+    if (!formData.password) newErrors.password = "Mật khẩu không được để trống.";
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Mật khẩu không khớp.";
+    if (!formData.gender) newErrors.gender = "Vui lòng chọn giới tính.";
+    if (!formData.user_type) newErrors.user_type = "Vui lòng chọn chức vụ.";
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;  // Trả về true nếu không có lỗi
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return; // Nếu có lỗi, dừng lại
+
+    setLoading(true);
+    
+    try {
+      const response = await fetch("http://localhost:8000/api/signup", {  // Cập nhật URL API backend
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(formData),
+      });
+
+      const result = await response.json();
+      
+      if (response.ok) {
+        alert("Đăng ký thành công!");
+        setFormData({ 
+          gender: "", full_name: "", email: "", phone: "", 
+          user_type: "", user_name: "", password: "", confirmPassword: ""
+        });
+        setErrors({});
+      } else {
+        alert(result.message || "Đăng ký thất bại!");
+      }
+      
+    } catch (error) {
+      console.error("Lỗi khi đăng ký:", error);
+      alert("Có lỗi xảy ra, vui lòng thử lại!");
+    }
+
+    setLoading(false);
+  };
+
+  return (     
+    <div style={outerContainerStyle}>       
+      <div style={formContainerStyle}>         
+        <h2 style={titleStyle}> Đăng ký </h2>         
+        <form style={formStyle} onSubmit={handleSubmit}>  
+
+          {/* Dropdownlist: Chức vụ & Giới tính */}
+          <div style={rowStyle}>
+            {/* Chức vụ */}
+            <div style={dropdownContainerStyle}>
+              <select name="user_type" value={formData.user_type} onChange={handleChange}
+                onFocus={() => setFocusedField("user_type")} onBlur={() => setFocusedField(null)}
+                style={{
+                  ...dropdownStyle,
+                  color: formData.user_type ? "black" : "gray",
+                  borderColor: focusedField === "user_type" ? "#6f3e76" : "#ccc",
+                }}>
+                <option value="" disabled hidden>Bạn làm gì?</option>
+                <option value="student">Sinh viên</option>
+                <option value="teacher">Giảng viên</option>
+              </select>
+              {errors.user_type && <p style={errorStyle}>{errors.user_type}</p>}
+            </div>
+
+            {/* Giới tính */}
+            <div style={dropdownContainerStyle}>
+              <select name="gender" value={formData.gender} onChange={handleChange}
+                onFocus={() => setFocusedField("gender")} onBlur={() => setFocusedField(null)}
+                style={{
+                  ...dropdownStyle,
+                  color: formData.gender ? "black" : "gray",
+                  borderColor: focusedField === "gender" ? "#6f3e76" : "#ccc",
+                }}>
+                <option value="" disabled hidden>Giới tính</option>
+                <option value="male">Nam</option>
+                <option value="female">Nữ</option>
+              </select>
+              {errors.gender && <p style={errorStyle}>{errors.gender}</p>}
+            </div>
+          </div>
+
+          {/* Input fields */}
+          {[
+            { name: "full_name", label: "Họ và tên", type: "text" },
+            { name: "email", label: "Email", type: "email" },
+            { name: "phone", label: "Số điện thoại", type: "text" },
+            { name: "user_name", label: "Tên đăng nhập", type: "text" },
+            { name: "password", label: "Mật khẩu", type: "password" },
+            { name: "confirmPassword", label: "Xác nhận mật khẩu", type: "password" },
+          ].map(({ name, label, type }) => (
+            <div key={name} style={{ position: "relative", marginBottom: "20px" }}>
+              <label style={{
+                position: "absolute", left: "12px", top: focusedField === name || formData[name] ? "-8px" : "50%",
+                transform: focusedField === name || formData[name] ? "none" : "translateY(-50%)",
+                transition: "all 0.3s ease", color: focusedField === name ? "#6f3e76" : "gray",
+                fontSize: focusedField === name || formData[name] ? "12px" : "16px", background: "white",
+                padding: "0 5px", borderRadius: "5px",
+              }}>
+                {label}
+              </label>
+              <input type={type} name={name} value={formData[name]} onChange={handleChange}
+                onFocus={() => setFocusedField(name)} onBlur={() => setFocusedField(null)}
+                style={{
+                  width: "95%", padding: "12px 10px",
+                  border: `2px solid ${focusedField === name ? "#6f3e76" : "#ccc"}`,
+                  borderRadius: "5px", fontSize: "16px", outline: "none", paddingTop: "18px",
+                }} />
+              {errors[name] && <p style={errorStyle}>{errors[name]}</p>}
+            </div>
+          ))}
+
+          <button type="submit" style={buttonStyle} disabled={loading}>
+            {loading ? "Đang đăng ký..." : "Đăng ký"}
+          </button>
+
+        </form>       
+      </div>     
+    </div>   
+  ); 
+}  
+
+const errorStyle = { color: "red", fontSize: "14px", marginTop: "5px" };
+
+// nền trang web
+const outerContainerStyle = {
+  display: "flex",
+  justifyContent: "center",
+  alignItems: "center",
+  height: "100vh",
+  backgroundColor: "#f1f1f1",
+};
+
+const formContainerStyle = {
+  width: "500px",
+  padding: "30px",
+  backgroundColor: "#fff",
+  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
+  borderRadius: "10px",
+};
+
+const titleStyle = {
+  textAlign: "center",
+  textTransform: "uppercase",
+  fontWeight: "bold",
+  marginBottom: "20px",
+};
+
+const formStyle = {
+  display: "flex",
+  flexDirection: "column",
+};
+
+// Nút đăng ký
+const buttonStyle = {
+  width: "100%",
+  padding: "10px",
+  backgroundColor: "#6f3e76",
+  color: "white",
+  border: "none",
+  borderRadius: "5px",
+  cursor: "pointer",
+  fontSize: "16px",
+  fontWeight: "bold",
+  textTransform: "uppercase",
+  marginTop: "15px",
+};
+
+// Hàng chứa dropdown list
+const rowStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+  gap: "10px",
+  marginBottom: "20px",
+};
+
+// Container cho dropdown
+const dropdownContainerStyle = {
+  flex: 1,
+};
+
+// Style của dropdown
+const dropdownStyle = {
+  width: "100%",
+  padding: "12px",
+  border: "2px solid #ccc",
+  borderRadius: "5px",
+  fontSize: "16px",
+  outline: "none",
+  background: "white",
+  cursor: "pointer",
+  transition: "border-color 0.3s ease",
+};
+
+export default Signup;

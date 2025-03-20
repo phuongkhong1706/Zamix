@@ -9,14 +9,65 @@ function Signup() {
     user_name: "",
     password: "",
     confirmPassword: "",
+    birth_date: "",
+    gender: "Nam",
+    user_type: "Sinh viên",
+    address: "",
+    avatar: null,
   });
-
-  const [focusedField, setFocusedField] = useState(null);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({ ...formData, [name]: value });
   };
+
+    const handleFileChange = (e) => {
+      const file = e.target.files[0];
+      if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
+        setFormData({ ...formData, avatar: file });
+      } else {
+        alert("Chỉ chấp nhận file .jpg hoặc .png");
+      }
+    };
+
+    const handleSubmit = async (e) => {
+      e.preventDefault();
+      if (formData.password !== formData.confirmPassword) {
+          alert("Mật khẩu xác nhận không khớp!");
+          return;
+      }
+
+      // Chuẩn bị FormData để gửi multipart/form-data
+      const formDataToSend = new FormData();
+      formDataToSend.append("full_name", formData.full_name);
+      formDataToSend.append("email", formData.email);
+      formDataToSend.append("birth_date", formData.birth_date);
+      formDataToSend.append("gender", formData.gender);
+      formDataToSend.append("user_type", formData.user_type);
+      formDataToSend.append("address", formData.address);
+      formDataToSend.append("password", formData.password);
+
+      if (formData.avatar) {
+          formDataToSend.append("avatar", formData.avatar);  // Thêm file ảnh nếu có
+      }
+
+      try {
+          const response = await fetch("http://localhost:8000/api/signup/", {
+              method: "POST",
+              body: formDataToSend,
+          });
+
+          const result = await response.json();
+          if (response.ok) {
+              alert(result.message);
+          } else {
+              alert(`Lỗi: ${result.error}`);
+          }
+      } catch (error) {
+          alert("Có lỗi xảy ra. Vui lòng thử lại!");
+      }
+  };
+
 
   return (
     <div style={outerContainerStyle}>
@@ -24,51 +75,32 @@ function Signup() {
         <h2 style={titleStyle}>
           <FaUserPlus size={24} color="#003366" /> Đăng Ký
         </h2>
-        <form style={formStyle}>
-          {[
-            { name: "full_name", label: "Họ và tên", type: "text" },
-            { name: "email", label: "Email", type: "email" },
-            { name: "phone", label: "Số điện thoại", type: "text" },
-            { name: "user_name", label: "Tên đăng nhập", type: "text" },
-            { name: "password", label: "Mật khẩu", type: "password" },
-            { name: "confirmPassword", label: "Xác nhận mật khẩu", type: "password" },
-          ].map(({ name, label, type }) => (
-            <div key={name} style={{ position: "relative", marginBottom: "20px" }}>
-              <label
-                style={{
-                  position: "absolute",
-                  left: "12px",
-                  top: focusedField === name || formData[name] ? "-8px" : "50%",
-                  transform: focusedField === name || formData[name] ? "none" : "translateY(-50%)",
-                  transition: "all 0.3s ease",
-                  color: focusedField === name ? "#003366" : "gray",
-                  fontSize: focusedField === name || formData[name] ? "12px" : "16px",
-                  background: "white",
-                  padding: "0 5px",
-                  borderRadius: "5px",
-                }}
-              >
-                {label}
-              </label>
-              <input
-                type={type}
-                name={name}
-                value={formData[name]}
-                onChange={handleChange}
-                onFocus={() => setFocusedField(name)}
-                onBlur={() => setFocusedField(null)}
-                style={{
-                  width: "100%",
-                  padding: "12px 10px",
-                  border: `2px solid ${focusedField === name ? "#003366" : "#ccc"}`,
-                  borderRadius: "5px",
-                  fontSize: "16px",
-                  outline: "none",
-                  paddingTop: "18px",
-                }}
-              />
+        <form onSubmit={handleSubmit} style={formStyle}>
+          <div style={sectionContainerStyle}>
+            <div style={sectionStyle}>
+              <input type="text" name="full_name" placeholder="Họ và tên" required onChange={handleChange} style={inputStyle} />
+              <input type="date" name="birth_date" onChange={handleChange} style={inputStyle} />
+              <input type="email" name="email" placeholder="Email" required onChange={handleChange} style={inputStyle} />
+              <select name="user_type" value={formData.user_type} onChange={handleChange} style={selectStyle}>
+                <option value="Sinh viên">Sinh viên</option>
+                <option value="Giảng viên">Giảng viên</option>
+              </select>
+              <input type="password" name="password" placeholder="Mật khẩu" required onChange={handleChange} style={ inputStyle} />
             </div>
-          ))}
+            <div style={sectionStyle}>
+              <input type="text" name="phone" placeholder="Số điện thoại" required onChange={handleChange} style={inputStyle} />
+              <select name="gender" value={formData.gender} onChange={handleChange} style={selectStyle}>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+              </select>
+              <input type="text" name="user_name" placeholder="Tên đăng nhập" required onChange={handleChange} style={inputStyle} />
+              <input type="text" name="address" placeholder="Địa chỉ" onChange={handleChange} style={inputStyle} />
+              <input type="password" name="confirmPassword" placeholder="Xác nhận mật khẩu" required onChange={handleChange} style={ inputStyle} />
+            </div>
+          </div>
+          <label style={{ fontWeight: "bold", marginTop: "20px" , color: "#003366"}}> AVATAR</label>
+          <input type="file" accept="image/jpeg, image/png" onChange={handleFileChange} style={inputStyleAV} />
+          
           <button type="submit" style={buttonStyle}>Đăng ký</button>
         </form>
       </div>
@@ -85,7 +117,7 @@ const outerContainerStyle = {
 };
 
 const formContainerStyle = {
-  width: "400px",
+  width: "900px",
   padding: "30px",
   backgroundColor: "#fff",
   boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
@@ -102,6 +134,43 @@ const titleStyle = {
 const formStyle = {
   display: "flex",
   flexDirection: "column",
+};
+
+const sectionContainerStyle = {
+  display: "flex",
+  justifyContent: "space-between",
+};
+
+const sectionStyle = {
+  width: "45%",
+  backgroundColor: "rgba(200, 200, 200, 0.3)",
+  padding: "15px",
+  borderRadius: "8px",
+};
+
+const inputStyle = {
+  width: "95%",
+  padding: "10px",
+  border: "1px solid #ccc",
+  borderRadius: "5px",
+  marginBottom: "10px",
+};
+
+const inputStyleAV = {
+  width: "97.5%",
+  padding: "10px",
+  border: "1px solid #ccc",
+  borderRadius: "5px",
+  marginBottom: "10px",
+};
+
+const selectStyle = {
+  width: "100%",
+  padding: "10px",
+  border: "1px solid #ccc",
+  borderRadius: "5px",
+  backgroundColor: "#fff",
+  marginBottom:"10px"
 };
 
 const buttonStyle = {

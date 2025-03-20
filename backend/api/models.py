@@ -11,15 +11,12 @@ class UserInformation(models.Model):
     id = models.BigAutoField(primary_key=True)
     full_name = models.CharField(max_length=255)
     password = models.CharField(max_length=255, null=True, blank=True)
-    email = models.EmailField(max_length=255, unique=True) #thêm email
-    phone = models.CharField(max_length=20, unique=True)
+    email = models.CharField(max_length=20, unique=True)
     birth_date = models.DateField(null=True, blank=True)
     gender = models.CharField(max_length=10, choices=[("Nam", "Nam"), ("Nữ", "Nữ")])
     user_type = models.CharField(max_length=50)
     address = models.TextField()
     avatar = models.CharField(max_length=255, null=True, blank=True)
-    # email_verified = models.BooleanField(default=False) #xác nhận email
-
 
     class Meta:
         db_table = "user_info"

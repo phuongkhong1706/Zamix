@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('id', models.BigAutoField(primary_key=True, serialize=False)),
                 ('full_name', models.CharField(max_length=255)),
                 ('password', models.CharField(blank=True, max_length=255, null=True)),
-                ('phone', models.CharField(max_length=20, unique=True)),
+                ('email', models.CharField(max_length=20, unique=True)),
                 ('birth_date', models.DateField(blank=True, null=True)),
                 ('gender', models.CharField(choices=[('Nam', 'Nam'), ('Nữ', 'Nữ')], max_length=10)),
                 ('user_type', models.CharField(max_length=50)),

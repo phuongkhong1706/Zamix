@@ -19,7 +19,7 @@ def signup_view(request):
             else:
                 return JsonResponse({"error": "Invalid Content-Type"}, status=400)
 
-            required_fields = ["full_name", "email", "phone", "gender", "user_type", "password"]
+            required_fields = ["full_name", "email", "gender", "user_type", "address"]
             for field in required_fields:
                 if field not in data:
                     return JsonResponse({"error": f"Thiếu trường bắt buộc: {field}"}, status=400)
@@ -28,7 +28,6 @@ def signup_view(request):
             user = UserInformation.objects.create(
                 full_name=data["full_name"],
                 email=data["email"],
-                phone=data["phone"],
                 birth_date=data.get("birth_date"),
                 gender=data["gender"],
                 user_type=data["user_type"],
