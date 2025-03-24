@@ -6,7 +6,11 @@ from django.core.files.storage import default_storage
 from django.core.files.base import ContentFile
 from api.models import UserInformation
 from django.conf import settings
+from django.views.decorators.csrf import csrf_exempt
 
+VALID_PROVINCES = {
+    "", "Hà Nội", "TP Hồ Chí Minh", "Đà Nẵng", "Hải Phòng", "Cần Thơ", "Nam Định"
+}  # Thêm các tỉnh/thành phố khác nếu cần
 UPLOAD_DIR = os.path.join(settings.BASE_DIR, "image")  # Thư mục lưu ảnh
 
 @csrf_exempt
@@ -19,20 +23,26 @@ def signup_view(request):
             else:
                 return JsonResponse({"error": "Invalid Content-Type"}, status=400)
 
-            required_fields = ["full_name", "email", "gender", "user_type", "address"]
+            required_fields = ["full_name","password", "email", "birth_date", "gender", "user_type"]
             for field in required_fields:
                 if field not in data:
                     return JsonResponse({"error": f"Thiếu trường bắt buộc: {field}"}, status=400)
+                
+            # Kiểm tra địa chỉ hợp lệ
+            address = data["address"].strip()
+            if address not in VALID_PROVINCES:
+                return JsonResponse({"error": "Địa chỉ không hợp lệ. Vui lòng chọn từ danh sách."}, status=400)
 
             # Tạo user
             user = UserInformation.objects.create(
                 full_name=data["full_name"],
+                password=data["password"],
                 email=data["email"],
+                phone=data["phone"],
                 birth_date=data.get("birth_date"),
                 gender=data["gender"],
                 user_type=data["user_type"],
-                address=data["address"],
-                password=data["password"],
+                address=address,
             )
 
             # Lưu avatar nếu có
