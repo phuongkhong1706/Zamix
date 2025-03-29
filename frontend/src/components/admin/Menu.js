@@ -1,6 +1,11 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import "../../menu.css";
+import "../../styles/Menu.css";
+import logoAmeo from "../../assets/icon/icon-cats.png";
+import searchIcon from "../../assets/icon/icon-search.png";
+import notiIcon from "../../assets/icon/icon-notification.png";
+import userIcon from "../../assets/icon/icon-user.png";
+
 
 function Menu() {
   const location = useLocation();
@@ -31,7 +36,7 @@ function Menu() {
     <nav className="nav">
       {/* Logo */}
       <div className="logo">
-        <img src="/img/icon-cats.png" alt="Logo" />
+        <img src={logoAmeo} alt="Logo" />
         <span>Ameo</span>
       </div>
 
@@ -72,13 +77,13 @@ function Menu() {
       {/* User section */}
       <div className="user-section">
         <button className="icon-button">
-          <img src="/img/icon-search.png" alt="Search" />
+          <img src={searchIcon} alt="Search" />
         </button>
         <button className="icon-button">
-          <img src="/img/icon-notification.png" alt="Thông báo" />
+          <img src={notiIcon} alt="Thông báo" />
         </button>
         <div className="profile">
-          <img src="/img/icon-user.png" alt="User" className="user-icon" />
+          <img src={userIcon} alt="User" className="user-icon" />
         </div>
       </div>
     </nav>

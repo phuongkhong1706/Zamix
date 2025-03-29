@@ -1,4 +1,7 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import logoAmeoWhite from "../assets/icon/icon-cats-white.png";
+import "../styles/SignUp.css";
 
 const provinces = [
   { value: "Hà Nội", label: "Hà Nội" },
@@ -11,10 +14,12 @@ const provinces = [
 ];
 
 function Signup() {
+  const navigate = useNavigate();
   const [formData, setFormData] = useState({
     full_name: "",
     email: "",
     phone: "",
+    username: "",
     password: "",
     confirmPassword: "",
     birth_date: "",
@@ -29,422 +34,307 @@ function Signup() {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-    setFormData({ ...formData, [name]: value });
-    
-    // Kiểm tra xem giá trị nhập vào có trong danh sách không
-    const isValid = provinces.some((p) => p.value === value);
-    if (!isValid && value !== "") {
-      setError("Vui lòng chọn một tỉnh/thành phố hợp lệ.");
-    } else {
-      setError("");
+  
+    setFormData((prevData) => {
+      // Nếu giá trị không thay đổi, không cần re-set lại error
+      if (prevData[name] === value) return prevData;
+  
+      return { ...prevData, [name]: value };
+    });
+  
+    // Chỉ kiểm tra lỗi nếu đang nhập vào ô "address"
+    if (name === "address") {
+      const isValid = provinces.some((p) => p.value === value);
+      setError(isValid || value === "" ? "" : "Vui lòng chọn một tỉnh/thành phố hợp lệ.");
     }
   };
-
   
+
   const handleFocus = (field) => setFocusedField(field);
   const handleBlur = (field) => setFocusedField(prev => (formData[field] ? prev : ''));
-
-  const handleFileChange = (e) => {
-    const file = e.target.files[0];
-    if (file && (file.type === "image/jpeg" || file.type === "image/png")) {
-      setFormData({ ...formData, avatar: file });
-    } else {
-      alert("Chỉ chấp nhận file .jpg hoặc .png");
-    }
-  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (formData.password !== formData.confirmPassword) {
-        alert("Mật khẩu xác nhận không khớp!");
-        return;
+      alert("Mật khẩu xác nhận không khớp!");
+      return;
     }
 
-    // Chuẩn bị FormData để gửi multipart/form-data
     const formDataToSend = new FormData();
-    formDataToSend.append("full_name", formData.full_name);
-    formDataToSend.append("email", formData.email);
-    formDataToSend.append("phone", formData.phone);
-    formDataToSend.append("birth_date", formData.birth_date);
-    formDataToSend.append("gender", formData.gender);
-    formDataToSend.append("user_type", formData.user_type);
-    formDataToSend.append("address", formData.address);
-    formDataToSend.append("password", formData.password);
-
-    if (formData.avatar) {
-        formDataToSend.append("avatar", formData.avatar);  // Thêm file ảnh nếu có
-    }
+    Object.keys(formData).forEach((key) => {
+      if (formData[key]) {
+        formDataToSend.append(key, formData[key]);
+      }
+    });
 
     try {
-        const response = await fetch("http://localhost:8000/api/signup/", {
-            method: "POST",
-            body: formDataToSend,
-        });
+      const response = await fetch("http://localhost:8000/api/signup/", {
+        method: "POST",
+        body: formDataToSend,
+      });
 
-        const result = await response.json();
-        if (response.ok) {
-            alert(result.message);
-        } else {
-            alert(`Lỗi: ${result.error}`);
-        }
+      const result = await response.json();
+      if (response.ok) {
+        alert("Đăng ký thành công!");
+        navigate("/login");
+      } else {
+        alert(`Lỗi: ${result.error}`);
+      }
     } catch (error) {
-        alert("Có lỗi xảy ra. Vui lòng thử lại!");
+      alert("Có lỗi xảy ra. Vui lòng thử lại!");
     }
   };
 
   return (
-    <div style={outerContainerStyle}>
-      <div style={formContainerStyle}>
-        <h2 style={titleStyle}>Welcome to my pon</h2>
-        <form onSubmit={handleSubmit} style={formStyle}>
-          <div style={sectionContainerStyle}>
-            <div style={sectionStyle}>
-              {/* FULL NAME */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(focusedField === 'full_name' || formData.full_name ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Họ và tên
-                </label>
-                <input
-                  type="text"
-                  name="full_name"
-                  value={formData.full_name}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('full_name')}
-                  onBlur={() => handleBlur('full_name')}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === 'full_name' ? '#6f3e76' : '#ccc',
-                  }}
-                  required
-                />
-              </div>
+    <div className="outerContainer">
+      <div className="leftPanel">
+        <div className="content">
+          <img src={logoAmeoWhite} alt="Ameo Logo" className="logo" />
+          <h1 className="logoText">Ameo</h1>
+          <p className="description">We're barely cats</p>
+          <button className="homeButton" onClick={() => navigate("/guest/home")}>
+            Khám phá ngay
+          </button>
+        </div>
+      </div>
+      
+      <div className="rightPanel">
+        <div className="formContainer">
+          <h2 className="title"> Đăng Ký
+          </h2>
+          <form onSubmit={handleSubmit} className="form">
+            {/* FULL NAME */}
+            <div className="inputContainer">
+              <label 
+              className={`placeholder ${focusedField === "full_name" || formData.full_name ? "focusedPlaceholder" : ""}`}
+              >
+                Họ và tên
+              </label>
+              <input
+                type="text"
+                name="full_name"
+                value={formData.full_name}
+                onChange={handleChange}
+                onFocus={() => handleFocus('full_name')}
+                onBlur={() => handleBlur('full_name')}
+                className="input"
+                required
+              />
+            </div>
+            {/* BIRTH DATE */}
+            <div className="inputContainer">
+              <label
+                className={`placeholder ${focusedField === "birth_date" || formData.birth_date ? "focusedPlaceholder" : ""}`}
+              >
+                Ngày sinh
+              </label>
+              <input
+                type="date"
+                name="birth_date"
+                value={formData.birth_date}
+                onChange={handleChange}
+                onFocus={() => handleFocus('birth_date')}
+                onBlur={() => handleBlur('birth_date')}
+                className="input"
+                required
+              />
+            </div>
 
-              {/* BIRTH DATE */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(focusedField === 'birth_date' || formData.birth_date ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Ngày sinh
-                </label>
-                <input
-                  type="date"
-                  name="birth_date"
-                  value={formData.birth_date}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('birth_date')}
-                  onBlur={() => handleBlur('birth_date')}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === 'birth_date' ? '#6f3e76' : '#ccc',
-                  }}
-                />
-              </div>
+            {/* EMAIL */}
+            <div className="inputContainer">
+              <label
+                className={`placeholder ${focusedField === "email" || formData.email ? "focusedPlaceholder" : ""}`}
+              >
+                Email
+              </label>
+              <input
+                type="email"
+                name="email"
+                value={formData.email}
+                onChange={handleChange}
+                onFocus={() => handleFocus('email')}
+                onBlur={() => handleBlur('email')}
+                className="input"
+                required
+              />
+            </div>
 
-              {/* EMAIL */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(focusedField === 'email' || formData.email ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('email')}
-                  onBlur={() => handleBlur('email')}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === 'email' ? '#6f3e76' : '#ccc',
-                  }}
-                  required
-                />
-              </div>
+            {/* PHONE */}
+            <div className="inputContainer">
+              <label
+                className={`placeholder ${focusedField === "phone" || formData.phone ? "focusedPlaceholder" : ""}`}
+              >
+                Số điện thoại
+              </label>
+              <input
+                type="text"
+                name="phone"
+                value={formData.phone}
+                onChange={handleChange}
+                onFocus={() => handleFocus('phone')}
+                onBlur={() => handleBlur('phone')}
+                className="input"
+                required
+              />
+            </div>
 
-              {/* PHONE */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(focusedField === 'phone' || formData.phone ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Số điện thoại
-                </label>
-                <input
-                  type="text"
-                  name="phone"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('phone')}
-                  onBlur={() => handleBlur('phone')}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === 'phone' ? '#6f3e76' : '#ccc',
-                  }}
-                  required
-                />
-              </div>
-
+            <div className="selectContainer">
               {/* USER TYPE */}
-              <div style={{ display: "flex", justifyContent: "space-between" }}>
-                <select
-                  name="user_type"
-                  value={formData.user_type}
-                  onChange={handleChange}
-                  style={{ ...selectStyle, width: "49%" }} // Đảm bảo chia đôi chiều rộng
-                >
-                  <option value="" disabled>
-                    Loại tài khoản
-                  </option>
-                  <option value="Sinh viên">Sinh viên</option>
-                  <option value="Giảng viên">Giảng viên</option>
-                </select>
+              <select
+                name="user_type"
+                value={formData.user_type}
+                onChange={handleChange}
+                className="select"
+              >
+                <option value="" disabled>
+                  Loại tài khoản
+                </option>
+                <option value="Sinh viên">Sinh viên</option>
+                <option value="Giảng viên">Giảng viên</option>
+              </select>
 
-                {/* GENDER */}
-                <select
-                  name="gender"
-                  value={formData.gender}
-                  onChange={handleChange}
-                  style={{ ...selectStyle, width: "49%" }} // Đảm bảo chia đôi chiều rộng
-                >
-                  <option value="" disabled>
-                    Giới tính
-                  </option>
-                  <option value="Nam">Nam</option>
-                  <option value="Nữ">Nữ</option>
-                </select>
-              </div>
-
+              {/* GENDER */}
+              <select
+                name="gender"
+                value={formData.gender}
+                onChange={handleChange}
+                className="select"
+              >
+                <option value="" disabled>
+                  Giới tính
+                </option>
+                <option value="Nam">Nam</option>
+                <option value="Nữ">Nữ</option>
+              </select>
             </div>
-            <div style={sectionStyle}>
-
-
-              {/* ADDRESS */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(formData.address ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Địa chỉ
-                </label>
-                <input
-                  type="text"
-                  name="address"
-                  list="provinceList"
-                  value={formData.address}
-                  onChange={handleChange}
-                  onFocus={() => setFocusedField("address")}
-                  onBlur={() => setFocusedField("")}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === "address" ? "#6f3e76" : "#ccc", // Viền đổi màu tím khi focus
-                  }}
-                />
-                <datalist id="provinceList">
-                  {provinces.map((p) => (
-                    <option key={p.value} value={p.value} />
-                  ))}
-                </datalist>
-                {error && <p style={{ color: "red", fontSize: "12px" }}>{error}</p>}
-              </div>
-
-              {/* PASSWORD */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(focusedField === 'password' || formData.password ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Mật khẩu
-                </label>
-                <input
-                  type="password"
-                  name="password"
-                  value={formData.password}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('password')}
-                  onBlur={() => handleBlur('password')}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === 'password' ? '#6f3e76' : '#ccc',
-                  }}
-                  required
-                />
-              </div>
-
-              {/* CONFIRM PASSWORD */}
-              <div style={inputContainerStyle}>
-                <label
-                  style={{
-                    ...placeholderStyle,
-                    ...(focusedField === 'confirmPassword' || formData.confirmPassword ? focusedPlaceholderStyle : {}),
-                  }}
-                >
-                  Xác nhận mật khẩu
-                </label>
-                <input
-                  type="password"
-                  name="confirmPassword"
-                  value={formData.confirmPassword}
-                  onChange={handleChange}
-                  onFocus={() => handleFocus('confirmPassword')}
-                  onBlur={() => handleBlur('confirmPassword')}
-                  style={{
-                    ...inputStyle,
-                    borderColor: focusedField === 'confirmPassword' ? '#6f3e76' : '#ccc',
-                  }}
-                  required
-                />
-              </div>
+            
+            {/* ADDRESS */}
+            <div className="inputContainer">
+              <label 
+                className={`placeholder ${
+                  formData.address || focusedField === "address" ? "focusedPlaceholder" : ""
+                }`}
+              >
+                Tỉnh/Thành phố
+              </label>
+              <input
+                type="text"
+                name="address"
+                list="provinceList"
+                value={formData.address}
+                onChange={handleChange}
+                onFocus={() => setFocusedField("address")}
+                onBlur={() => setFocusedField("")}
+                className="input"
+                required
+              />
+              <datalist id="provinceList">
+                {provinces.map((p) => (
+                  <option key={p.value} value={p.value} />
+                ))}
+              </datalist>
+              {error && <p style={{ color: "red", fontSize: "12px" }}>{error}</p>}
             </div>
-          </div>
+            {/* PASSWORD */}
+            <div className="inputContainer">
+              <label
+                className={`placeholder ${focusedField === "password" || formData.password ? "focusedPlaceholder" : ""}`}
+              >
+                Mật khẩu
+              </label>
+              <input
+                type="password"
+                name="password"
+                value={formData.password}
+                onChange={handleChange}
+                onFocus={() => handleFocus('password')}
+                onBlur={() => handleBlur('password')}
+                className="input"
+                required
+              />
+            </div>
 
-          {/*<label style={{ fontWeight: 'bold', marginTop: '20px', color: '#6f3e76' }}>
-            AVATAR
-          </label>
-          <input
-            type="file"
-            accept="image/jpeg, image/png"
-            onChange={handleFileChange}
-            style={inputStyleAV}
-          /> */}
-
-          <button type="submit" style={buttonStyle}>Đăng ký</button>
-        </form>
+            {/* CONFIRM PASSWORD */}
+            <div className="inputContainer">
+              <label
+                className={`placeholder ${focusedField === "confirmPassword" || formData.confirmPassword ? "focusedPlaceholder" : ""}`}
+              >
+                Xác nhận mật khẩu
+              </label>
+              <input
+                type="password"
+                name="confirmPassword"
+                value={formData.confirmPassword}
+                onChange={handleChange}
+                onFocus={() => handleFocus('confirmPassword')}
+                onBlur={() => handleBlur('confirmPassword')}
+                className="input"
+                required
+              />
+            </div>
+            
+            {/* BUTTON SIGNUP */}
+            <div className="buttonContainer">
+              <button type="submit" className="button">Đăng ký</button>
+              <p className="loginText">
+                Bạn đã có tài khoản?
+                <a href="/login" className="loginLink">Đăng nhập</a>
+              </p>
+            </div>
+          </form>
+        </div>
+        {/* SVG làm viền */}  
+        {/* đường cong 0.25 */}
+        <svg 
+          className="curve"
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 1440 320"
+        >
+          <path 
+            fill="#ffffff" 
+            fill-opacity="0.25" 
+            d="M0,128L30,154.7C60,181,120,235,180,234.7C240,235,300,181,360,165.3C420,149,480,171,540,154.7C600,139,660,85,720,90.7C780,96,840,160,900,165.3C960,171,1020,117,1080,117.3C1140,117,1200,171,1260,208C1320,245,1380,267,1410,277.3L1440,288L1440,0L1410,0C1380,0,1320,0,1260,0C1200,0,1140,0,1080,0C1020,0,960,0,900,0C840,0,780,0,720,0C660,0,600,0,540,0C480,0,420,0,360,0C300,0,240,0,180,0C120,0,60,0,30,0L0,0Z"
+          ></path>
+        </svg>
+        {/* đường cong 0.5 */}
+        <svg 
+          className="curve"
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 1440 320"
+        >
+          <path 
+            fill="#ffffff" 
+            fill-opacity="0.5" 
+            d="M0,96L48,96C96,96,192,96,288,122.7C384,149,480,203,576,197.3C672,192,768,128,864,96C960,64,1056,64,1152,96C1248,128,1344,192,1392,224L1440,256L1440,0L1392,0C1344,0,1248,0,1152,0C1056,0,960,0,864,0C768,0,672,0,576,0C480,0,384,0,288,0C192,0,96,0,48,0L0,0Z"
+          ></path>
+        </svg>
+        {/* đường cong 0.5 */}
+        <svg 
+          className="curve"
+          xmlns="http://www.w3.org/2000/svg" 
+          viewBox="0 0 1440 320"
+        >
+          <path 
+            fill="#ffffff" 
+            fill-opacity="0.5" 
+            d="M0,0L20,37.3C40,75,80,149,120,165.3C160,181,200,139,240,154.7C280,171,320,245,360,266.7C400,288,440,256,480,213.3C520,171,560,117,600,106.7C640,96,680,128,720,122.7C760,117,800,75,840,64C880,53,920,75,960,122.7C1000,171,1040,245,1080,266.7C1120,288,1160,256,1200,218.7C1240,181,1280,139,1320,106.7C1360,75,1400,53,1420,42.7L1440,32L1440,0L1420,0C1400,0,1360,0,1320,0C1280,0,1240,0,1200,0C1160,0,1120,0,1080,0C1040,0,1000,0,960,0C920,0,880,0,840,0C800,0,760,0,720,0C680,0,640,0,600,0C560,0,520,0,480,0C440,0,400,0,360,0C320,0,280,0,240,0C200,0,160,0,120,0C80,0,40,0,20,0L0,0Z"
+          ></path>
+        </svg>
+        {/* đường cong trắng */}
+        <svg
+          className="curve"
+          xmlns="http://www.w3.org/2000/svg"
+          viewBox="0 0 1440 320"
+        >
+          <path
+            fill="#ffffff"
+            fillOpacity="1"
+            d="M0,192L21.8,197.3C43.6,203,87,213,131,197.3C174.5,181,218,139,262,144C305.5,149,349,203,393,192C436.4,181,480,107,524,96C567.3,85,611,139,655,165.3C698.2,192,742,192,785,176C829.1,160,873,128,916,112C960,96,1004,96,1047,122.7C1090.9,149,1135,203,1178,234.7C1221.8,267,1265,277,1309,261.3C1352.7,245,1396,203,1418,181.3L1440,160L1440,0L1418.2,0C1396.4,0,1353,0,1309,0C1265.5,0,1222,0,1178,0C1134.5,0,1091,0,1047,0C1003.6,0,960,0,916,0C872.7,0,829,0,785,0C741.8,0,698,0,655,0C610.9,0,567,0,524,0C480,0,436,0,393,0C349.1,0,305,0,262,0C218.2,0,175,0,131,0C87.3,0,44,0,22,0L0,0Z"
+          ></path>
+        </svg>
       </div>
     </div>
   );
-};
-
-const outerContainerStyle = {
-  display: "flex",
-  justifyContent: "center", // Canh giữa theo chiều ngang
-  minHeight: "100vh", // Đảm bảo toàn bộ chiều cao màn hình
-  backgroundColor: "#f1f1f1",
-  padding: "20px 0", // Giữ khoảng cách cố định từ lề trên
-  boxSizing: "border-box", // Đảm bảo padding không làm phồng layout
-};
-
-const formContainerStyle = {
-  width: "900px",
-  padding: "30px",
-  backgroundColor: "#fff",
-  boxShadow: "0px 4px 10px rgba(0, 0, 0, 0.2)",
-  borderRadius: "10px",
-  marginTop: "0", // Xóa canh lề cũ
-};
-
-
-// Phần tiêu đề
-const titleStyle = {
-  textAlign: "center",
-  fontWeight: "bold",
-  marginBottom: "20px",
-};
-
-// Form chính
-const formStyle = {
-  display: "flex",
-  flexDirection: "column",
-};
-
-const sectionContainerStyle = {
-  display: "flex",
-  flexWrap: "wrap",
-  justifyContent: "space-between",
-};
-
-const sectionStyle = {
-  width: "45%",
-  backgroundColor: "#f1f1f1",
-  padding: "15px",
-  borderRadius: "8px",
-};
-
-// Style cho input
-const inputContainerStyle = {
-  position: "relative",
-  marginBottom: "15px",
-};
-
-const inputStyle = {
-  width: "94%",
-  padding: "12px",
-  border: "1px solid #ccc",
-  borderRadius: "5px",
-  outline: "none",
-};
-
-const placeholderStyle = {
-  position: "absolute",
-  left: "12px",
-  top: "10px",
-  color: "rgba(200, 200, 200, 0.3)",
-  transition: "0.2s ease",
-  pointerEvents: "none",
-  backgroundColor: "white", // Làm nền cho placeholder để không bị viền che
-  padding: "0 5px", // Tạo khoảng trống giữa placeholder và viền
-  zIndex: 1, // Đặt trên input
-};
-
-const focusedPlaceholderStyle = {
-  top: "-8px",
-  left: "10px",
-  fontSize: "12px",
-  fontWeight: "bold",
-  color: "#6f3e76",
-  backgroundColor: "#f1f1f1", // Giữ nguyên nền khi focus
-  padding: "0 5px",
-  zIndex: 1, // Đặt trên input
-};
-
-// Style cho select box
-const selectStyle = {
-  width: "100%",
-  padding: "12px",
-  border: "1px solid #ccc",
-  borderRadius: "5px",
-  backgroundColor: "#fff",
-  marginBottom: "10px",
-};
-
-// Style cho file input
-// const inputStyleAV = {
-//   width: "97.5%",
-//   padding: "10px",
-//   border: "1px solid #ccc",
-//   borderRadius: "5px",
-//   marginBottom: "10px",
-// };
-
-// Nút đăng ký
-const buttonStyle = {
-  width: "100%",
-  padding: "12px",
-  backgroundColor: "#6f3e76",
-  color: "#fff",
-  border: "none",
-  borderRadius: "5px",
-  cursor: "pointer",
-  fontSize: "16px",
-  fontWeight: "bold",
-  marginTop: "15px",
-};
+}
 
 export default Signup;

@@ -1,0 +1,181 @@
+/* SignUp.css */
+.outerContainer {
+  display: flex;
+  min-height: 100vh; /* Dùng min-height thay vì height */
+  overflow: hidden;
+  position: relative;
+}
+
+.leftPanel {
+  width: 60%;
+  position: relative;
+  background-color: #6f3e76;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.content {
+  text-align: center;
+  color: white;
+}
+
+.logo {
+  width: 100px;
+  height: 100px;
+  margin-bottom: 10px;
+}
+
+.logoText {
+  font-size: 28px;
+  font-weight: bold;
+}
+
+.description {
+  font-size: 16px;
+  margin-bottom: 20px;
+}
+
+.homeButton {
+  padding: 10px 20px;
+  background-color: white;
+  color: #6f3e76;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 16px;
+  font-weight: bold;
+}
+
+.rightPanel {
+  width: 45%;
+  background-color: #fff;
+  position: relative;
+}
+
+.curve {
+  position: absolute;
+  left: -25%;
+  top: 35%;
+  transform: translateX(-50%) rotate(90deg);
+  width: auto;
+  height: 100%;
+  min-width: 90px;
+  min-height: 100vh;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.formContainer {
+  position: relative;
+  z-index: 2;
+  background-color: #fff;
+  padding: 30px 40px 30px 10px;
+}
+
+.title {
+  text-align: center;
+  font-weight: bold;
+  margin-bottom: 20px;
+  margin-top: -5px;
+}
+
+.form {
+  display: flex;
+  flex-direction: column;
+}
+
+.inputContainer {
+  position: relative;
+  margin-bottom: 15px;
+}
+
+.input {
+  width: 96%;
+  padding: 12px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  outline: none;
+}
+
+.input:focus {
+    border-color: #6f3e76;
+  }
+
+.placeholder {
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  color: rgba(200, 200, 200, 0.3);
+  transition: 0.2s ease;
+  pointer-events: none;
+  border-radius: 5px;
+  background-color: white;
+  padding: 0 5px;
+  z-index: 1;
+}
+
+.focusedPlaceholder {
+  top: -8px;
+  left: 10px;
+  font-size: 12px;
+  font-weight: bold;
+  color: #6f3e76;
+  background-color: white;
+  padding: 0 5px;
+  z-index: 1;
+}
+
+.selectContainer {
+    display: flex;
+    justify-content: space-between;
+    gap: 2%; /* Khoảng cách giữa 2 select */
+}
+  
+.select {
+    width: 49%;
+    padding: 12px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    background-color: #fff;
+    margin-bottom: 10px;
+    cursor: pointer;
+  }
+  
+  .buttonContainer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  
+  .button {
+    width: 50%;
+    padding: 10px;
+    background-color: #6f3e76;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: bold;
+    text-transform: uppercase;
+    margin-top: 15px;
+  }
+  
+  .button:hover {
+    background-color: #572e5a; /* Màu thay đổi khi hover */
+  }
+  
+  .loginText {
+    margin-left: 10px;
+    margin-bottom: 5px;
+  }
+  
+  .loginLink {
+    color: #6f3e76;
+    font-weight: bold;
+    text-decoration: none;
+    margin-left: 10px;
+  }
+  

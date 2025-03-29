@@ -22,7 +22,7 @@ urlpatterns = [
     path('api/', include('api.urls')),  # Đảm bảo include đúng module chính của API
     path('api/', include('api.urls.admin')),
     path('api/', include('api.urls.guest')),
-    # path('api/', include('api.urls.login')),
+    path('api/', include('api.urls.login')),
     # path('api/', include('api.urls.forgotpw')),
     # path('api/', include('api.urls.verifyOTP')),
     # path('api/', include('api.urls.resetpw')),

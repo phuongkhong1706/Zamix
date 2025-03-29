@@ -1,6 +1,9 @@
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
-import "../../menu.css";
+import "../../styles/Menu.css";
+import searchIcon from "../../assets/icon/icon-search.png";
+import logoAmeo from "../../assets/icon/icon-cats.png";
+
 
 function GuestMenu() {
   const location = useLocation();
@@ -46,7 +49,7 @@ function GuestMenu() {
     <nav className="nav">
       {/* Logo */}
       <div className="logo">
-        <img src="/img/icon-cats.png" alt="Logo" />
+        <img src={logoAmeo} alt="Logo" />
         <span>Ameo</span>
       </div>
 
@@ -90,7 +93,7 @@ function GuestMenu() {
           className={`search-container ${isSearchExpanded ? "expanded" : ""}`}
           onClick={handleSearchFocus}
         >
-          <img src="/img/icon-search.png" alt="Search" className="search-icon" />
+          <img src={searchIcon} alt="Search" className="search-icon" />
           <input
             type="text"
             className="search-input"
