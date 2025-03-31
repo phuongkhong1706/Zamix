@@ -93,7 +93,7 @@ function GuestMenu() {
           className={`search-container ${isSearchExpanded ? "expanded" : ""}`}
           onClick={handleSearchFocus}
         >
-          <img src={searchIcon} alt="Search" className="search-icon" />
+          <img src={searchIcon} alt="Search" className="icon" />
           <input
             type="text"
             className="search-input"

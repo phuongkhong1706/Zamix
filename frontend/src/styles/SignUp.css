@@ -1,12 +1,12 @@
 /* SignUp.css */
-.outerContainer {
+.signupouterContainer {
   display: flex;
   min-height: 100vh; /* Dùng min-height thay vì height */
   overflow: hidden;
   position: relative;
 }
 
-.leftPanel {
+.signupleftPanel {
   width: 60%;
   height: 100vh; /* Đảm bảo phần panel chiếm toàn bộ chiều cao */
   background-color: #6f3e76;
@@ -15,7 +15,7 @@
   align-items: center; /* Căn giữa theo chiều dọc */
 }
 
-.content {
+.signupcontent {
   text-align: center;
   color: white;
   display: flex;
@@ -23,28 +23,28 @@
   align-items: center; /* Căn giữa tất cả phần tử theo chiều ngang */
   justify-content: center;
   position: absolute;
-  top: 15%;
+  top: 25%;
   left: 21%;
   transform: translateX(-50%);
 }
 
-.logo {
+.signuplogo {
   width: 100px;
   height: 100px;
   margin-bottom: 10px;
 }
 
-.logoText {
+.signuplogoText {
   font-size: 28px;
   font-weight: bold;
 }
 
-.description {
+.signupdescription {
   font-size: 16px;
   margin-bottom: 20px;
 }
 
-.homeButton {
+.signuphomeButton {
   padding: 10px 20px;
   background-color: white;
   color: #6f3e76;
@@ -55,13 +55,13 @@
   font-weight: bold;
 }
 
-.rightPanel {
+.signuprightPanel {
   width: 45%;
   background-color: #fff;
   position: relative;
 }
 
-.curve {
+.signupcurve {
   position: absolute;
   left: -25%;
   top: 35%;
@@ -75,31 +75,31 @@
   z-index: 1;
 }
 
-.formContainer {
+.signupformContainer {
   position: relative;
   z-index: 2;
   background-color: #fff;
   padding: 30px 40px 30px 10px;
 }
 
-.title {
+.signuptitle {
   text-align: center;
   font-weight: bold;
   margin-bottom: 20px;
   margin-top: -5px;
 }
 
-.form {
+.signupform {
   display: flex;
   flex-direction: column;
 }
 
-.inputContainer {
+.signupinputContainer {
   position: relative;
   margin-bottom: 15px;
 }
 
-.input {
+.signupinput {
   width: 96%;
   padding: 12px;
   border: 1px solid #ccc;
@@ -107,11 +107,11 @@
   outline: none;
 }
 
-.input:focus {
+.signupinput:focus {
     border-color: #6f3e76;
   }
 
-.placeholder {
+.signupplaceholder {
   position: absolute;
   left: 12px;
   top: 10px;
@@ -124,7 +124,7 @@
   z-index: 1;
 }
 
-.focusedPlaceholder {
+.signupfocusedPlaceholder {
   top: -8px;
   left: 10px;
   font-size: 12px;
@@ -135,13 +135,13 @@
   z-index: 1;
 }
 
-.selectContainer {
+.signupselectContainer {
   display: flex;
   justify-content: space-between;
   gap: 2%; /* Khoảng cách giữa 2 select */
 }
   
-.select {
+.signupselect {
   width: 49%;
   padding: 12px;
   border: 1px solid #ccc;
@@ -151,13 +151,13 @@
   cursor: pointer;
 }
 
-.buttonContainer {
+.signupbuttonContainer {
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
   
-.button {
+.signupbutton {
   width: 50%;
   padding: 10px;
   background-color: #6f3e76;
@@ -171,7 +171,7 @@
   margin-top: 15px;
 }
   
-.button:hover {
+.signupbutton:hover {
   background-color: #572e5a; /* Màu thay đổi khi hover */
 }
 

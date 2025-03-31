@@ -86,27 +86,27 @@ function Signup() {
   };
 
   return (
-    <div className="outerContainer">
-      <div className="leftPanel">
-        <div className="content">
-          <img src={logoAmeoWhite} alt="Ameo Logo" className="logo" />
-          <h1 className="logoText">Ameo</h1>
-          <p className="description">We're barely cats</p>
-          <button className="homeButton" onClick={() => navigate("/guest/home")}>
+    <div className="signupouterContainer">
+      <div className="signupleftPanel">
+        <div className="signupcontent">
+          <img src={logoAmeoWhite} alt="Ameo Logo" className="signuplogo" />
+          <h1 className="signuplogoText">Ameo</h1>
+          <p className="signupdescription">We're barely cats</p>
+          <button className="signuphomeButton" onClick={() => navigate("/guest/home")}>
             Khám phá ngay
           </button>
         </div>
       </div>
       
-      <div className="rightPanel">
-        <div className="formContainer">
-          <h2 className="title"> Đăng ký
+      <div className="signuprightPanel">
+        <div className="signupformContainer">
+          <h2 className="signuptitle"> Đăng ký
           </h2>
-          <form onSubmit={handleSubmit} className="form">
+          <form onSubmit={handleSubmit} className="signupform">
             {/* FULL NAME */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label 
-              className={`placeholder ${focusedField === "full_name" || formData.full_name ? "focusedPlaceholder" : ""}`}
+              className={`signupplaceholder ${focusedField === "full_name" || formData.full_name ? "signupfocusedPlaceholder" : ""}`}
               >
                 Họ và tên
               </label>
@@ -117,14 +117,14 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => handleFocus('full_name')}
                 onBlur={() => handleBlur('full_name')}
-                className="input"
+                className="signupinput"
                 required
               />
             </div>
             {/* BIRTH DATE */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label
-                className={`placeholder ${focusedField === "birth_date" || formData.birth_date ? "focusedPlaceholder" : ""}`}
+                className={`signupplaceholder ${focusedField === "birth_date" || formData.birth_date ? "signupfocusedPlaceholder" : ""}`}
               >
                 Ngày sinh
               </label>
@@ -135,15 +135,15 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => handleFocus('birth_date')}
                 onBlur={() => handleBlur('birth_date')}
-                className="input"
+                className="signupinput"
                 required
               />
             </div>
 
             {/* EMAIL */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label
-                className={`placeholder ${focusedField === "email" || formData.email ? "focusedPlaceholder" : ""}`}
+                className={`signupplaceholder ${focusedField === "email" || formData.email ? "signupfocusedPlaceholder" : ""}`}
               >
                 Email
               </label>
@@ -154,15 +154,15 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => handleFocus('email')}
                 onBlur={() => handleBlur('email')}
-                className="input"
+                className="signupinput"
                 required
               />
             </div>
 
             {/* PHONE */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label
-                className={`placeholder ${focusedField === "phone" || formData.phone ? "focusedPlaceholder" : ""}`}
+                className={`signupplaceholder ${focusedField === "phone" || formData.phone ? "signupfocusedPlaceholder" : ""}`}
               >
                 Số điện thoại
               </label>
@@ -173,18 +173,18 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => handleFocus('phone')}
                 onBlur={() => handleBlur('phone')}
-                className="input"
+                className="signupinput"
                 required
               />
             </div>
 
-            <div className="selectContainer">
+            <div className="signupselectContainer">
               {/* USER TYPE */}
               <select
                 name="user_type"
                 value={formData.user_type}
                 onChange={handleChange}
-                className="select"
+                className="signupselect"
               >
                 <option value="" disabled>
                   Loại tài khoản
@@ -198,7 +198,7 @@ function Signup() {
                 name="gender"
                 value={formData.gender}
                 onChange={handleChange}
-                className="select"
+                className="signupselect"
               >
                 <option value="" disabled>
                   Giới tính
@@ -209,10 +209,10 @@ function Signup() {
             </div>
             
             {/* ADDRESS */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label 
-                className={`placeholder ${
-                  formData.address || focusedField === "address" ? "focusedPlaceholder" : ""
+                className={`signupplaceholder ${
+                  formData.address || focusedField === "address" ? "signupfocusedPlaceholder" : ""
                 }`}
               >
                 Tỉnh/Thành phố
@@ -225,7 +225,7 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => setFocusedField("address")}
                 onBlur={() => setFocusedField("")}
-                className="input"
+                className="signupinput"
                 required
               />
               <datalist id="provinceList">
@@ -236,9 +236,9 @@ function Signup() {
               {error && <p style={{ color: "red", fontSize: "12px" }}>{error}</p>}
             </div>
             {/* PASSWORD */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label
-                className={`placeholder ${focusedField === "password" || formData.password ? "focusedPlaceholder" : ""}`}
+                className={`signupplaceholder ${focusedField === "password" || formData.password ? "signupfocusedPlaceholder" : ""}`}
               >
                 Mật khẩu
               </label>
@@ -249,15 +249,15 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => handleFocus('password')}
                 onBlur={() => handleBlur('password')}
-                className="input"
+                className="signupinput"
                 required
               />
             </div>
 
             {/* CONFIRM PASSWORD */}
-            <div className="inputContainer">
+            <div className="signupinputContainer">
               <label
-                className={`placeholder ${focusedField === "confirmPassword" || formData.confirmPassword ? "focusedPlaceholder" : ""}`}
+                className={`signupplaceholder ${focusedField === "confirmPassword" || formData.confirmPassword ? "signupfocusedPlaceholder" : ""}`}
               >
                 Xác nhận mật khẩu
               </label>
@@ -268,14 +268,14 @@ function Signup() {
                 onChange={handleChange}
                 onFocus={() => handleFocus('confirmPassword')}
                 onBlur={() => handleBlur('confirmPassword')}
-                className="input"
+                className="signupinput"
                 required
               />
             </div>
             
             {/* BUTTON SIGNUP */}
-            <div className="buttonContainer">
-              <button type="submit" className="button">Đăng ký</button>
+            <div className="signupbuttonContainer">
+              <button type="submit" className="signupbutton">Đăng ký</button>
               <p className="loginText">
                 Bạn đã có tài khoản?
                 <a href="/login" className="loginLink">Đăng nhập</a>
@@ -286,7 +286,7 @@ function Signup() {
         {/* SVG làm viền */}  
         {/* đường cong 0.25 */}
         <svg 
-          className="curve"
+          className="signupcurve"
           xmlns="http://www.w3.org/2000/svg" 
           viewBox="0 0 1440 320"
         >
@@ -298,7 +298,7 @@ function Signup() {
         </svg>
         {/* đường cong 0.5 */}
         <svg 
-          className="curve"
+          className="signupcurve"
           xmlns="http://www.w3.org/2000/svg" 
           viewBox="0 0 1440 320"
         >
@@ -310,7 +310,7 @@ function Signup() {
         </svg>
         {/* đường cong 0.5 */}
         <svg 
-          className="curve"
+          className="signupcurve"
           xmlns="http://www.w3.org/2000/svg" 
           viewBox="0 0 1440 320"
         >
@@ -322,7 +322,7 @@ function Signup() {
         </svg>
         {/* đường cong trắng */}
         <svg
-          className="curve"
+          className="signupcurve"
           xmlns="http://www.w3.org/2000/svg"
           viewBox="0 0 1440 320"
         >

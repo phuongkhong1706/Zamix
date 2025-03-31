@@ -4,6 +4,6 @@ from api.views.student.home import HomeView
 
 
 urlpatterns = [
-    path('home/', HomeView.as_view(), name='student_home'),
+    path('student/home/', HomeView.as_view(), name='student_home'),
     #path('do_exam/', DoExamView.as_view(), name='admin_do_exam'),
 ]

@@ -34,19 +34,32 @@ function Login({ onLoginSuccess }) {
         return;
       }
   
-      // Lưu vào localStorage
+      // Lưu thông tin vào localStorage
       const userData = {
         email: data.email,
         full_name: data.full_name || data.email,
         role: data.role,
       };
       localStorage.setItem("user", JSON.stringify(userData));
+  
+      // Điều hướng dựa trên role
+      if (data.role === "student") {
+        navigate("/student/home");
+      } else if (data.role === "teacher") {
+        navigate("/teacher/home");
+      } else if (data.role === "admin") {
+        navigate("/admin/home");
+      } else {
+        navigate("/guest/home"); // Mặc định cho user không xác định
+      }
+  
       onLoginSuccess(userData.role);
     } catch (error) {
       console.error("Lỗi khi đăng nhập:", error);
       alert("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
+  
   
 
   return (

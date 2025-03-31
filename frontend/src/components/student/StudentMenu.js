@@ -7,11 +7,22 @@ import notiIcon from "../../assets/icon/icon-notification.png";
 import userIcon from "../../assets/icon/icon-user.png";
 
 
-function Menu() {
+function StudentMenu() {
   const location = useLocation();
   const [activePath, setActivePath] = useState(location.pathname);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
+  const [isSearchExpanded, setIsSearchExpanded] = useState(false);
+  const [searchText, setSearchText] = useState("");
+
+  const handleSearchFocus = () => {
+    setIsSearchExpanded(true);
+  };
+  const handleSearchBlur = () => {
+    if (!searchText) {
+      setIsSearchExpanded(false);
+    }
+  };
 
   // Xác định tab cha có active hay không
   const isParentActive =
@@ -76,9 +87,20 @@ function Menu() {
 
       {/* User section */}
       <div className="user-section">
-        <button className="icon-button">
-          <img src={searchIcon} alt="Search" />
-        </button>
+      <div
+          className={`search-container ${isSearchExpanded ? "expanded" : ""}`}
+          onClick={handleSearchFocus}
+        >
+          <img src={searchIcon} alt="Search" className="icon" />
+          <input
+            type="text"
+            className="search-input"
+            placeholder="Tìm kiếm..."
+            value={searchText}
+            onChange={(e) => setSearchText(e.target.value)}
+            onBlur={handleSearchBlur}
+          />
+        </div>
         <button className="icon-button">
           <img src={notiIcon} alt="Thông báo" />
         </button>
@@ -90,4 +112,4 @@ function Menu() {
   );
 }
 
-export default Menu;
+export default StudentMenu;
