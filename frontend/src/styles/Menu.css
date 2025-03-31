@@ -5,17 +5,17 @@
   top: 0;
   left: 0;
   z-index: 1000;
-  min-height: 50px;  /* Đảm bảo tối thiểu 50px */
-  height: auto; /* Cho phép mở rộng nếu nội dung nhiều */
+  height: 50px; /* Giữ cố định chiều cao */
   background-color: white;
-  border-bottom: 1px solid #ddd;  /* Đường viền nhẹ */
+  border-bottom: 1px solid #ddd; /* Đường viền nhẹ */
 
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 30 0px;  /* Khoảng cách lề trái/phải */
 
-  /* box-shadow: none */
+
+  /* overflow-x: auto; /* Cho phép cuộn ngang nếu nội dung vượt quá */
+  white-space: nowrap; /* Ngăn menu xuống dòng */
 }
 
 
@@ -26,6 +26,7 @@
   align-items: center;
   font-weight: bold;
   font-size: 20px;
+  padding-top: 10px;
 }
 
 .logo img {

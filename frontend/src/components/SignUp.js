@@ -100,7 +100,7 @@ function Signup() {
       
       <div className="rightPanel">
         <div className="formContainer">
-          <h2 className="title"> Đăng Ký
+          <h2 className="title"> Đăng ký
           </h2>
           <form onSubmit={handleSubmit} className="form">
             {/* FULL NAME */}

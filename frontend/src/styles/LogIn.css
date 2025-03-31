@@ -1,12 +1,12 @@
 /* SignUp.css */
-.outerContainer {
+.loginouterContainer {
   display: flex;
   min-height: 100vh; /* Dùng min-height thay vì height */
   overflow: hidden;
   position: relative;
 }
 
-.leftPanel {
+.loginleftPanel {
   width: 60%;
   height: 100vh; /* Đảm bảo phần panel chiếm toàn bộ chiều cao */
   background-color: #6f3e76;
@@ -15,7 +15,7 @@
   align-items: center; /* Căn giữa theo chiều dọc */
 }
 
-.content {
+.logincontent {
   text-align: center;
   color: white;
   display: flex;
@@ -23,28 +23,28 @@
   align-items: center; /* Căn giữa tất cả phần tử theo chiều ngang */
   justify-content: center;
   position: absolute;
-  top: 15%;
+  top: 25%;
   left: 21%;
   transform: translateX(-50%);
 }
 
-.logo {
+.loginlogo {
   width: 100px;
   height: 100px;
   margin-bottom: 10px;
 }
 
-.logoText {
+.loginlogoText {
   font-size: 28px;
   font-weight: bold;
 }
 
-.description {
+.logindescription {
   font-size: 16px;
   margin-bottom: 20px;
 }
 
-.homeButton {
+.loginhomeButton {
   padding: 10px 20px;
   background-color: white;
   color: #6f3e76;
@@ -55,13 +55,22 @@
   font-weight: bold;
 }
 
-.rightPanel {
+.loginhomeButton:hover {
+  background-color: #e0dcdc;
+}
+
+.loginrightPanel {
   width: 45%;
   background-color: #fff;
   position: relative;
+
+  /* Dùng CSS Grid để căn giữa */
+  display: grid;
+  place-items: center; /* Căn giữa cả chiều ngang & dọc */
+  height: 100vh;
 }
 
-.curve {
+.logincurve {
   position: absolute;
   left: -25%;
   top: 35%;
@@ -75,47 +84,48 @@
   z-index: 1;
 }
 
-.formContainer {
+.loginformContainer {
   position: relative;
   z-index: 2;
   background-color: #fff;
-  padding: 30px 40px 30px 10px;
+  /*padding: 30px 40px 30px 10px; /*top right bottom left*/
 }
 
-.title {
+.logintitle {
   text-align: center;
   font-weight: bold;
   margin-bottom: 20px;
   margin-top: -5px;
 }
 
-.form {
+.loginform {
   display: flex;
   flex-direction: column;
 }
 
-.inputContainer {
+.logininputContainer {
   position: relative;
   margin-bottom: 15px;
+  width: 300px;
 }
 
-.input {
-  width: 96%;
+.logininput {
+  width: 100%;
   padding: 12px;
   border: 1px solid #ccc;
   border-radius: 5px;
   outline: none;
 }
 
-.input:focus {
+.logininput:focus {
     border-color: #6f3e76;
   }
 
-.placeholder {
+.loginplaceholder {
   position: absolute;
   left: 12px;
   top: 10px;
-  color: rgba(3, 0, 0, 0.3);
+  color: rgba(0, 0, 0, 0.3);
   transition: 0.2s ease;
   pointer-events: none;
   border-radius: 5px;
@@ -124,7 +134,7 @@
   z-index: 1;
 }
 
-.focusedPlaceholder {
+.loginfocusedPlaceholder {
   top: -8px;
   left: 10px;
   font-size: 12px;
@@ -135,31 +145,9 @@
   z-index: 1;
 }
 
-.selectContainer {
-  display: flex;
-  justify-content: space-between;
-  gap: 2%; /* Khoảng cách giữa 2 select */
-}
-  
-.select {
-  width: 49%;
-  padding: 12px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  background-color: #fff;
-  margin-bottom: 10px;
-  cursor: pointer;
-}
-
-.buttonContainer {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-  
-.button {
-  width: 50%;
-  padding: 10px;
+.loginbutton {
+  width: 327px;
+  height: 40px;
   background-color: #6f3e76;
   color: white;
   border: none;
@@ -171,19 +159,28 @@
   margin-top: 15px;
 }
   
-.button:hover {
+.loginbutton:hover {
   background-color: #572e5a; /* Màu thay đổi khi hover */
 }
 
-.loginText {
-  margin-left: 10px;
+.signupText {
   margin-bottom: 5px;
+  text-align: center;
 }
 
-.loginLink {
+.signupLink {
   color: #6f3e76;
   font-weight: bold;
   text-decoration: none;
   margin-left: 10px;
 }
   
+.loginforgotPasswordLink {
+  text-align: right;
+  margin-bottom: 15px;
+}
+
+.loginforgotPasswordLink a {
+  color: #6f3e76;
+  text-decoration: underline;
+}
