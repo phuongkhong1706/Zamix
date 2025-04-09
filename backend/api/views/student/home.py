@@ -2,7 +2,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 
-class HomeView(APIView):
+class StudentHomeView(APIView):
     def get(self, request):
         data = {
             "title": "Trang chủ",

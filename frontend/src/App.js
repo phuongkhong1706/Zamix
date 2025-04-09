@@ -13,7 +13,8 @@ import GuestHomeTab from "./components/guest/tabs/GuestHomeTab";
 /* Chức năng student */
 import StudentMenu from "./components/student/StudentMenu";
 import StudentHomeTab from "./components/student/tabs/StudentHomeTab";
-import StudentDoExam from "./components/student/tabs/StudentDoExam";
+import StudentDoExam from "./components/student/tabs/doExam/StudentDoExam";
+import StudentDoExamDetail from "./components/student/tabs/doExam/StudentDoExamDetail";
 
 /* Chức năng teacher */
 
@@ -60,7 +61,7 @@ function App() {
         {/* Các trang giao diện Student */}
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
-
+        <Route path="/student/do_exam/:examId" element={<StudentDoExamDetail />} />
       </Routes>
     </Router>
   );

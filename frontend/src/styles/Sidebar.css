@@ -1,0 +1,23 @@
+.sidebar {
+  position: fixed;              /* Cố định vị trí */
+  top: 50px;                    /* Đúng bằng chiều cao của navbar */
+  left: 0;                      /* Sát lề trái */
+  width: 220px;
+  height: calc(100vh - 50px);   /* Chiếm toàn bộ chiều cao còn lại */
+  background-color: #f9f9f9;
+  padding: 16px;
+  border-right: 1px solid #ccc;
+  overflow-y: auto;             /* Cuộn khi nội dung vượt quá */
+  z-index: 999;                 /* Dưới navbar một chút nếu cần */
+}
+
+.label {
+  display: block;
+  margin: 6px 0;
+  font-size: 14px;
+}
+
+.main-content {
+  margin-left: 220px; /* Dịch sang phải để tránh bị sidebar đè lên */
+  padding: 16px;
+}

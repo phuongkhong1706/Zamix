@@ -23,3 +23,30 @@ class UserInformation(models.Model):
 
     def __str__(self):
         return self.full_name
+
+class Exam(models.Model):
+    EXAM_TYPES = [
+        ('midterm', 'Giữa kỳ'),
+        ('final', 'Cuối kỳ'),
+    ]
+
+    title = models.CharField(max_length=255)
+    subject = models.CharField(max_length=100)
+    type = models.CharField(max_length=10, choices=EXAM_TYPES)
+    time_start = models.DateTimeField()
+    time_end = models.DateTimeField()
+    duration = models.DurationField(default=0)
+
+    def __str__(self):
+        return f"{self.title} - {self.subject}"
+
+    @property
+    def status(self):
+        from django.utils.timezone import now
+        current = now()
+        if self.time_start <= current <= self.time_end:
+            return "Kỳ thi đang diễn ra"
+        elif current < self.time_start:
+            return "Kỳ thi chưa bắt đầu"
+        else:
+            return "Kỳ thi đã kết thúc"
