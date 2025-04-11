@@ -18,8 +18,12 @@ function StudentDoExam() {
 
   useEffect(() => {
     fetch("http://127.0.0.1:8000/api/student/do_exam/")
-      .then((response) => response.json())
-      .then((data) => setData(data))
+      .then((res) => res.json())
+      .then((res) => {
+        console.log("Kết quả API:", res);
+        // Fallback nếu không có mảng
+        setData(Array.isArray(res) ? res : []);
+      })
       .catch((error) => {
         console.error("Lỗi khi lấy dữ liệu:", error);
         setData([]);
@@ -61,7 +65,7 @@ function StudentDoExam() {
               >
                 <h3 style={headerStyle}>{exam.title}</h3>
                 <p><strong>Loại:</strong> {typeDisplayMap[exam.type] || exam.type}</p>
-                <p><strong>Môn:</strong> {exam.subject}</p>
+                <p><strong>Thời gian làm bài:</strong> {exam.duration}</p>
                 <p>🟢 <strong>Bắt đầu:</strong> {formatTime(exam.time_start)}</p>
                 <p>🔴 <strong>Kết thúc:</strong> {formatTime(exam.time_end)}</p>
                 <p style={{
@@ -89,7 +93,7 @@ const cardStyle = {
   backgroundColor: '#f5f8ff',
   borderRadius: '12px',
   padding: '16px',
-  width: '340px',
+  width: '450px',
   boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
   fontFamily: 'Arial',
 };

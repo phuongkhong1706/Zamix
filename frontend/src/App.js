@@ -61,7 +61,7 @@ function App() {
         {/* Các trang giao diện Student */}
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
-        <Route path="/student/do_exam/:examId" element={<StudentDoExamDetail />} />
+        <Route path="/exam/:id" element={<StudentDoExamDetail />} />
       </Routes>
     </Router>
   );

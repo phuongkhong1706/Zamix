@@ -5,7 +5,7 @@ const examTypes = [
   { value: "midterm", label: "Giữa kỳ" },
   { value: "final", label: "Cuối kỳ" },
 ];
-const subjects = ["Giải tích", "Đại số", "Vật lý", "Hoá học"];
+const subjects = ["Giải tích", "Đại số", "Cấu trúc dữ liệu", "Hoá học"];
 
 function FilterSidebar({ filters, setFilters }) {
   const toggleFilter = (type, value) => {

@@ -1,5 +1,6 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
+from datetime import timedelta
 
 class Item(models.Model):
     name = models.CharField(max_length=200)
@@ -30,15 +31,21 @@ class Exam(models.Model):
         ('final', 'Cuối kỳ'),
     ]
 
+    GRADE_CHOICES = [
+        (10, 'Lớp 10'),
+        (11, 'Lớp 11'),
+        (12, 'Lớp 12'),
+    ]
+
     title = models.CharField(max_length=255)
-    subject = models.CharField(max_length=100)
+    grade = models.IntegerField(choices=GRADE_CHOICES)
     type = models.CharField(max_length=10, choices=EXAM_TYPES)
     time_start = models.DateTimeField()
     time_end = models.DateTimeField()
-    duration = models.DurationField(default=0)
+    duration = models.DurationField(default=timedelta(minutes=1))
 
     def __str__(self):
-        return f"{self.title} - {self.subject}"
+        return f"{self.title} - Lớp {self.grade}"
 
     @property
     def status(self):
@@ -50,3 +57,38 @@ class Exam(models.Model):
             return "Kỳ thi chưa bắt đầu"
         else:
             return "Kỳ thi đã kết thúc"
+        
+class ExamQuestion(models.Model):
+    EXAM_TYPES = [
+        ('midterm', 'Giữa kỳ'),
+        ('final', 'Cuối kỳ'),
+    ]
+
+    GRADE_CHOICES = [
+        (10, 'Lớp 10'),
+        (11, 'Lớp 11'),
+        (12, 'Lớp 12'),
+    ]
+
+    DIFFICULTY_LEVELS = [
+        (1, 'Nhận biết'),
+        (2, 'Thông hiểu'),
+        (3, 'Vận dụng'),
+        (4, 'Vận dụng cao'),
+    ]
+
+    id_question = models.AutoField(primary_key=True)
+    exam = models.ForeignKey(Exam, related_name="questions", on_delete=models.CASCADE, null=True)  # Liên kết tới kỳ thi
+    grade = models.IntegerField(choices=GRADE_CHOICES)
+    question_format = models.CharField(max_length=100)  # dạng bài (VD: trắc nghiệm, điền khuyết, ...)
+    type = models.CharField(max_length=10, choices=EXAM_TYPES)
+    difficulty = models.IntegerField(choices=DIFFICULTY_LEVELS)
+    content = models.TextField()
+    option_a = models.CharField(max_length=255)
+    option_b = models.CharField(max_length=255)
+    option_c = models.CharField(max_length=255)
+    option_d = models.CharField(max_length=255)
+    correct_answer = models.CharField(max_length=1, choices=[('A', 'A'), ('B', 'B'), ('C', 'C'), ('D', 'D')])
+
+    def __str__(self):
+        return f"Câu hỏi {self.id_question} - Lớp {self.grade} - {self.get_type_display()}"

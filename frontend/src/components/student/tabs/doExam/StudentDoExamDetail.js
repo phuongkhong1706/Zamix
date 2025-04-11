@@ -1,74 +1,90 @@
-import React, { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import axios from "axios";
+import React, { useState, useEffect } from "react";
+import { useParams } from "react-router-dom";
 
-const StudentDoExamDetail = () => {
-  const { examId } = useParams();
-  const [questions, setQuestions] = useState([]);
-  const [examTitle, setExamTitle] = useState("");
-  const [answers, setAnswers] = useState({});
-  const navigate = useNavigate();
+// Component đếm ngược
+function CountdownTimer({ durationInSeconds, onEnd }) {
+  const [timeLeft, setTimeLeft] = useState(durationInSeconds);
 
   useEffect(() => {
-    axios.get(`http://localhost:8000/api/student/do_exam/${examId}/`)
-      .then((res) => {
-        setQuestions(res.data.questions);
-        setExamTitle(res.data.exam.title);
-      })
-      .catch((err) => console.log(err));
-  }, [examId]);
+    if (!durationInSeconds) return;
 
-  const handleChange = (questionId, choice) => {
-    setAnswers({ ...answers, [questionId]: choice });
-  };
+    setTimeLeft(durationInSeconds); // Đặt lại giá trị mỗi lần đổi đề
 
-  const handleSubmit = () => {
-    const payload = {
-      exam_id: parseInt(examId),
-      student_id: 1, // hardcode, sau này sửa thành user login
-      answers: Object.entries(answers).map(([question_id, selected_choice]) => ({
-        question_id: parseInt(question_id),
-        selected_choice
-      }))
-    };
+    const interval = setInterval(() => {
+      setTimeLeft((prevTime) => {
+        if (prevTime <= 1) {
+          clearInterval(interval);
+          onEnd?.();
+          return 0;
+        }
+        return prevTime - 1;
+      });
+    }, 1000);
 
-    axios.post("http://localhost:8000/api/submit/", payload)
-      .then(() => {
-        alert("Nộp bài thành công!");
-        navigate("/student/do_exam");
-      })
-      .catch(err => console.log(err));
+    return () => clearInterval(interval);
+  }, [durationInSeconds, onEnd]);
+
+  const formatTime = (seconds) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
   };
 
   return (
-    <div className="p-4">
-      <h2 className="text-xl font-bold mb-4">Làm bài: {examTitle}</h2>
-      {questions.map((q, idx) => (
-        <div key={q.id} className="mb-6">
-          <p><strong>Câu {idx + 1}:</strong> {q.content}</p>
-          {Object.entries(q.choices).map(([key, val]) => (
-            <label key={key} className="block">
-              <input
-                type="radio"
-                name={`q_${q.id}`}
-                value={key}
-                onChange={() => handleChange(q.id, key)}
-                checked={answers[q.id] === key}
-              />
-              <span className="ml-2">{key}. {val}</span>
-            </label>
-          ))}
-        </div>
-      ))}
-
-      <button
-        onClick={handleSubmit}
-        className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600"
-      >
-        Nộp bài
-      </button>
+    <div style={{ fontSize: "24px", fontWeight: "bold", color: "#e74c3c", marginBottom: "16px" }}>
+      ⏳ Thời gian còn lại: {formatTime(timeLeft)}
     </div>
   );
+}
+
+function StudentDoExamDetail() {
+  const { id } = useParams();
+  const [examData, setExamData] = useState(null);
+
+  useEffect(() => {
+    fetch(`http://127.0.0.1:8000/api/student/do_exam/exams/${id}/`)
+      .then((res) => res.json())
+      .then((data) => {
+        setExamData(data);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy dữ liệu kỳ thi:", err);
+      });
+  }, [id]);
+
+  if (!examData) return <div>Đang tải đề thi...</div>;
+
+  return (
+    <div style={{ padding: "20px" }}>
+      <h2>{examData.exam_title}</h2>
+
+      <CountdownTimer
+        durationInSeconds={parseInt(examData.duration, 10)}
+        onEnd={() => alert("⏰ Hết giờ làm bài!")}
+      />
+
+      <hr />
+      {examData.questions.map((q, index) => (
+        <div key={q.id_question} style={questionStyle}>
+          <p><strong>Câu {index + 1}:</strong> {q.content}</p>
+          <ul>
+            <li>A. {q.option_a}</li>
+            <li>B. {q.option_b}</li>
+            <li>C. {q.option_c}</li>
+            <li>D. {q.option_d}</li>
+          </ul>
+        </div>
+      ))}
+    </div>
+  );
+}
+
+const questionStyle = {
+  marginBottom: "20px",
+  padding: "12px",
+  backgroundColor: "#f9f9f9",
+  borderRadius: "10px",
+  boxShadow: "0 2px 6px rgba(0,0,0,0.1)"
 };
 
 export default StudentDoExamDetail;
