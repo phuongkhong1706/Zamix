@@ -42,8 +42,7 @@ class Exam(models.Model):
     type = models.CharField(max_length=10, choices=EXAM_TYPES)
     time_start = models.DateTimeField()
     time_end = models.DateTimeField()
-    duration = models.DurationField(default=timedelta(minutes=1))
-
+    duration = models.IntegerField(default=3600)  # Lưu thời gian kỳ thi bằng giây (mặc định 3600 giây = 1 giờ)
     def __str__(self):
         return f"{self.title} - Lớp {self.grade}"
 

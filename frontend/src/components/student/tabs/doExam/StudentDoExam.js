@@ -11,7 +11,7 @@ function StudentDoExam() {
   const [data, setData] = useState(null);
   const [filters, setFilters] = useState({
     examTypes: new Set(),
-    subjects: new Set(),
+    grades: new Set(),
   });
 
   const navigate = useNavigate(); // 👈 Thêm điều hướng
@@ -33,9 +33,9 @@ function StudentDoExam() {
   const filteredData = data?.filter((exam) => {
     const matchType =
       filters.examTypes.size === 0 || filters.examTypes.has(exam.type);
-    const matchSubject =
-      filters.subjects.size === 0 || filters.subjects.has(exam.subject);
-    return matchType && matchSubject;
+    const matchGrade =
+      filters.grades.size === 0 || filters.grades.has(exam.grade);
+    return matchType && matchGrade;
   });
 
   const handleExamClick = (id) => {

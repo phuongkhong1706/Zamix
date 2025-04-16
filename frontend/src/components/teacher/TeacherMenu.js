@@ -8,10 +8,11 @@ import userIcon from "../../assets/icon/icon-user.png";
 import logoutIcon from "../../assets/icon/icon-logout.png"
 import profileUserIcon from "../../assets/icon/icon-profile-user.png"
 
-function StudentMenu() {
+function TeacherMenu() {
   const location = useLocation();
   const [activePath, setActivePath] = useState(location.pathname);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isResultDropDownOpen, setIsResultDropdownOpen] = useState(false);
+  const [isExamsDropDownOpen, setIsExamsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -29,10 +30,10 @@ function StudentMenu() {
   };
 
   // Xác định tab cha có active hay không
-  const isParentActive =
-    activePath.startsWith("/student/ket-qua/diem-thi") || activePath.startsWith("/student/ket-qua/danh-gia");  
+  const isResultParentActive = activePath.startsWith("/teacher/ket-qua/diem-thi") || activePath.startsWith("/teacher/ket-qua/danh-gia");  
+  const isExamsParentActive = activePath.startsWith("/teacher/exams/exam_management") || activePath.startsWith("/teacher/exams/question_bank");  
   
-    const handleUserMenuToggle = () => {
+  const handleUserMenuToggle = () => {
     setIsUserMenuOpen(!isUserMenuOpen); // Đảo ngược trạng thái của menu con
   };
   
@@ -55,7 +56,7 @@ function StudentMenu() {
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
+        setIsResultDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -72,33 +73,47 @@ function StudentMenu() {
 
       {/* Menu items */}
       <ul className="nav-menu">
-        <li className={activePath === "/student/home" ? "active" : ""}>
-          <Link to="/student/home" className="menu-link">Trang chủ</Link>
+        <li className={activePath === "/teacher/home" ? "active" : ""}>
+          <Link to="/teacher/home" className="menu-link">Trang chủ</Link>
         </li>
-        <li className={activePath === "/student/do_exam" ? "active" : ""}>
-          <Link to="/student/do_exam" className="menu-link">Vào thi</Link>
+        {/* Tab "Kết quả" có submenu */}
+        <li
+          className={`has-submenu ${isExamsDropDownOpen ? "submenu-hover" : ""} ${isExamsParentActive ? "submenu-active" : ""}`}
+          onMouseEnter={() => setIsExamsDropdownOpen(true)}
+          onMouseLeave={() => setIsExamsDropdownOpen(false)}
+          ref={dropdownRef}
+        >
+          <span className="menu-link">Đề thi</span> <span className="dropdown-icon"></span>
+          <ul className={`submenu ${isExamsDropDownOpen ? "open" : ""}`}>
+            <li className={activePath === "/teacher/exams/exam_management" ? "submenu-active" : ""}>
+              <Link to="/teacher/exams/exam_management">Quản lý kỳ thi</Link>
+            </li>
+            <li className={activePath === "/teacher/exams/question_bank" ? "submenu-active" : ""}>
+              <Link to="/teacher/exams/question_bank">Ngân hàng đề thi</Link>
+            </li>
+          </ul>
         </li>
-        <li className={activePath === "/student/news" ? "active" : ""}>
-          <Link to="/student/news" className="menu-link">Tin tức</Link> 
+        <li className={activePath === "/teacher/news" ? "active" : ""}>
+          <Link to="/teacher/news" className="menu-link">Tin tức</Link> 
         </li>
-        <li className={activePath === "/student/the-le" ? "active" : ""}>
-          <Link to="/student/the-le" className="menu-link">Thể lệ</Link>
+        <li className={activePath === "/teacher/the-le" ? "active" : ""}>
+          <Link to="/teacher/the-le" className="menu-link">Thể lệ</Link>
         </li>
 {/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
         {/* Tab "Kết quả" có submenu */}
         <li
-          className={`has-submenu ${isDropdownOpen ? "submenu-hover" : ""} ${isParentActive ? "submenu-active" : ""}`}
-          onMouseEnter={() => setIsDropdownOpen(true)}
-          onMouseLeave={() => setIsDropdownOpen(false)}
+          className={`has-submenu ${isResultDropDownOpen ? "submenu-hover" : ""} ${isResultParentActive ? "submenu-active" : ""}`}
+          onMouseEnter={() => setIsResultDropdownOpen(true)}
+          onMouseLeave={() => setIsResultDropdownOpen(false)}
           ref={dropdownRef}
         >
           <span className="menu-link">Kết quả</span> <span className="dropdown-icon"></span>
-          <ul className={`submenu ${isDropdownOpen ? "open" : ""}`}>
-            <li className={activePath === "/student/ket-qua/diem-thi" ? "submenu-active" : ""}>
-              <Link to="/student/ket-qua/diem-thi">Điểm thi</Link>
+          <ul className={`submenu ${isResultDropDownOpen ? "open" : ""}`}>
+            <li className={activePath === "/teacher/ket-qua/diem-thi" ? "submenu-active" : ""}>
+              <Link to="/teacher/ket-qua/diem-thi">Điểm thi</Link>
             </li>
-            <li className={activePath === "/student/ket-qua/danh-gia" ? "submenu-active" : ""}>
-              <Link to="/student/ket-qua/danh-gia">Đánh giá</Link>
+            <li className={activePath === "/teacher/ket-qua/danh-gia" ? "submenu-active" : ""}>
+              <Link to="/teacher/ket-qua/danh-gia">Đánh giá</Link>
             </li>
           </ul>
         </li>
@@ -130,7 +145,7 @@ function StudentMenu() {
         {/* User menu dropdown */}
         {isUserMenuOpen && (
           <div className="user-dropdown" ref={userMenuRef}>
-            <Link to="/student/profile" className="user-dropdown-item">
+            <Link to="/teacher/profile" className="user-dropdown-item">
               <img
                 src={profileUserIcon}
                 alt="Hồ sơ cá nhân"
@@ -163,4 +178,4 @@ function StudentMenu() {
   );
 }
 
-export default StudentMenu;
+export default TeacherMenu;

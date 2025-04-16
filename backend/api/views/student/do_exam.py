@@ -1,5 +1,4 @@
 from rest_framework.views import APIView
-from rest_framework.generics import RetrieveAPIView
 from rest_framework.response import Response
 from rest_framework import status
 from ...models import Exam
@@ -20,6 +19,7 @@ class StudentDoExamDetailView(APIView):
             exam = Exam.objects.get(id=exam_id)
             questions = exam.questions.all()
             serializer = ExamQuestionSerializer(questions, many=True)
+            
             return Response({
                 "exam_title": exam.title,
                 "exam_id": exam.id,

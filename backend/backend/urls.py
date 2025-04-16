@@ -23,6 +23,7 @@ urlpatterns = [
     path('api/', include('api.urls.admin')),
     path('api/', include('api.urls.guest')),
     path('api/', include('api.urls.student')),
+    path('api/', include('api.urls.teacher')),
     path('api/', include('api.urls.login')),
     # path('api/', include('api.urls.forgotpw')),
     # path('api/', include('api.urls.verifyOTP')),

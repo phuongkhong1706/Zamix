@@ -5,7 +5,7 @@ const examTypes = [
   { value: "midterm", label: "Giữa kỳ" },
   { value: "final", label: "Cuối kỳ" },
 ];
-const subjects = ["Giải tích", "Đại số", "Cấu trúc dữ liệu", "Hoá học"];
+const grades = [10, 11, 12];
 
 function FilterSidebar({ filters, setFilters }) {
   const toggleFilter = (type, value) => {
@@ -53,25 +53,25 @@ function FilterSidebar({ filters, setFilters }) {
         ))}
       </div>
 
-      {/* Môn học */}
+      {/* Khối lớp */}
       <div>
-        <p><strong>Môn học</strong></p>
+        <p><strong>Khối lớp</strong></p>
         <label className="label">
           <input
             type="checkbox"
-            checked={isAllSelected("subjects")}
-            onChange={() => toggleFilter("subjects", "All")}
+            checked={isAllSelected("grades")}
+            onChange={() => toggleFilter("grades", "All")}
           />
           Tất cả
         </label>
-        {subjects.map((subj) => (
-          <label key={subj} className="label">
+        {grades.map((grade) => (
+          <label key={grade} className="label">
             <input
               type="checkbox"
-              checked={filters.subjects.has(subj)}
-              onChange={() => toggleFilter("subjects", subj)}
+              checked={filters.grades.has(grade)}
+              onChange={() => toggleFilter("grades", grade)}
             />
-            {subj}
+            Lớp {grade}
           </label>
         ))}
       </div>

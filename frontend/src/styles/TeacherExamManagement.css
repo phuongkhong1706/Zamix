@@ -1,0 +1,187 @@
+.exam-container {
+  padding: 24px;
+  font-family: Arial, sans-serif;
+}
+
+.exam-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.exam-header h2 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.exam-filters {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap; /* nếu muốn responsive */
+}
+
+.filter-left,
+.filter-right {
+  display: flex;
+  gap: 12px;
+}
+
+
+.exam-filters select {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-width: 180px;
+}
+
+.exam-filters input {
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  min-width: 280px; /* hoặc 300px tùy ý */
+}
+
+
+.exam-table-wrapper {
+  overflow-x: auto;
+}
+
+.exam-table {
+  width: 100%;
+  border-collapse: collapse;
+  border: 1px solid #ccc;
+}
+
+.exam-table thead {
+  background-color: #f9f9f9;
+}
+
+.exam-table th,
+.exam-table td {
+  border: 1px solid #ccc;
+  padding: 12px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.exam-table .exam-title {
+  font-weight: bold;
+  margin-bottom: 6px;
+}
+
+.exam-table .badge {
+  display: inline-block;
+  background-color: #def7e0;
+  color: #197d30;
+  padding: 2px 8px;
+  font-size: 12px;
+  border-radius: 12px;
+}
+
+.status {
+  font-weight: 600;
+}
+
+.status-upcoming {
+  color: #22345a; /* xanh dương nhạt */
+}
+
+.status-ongoing {
+  color: #15803d; /* xanh lá đậm */
+}
+
+.status-finished {
+  color: #db0b00; /* đỏ */
+}
+
+
+.exam-table .students {
+  font-size: 13px;
+  color: #555;
+  margin-top: 4px;
+}
+
+.exam-table .action-buttons {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center; /* căn icon và text theo chiều dọc */
+  gap: 6px;             /* khoảng cách giữa icon và text */
+  padding: 6px 10px;
+  border: none;
+  border-radius: 5px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.btn.add {
+  background-color: #6f3e76;
+  color: white;
+  font-weight: bold;
+  height: 35px;
+}
+
+.btn.add:hover{
+  background-color: #572e5a;
+}
+
+.btn.search {
+  background-color: #6f3e76;
+  color: white;
+}
+
+.btn.search:hover{
+  background-color: #572e5a;
+}
+
+.btn.detail {
+  background-color: #304674;
+  color: white;
+}
+
+.btn.detail:hover {
+  background-color: #22345a; /* đậm hơn */
+}
+
+.btn.edit {
+  background-color: #e5e7eb;
+  color: black;
+}
+
+.btn.edit:hover {
+  background-color: #d1d5db; /* đậm hơn */
+}
+
+.btn.delete {
+  background-color: #db0b00;
+  color: white;
+}
+
+.btn.delete:hover {
+  background-color: #a30800; /* đậm hơn */
+}
+
+.btn.export {
+  background-color: #15803d;
+  color: white;
+}
+
+.btn.export:hover {
+  background-color: #116430; /* đậm hơn */
+}
+
+
+.btn-icon {
+  width: 16px;
+  height: 16px;
+}

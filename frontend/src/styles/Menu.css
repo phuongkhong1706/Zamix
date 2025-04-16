@@ -92,7 +92,7 @@
   display: flex;
   align-items: center;
   gap: 10px;
-  margin-right: 10px;
+  margin-right: 20px;
 }
 
 /* Button icon */
@@ -288,4 +288,41 @@
 .icon {
   width: 24px;
   height: 24px;
+}
+
+/* ##################### USER DROPDOWN ############################ */
+.user-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 20px;
+  background-color: white;
+  box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  width: 170px;
+  list-style: none;
+  padding: 5px;
+  margin-top: 5px;
+  z-index: 2000;
+}
+
+.user-dropdown-item {
+  padding: 10px 15px;
+  text-decoration: none;
+  color: black;
+  display: flex; /* dùng flex để căn hàng ngang */
+  align-items: center; /* căn giữa icon và text theo chiều dọc */
+  transition: background-color 0.3s ease;
+  border-radius: 10px;
+}
+
+.user-dropdown-item:hover {
+  background-color: #f3eef4;
+  color: black;
+}
+
+.user-dropdown-icon {
+  width: 20px;
+  height: 20px;
+  margin-right: 10px;
+  object-fit: contain;
 }

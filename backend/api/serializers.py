@@ -14,6 +14,7 @@ class ExamQuestionSerializer(serializers.ModelSerializer):
 
 class ExamSerializer(serializers.ModelSerializer):
     questions = ExamQuestionSerializer(many=True, read_only=True)  # dùng related_name="questions"
+    duration = serializers.SerializerMethodField()
 
     class Meta:
         model = Exam
@@ -21,3 +22,7 @@ class ExamSerializer(serializers.ModelSerializer):
             'id', 'title', 'grade', 'type', 'time_start', 'time_end',
             'duration', 'status', 'questions'
         ]
+
+    def get_duration(self, obj):
+        # Vì 'duration' là số giây (integer), ta trả về trực tiếp giá trị đó.
+        return obj.duration if obj.duration else 0
