@@ -263,6 +263,7 @@
   padding: 5px 10px;
   transition: width 0.3s ease;
   width: 25px; /*độ rộng của button */
+  height: 25px;
   overflow: hidden;
   background: white;
 }

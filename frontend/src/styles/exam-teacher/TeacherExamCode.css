@@ -1,0 +1,173 @@
+.exam-form-title {
+    font-size: 1.25rem;
+    font-weight: bold;
+    margin-bottom: 1rem;
+  }
+  
+  .exam-form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .exam-form-group {
+    width: 90%;
+  }
+  
+  
+  .exam-form-label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 0.25rem;
+  }
+  
+  .exam-form-input,
+  .exam-form-select {
+    width: 100%;
+    padding: 0.5rem;
+    border: 1px solid #ccc;
+    border-radius: 0.375rem;
+  }
+  
+  .exam-form-datetime {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  
+  .btn {
+    display: inline-flex;
+    align-items: center; /* căn icon và text theo chiều dọc */
+    gap: 6px;             /* khoảng cách giữa icon và text */
+    padding: 6px 10px;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+  }
+  
+  .btn.addquestion {
+    background-color: #6f3e76;
+    color: white;
+    font-weight: bold;
+    height: 35px;
+  }
+  .btn.addquestion:hover{
+    background-color: #572e5a;
+  }
+
+  .btn-icon {
+    width: 16px;
+    height: 16px;
+  }
+
+  /*################################################################################*/
+  .question-form {
+    margin-top: 20px;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 8px;
+    background-color: #fdfdfd;
+  }
+  
+  .question-form h4 {
+    font-size: 16px;
+    margin-bottom: 12px;
+  }
+  
+  .question-form input[type="text"] {
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    width: 100%;
+    margin-bottom: 10px;
+  }
+  
+  .question-form .correct-answer label {
+    margin-right: 12px;
+    font-weight: 500;
+  }
+  
+  .question-form button.save-btn {
+    background-color: #22c55e; /* tương đương bg-green-500 */
+    color: white;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-top: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+  }
+  
+  .question-form button.save-btn:hover {
+    background-color: #16a34a; /* màu hover đậm hơn */
+  }
+  
+  /*#####################################################*/
+  .question-item {
+  position: relative;
+  margin-bottom: 20px;
+  padding: 12px;
+  background-color: #f9f9f9;
+  border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+.question-item .action-buttons {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  display: flex;
+  gap: 8px;
+}
+
+.question-item .action-buttons button {
+  padding: 4px 10px;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;   
+}
+
+.question-item .edit-btn {
+  background-color: #e5e7eb; /* yellow-400 */
+  color: black;
+}
+
+.question-item .delete-btn {
+  background-color: #ef4444; /* red-500 */
+  color: white;
+}
+
+.question-item .correct-answer {
+  color: green;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.question-item ul {
+  list-style-type: none;
+  padding-left: 0;
+  margin-top: 10px;
+}
+/*#####################################################*/
+.latex-editor {
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  padding: 8px;
+  min-height: 40px;
+  margin-bottom: 10px;
+  background: white;
+}
+
+.latex-display {
+  border: none;
+  background: none;
+  font-size: 1rem;
+}

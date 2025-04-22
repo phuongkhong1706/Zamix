@@ -21,6 +21,8 @@ import StudentNewsTab from "./components/student/tabs/StudentNewsTab";
 import TeacherMenu from "./components/teacher/TeacherMenu"
 import TeacherHomeTab from "./components/teacher/tabs/TeacherHomeTab";
 import TeacherExamManagement from "./components/teacher/tabs/exams/TeacherExamManagement";
+import TeacherExamAdd from "./components/teacher/tabs/exams/TeacherExamAdd";
+import TeacherExamCode from "./components/teacher/tabs/exams/TeacherExamCode";
 
 /* Định dạng trang web Guest (có menu) */
 function GuestLayout({ children }) {
@@ -85,6 +87,8 @@ function App() {
         {/* Các trang giao diện Teacher */}
         <Route path="/teacher/home" element={<TeacherLayout> <TeacherHomeTab /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management" element={<TeacherLayout> <TeacherExamManagement /> </TeacherLayout>}/>
+        <Route path="/teacher/exams/exam_management/exam_add" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>}/>
+        <Route path="/teacher/exams/exam_management/exam_add/exam_code" element={<TeacherExamCode />} />
       </Routes>
     </Router>
   );

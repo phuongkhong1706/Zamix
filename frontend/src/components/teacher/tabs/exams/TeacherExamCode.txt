@@ -1,0 +1,292 @@
+import React, { useState } from "react";
+import "../../../../styles/SidebarNavigation.css";
+import "../../../../styles/exam-teacher/TeacherExamCode.css";
+import iconAddQuestion from "../../../../assets/icon/icon-add.png";
+import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png"
+import iconCorrect from "../../../../assets/icon/icon-correct.png"
+import iconEdit from "../../../../assets/icon/icon-edit.png";
+import iconDelete from "../../../../assets/icon/icon-delete.png";
+
+function TeacherExamCode() {
+  const [examData, setExamData] = useState({
+    exam_title: "",
+    exam_code: "",
+    exam_type: "",
+    grade: "",
+    start_time: "",
+    duration: "",
+  });
+
+  const [answers, setAnswers] = useState({});
+  const [newQuestions, setNewQuestions] = useState([]);
+  const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
+  const [editingIndex, setEditingIndex] = useState(null);
+
+  const [newQuestion, setNewQuestion] = useState({
+    content: "",
+    option_a: "",
+    option_b: "",
+    option_c: "",
+    option_d: "",
+    correct_answer: "",
+  });
+
+  const handleAnswerChange = (questionIndex, answer) => {
+    setAnswers((prev) => ({
+      ...prev,
+      [questionIndex]: answer,
+    }));
+  };
+
+  const handleAddOrEditQuestion = () => {
+    if (
+      newQuestion.content &&
+      newQuestion.option_a &&
+      newQuestion.option_b &&
+      newQuestion.option_c &&
+      newQuestion.option_d &&
+      newQuestion.correct_answer
+    ) {
+      if (editingIndex !== null) {
+        const updatedQuestions = [...newQuestions];
+        updatedQuestions[editingIndex] = newQuestion;
+        setNewQuestions(updatedQuestions);
+        setEditingIndex(null);
+      } else {
+        setNewQuestions((prev) => [...prev, newQuestion]);
+      }
+
+      setNewQuestion({
+        content: "",
+        option_a: "",
+        option_b: "",
+        option_c: "",
+        option_d: "",
+        correct_answer: "",
+      });
+      setShowNewQuestionForm(false);
+    } else {
+      alert("Vui lòng điền đầy đủ thông tin câu hỏi.");
+    }
+  };
+
+  const handleEditQuestion = (index) => {
+    setNewQuestion(newQuestions[index]);
+    setShowNewQuestionForm(true);
+    setEditingIndex(index);
+  };
+
+  const handleDeleteQuestion = (index) => {
+    if (window.confirm("Bạn có chắc muốn xoá câu hỏi này không?")) {
+      setNewQuestions((prev) => prev.filter((_, i) => i !== index));
+    }
+  };
+
+  return (
+    <div style={{ display: "flex", padding: "20px"}}>
+      {/* MAIN CONTENT */}
+      <div style={{ flex: 1, paddingRight: "280px" }}>
+      <h2>
+        Mã đề:{" "}
+        <input
+          type="text"
+          className="border p-2 rounded"
+          value={examData.exam_code}
+          onChange={(e) =>
+            setExamData({ ...examData, exam_code: e.target.value })
+          }
+          placeholder="Nhập mã đề"
+        />
+      </h2>
+      <hr />
+
+        {/* Danh sách câu hỏi mới thêm */}
+        {newQuestions.map((q, index) => (
+          <div key={`new-${index}`} className="question-item">
+            <div className="action-buttons">
+              <button className="edit-btn" onClick={() => handleEditQuestion(index)}>
+                <img src={iconEdit} alt="icon" className="btn-icon" /> Sửa
+              </button>
+              <button className="delete-btn" onClick={() => handleDeleteQuestion(index)}>
+                <img src={iconDelete} alt="icon" className="btn-icon" /> Xoá
+              </button>
+            </div>
+
+            <p>
+              <strong>Câu {index + 1}:</strong> {q.content}
+            </p>
+            <ul>
+              {["A", "B", "C", "D"].map((option) => (
+                <li key={option}>
+                  <strong>{option}</strong>. {q[`option_${option.toLowerCase()}`]}{" "}
+                  {q.correct_answer === option && (
+                    <span className="correct-answer">
+                      <img src={iconCorrect} alt="icon" className="btn-icon" />
+                      Đáp án đúng
+                    </span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))}
+
+
+        {/* Nút thêm câu hỏi */}
+        <div style={{ marginTop: "20px" }}>
+        <button
+          onClick={() => {
+            setShowNewQuestionForm(!showNewQuestionForm);
+            setEditingIndex(null);
+            setNewQuestion({
+              content: "",
+              option_a: "",
+              option_b: "",
+              option_c: "",
+              option_d: "",
+              correct_answer: "",
+            });
+          }}
+          className="btn addquestion"
+        >
+          <img
+            src={showNewQuestionForm ? iconCancelQuestion : iconAddQuestion}
+            alt="icon"
+            className="btn-icon"
+          />
+          {showNewQuestionForm
+            ? (editingIndex !== null ? "Huỷ thay đổi" : "Huỷ thêm")
+            : "Thêm câu hỏi"}
+        </button>
+        </div>
+
+        {/* Form thêm/sửa câu hỏi */}
+        {showNewQuestionForm && (
+          <div className="question-form">
+            <h4>{editingIndex !== null ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}</h4>
+            <input
+              type="text"
+              placeholder="Nội dung câu hỏi"
+              value={newQuestion.content}
+              onChange={(e) =>
+                setNewQuestion({ ...newQuestion, content: e.target.value })
+              }
+            />
+            {["a", "b", "c", "d"].map((opt) => (
+              <input
+                key={opt}
+                type="text"
+                placeholder={`Đáp án ${opt.toUpperCase()}`}
+                value={newQuestion[`option_${opt}`]}
+                onChange={(e) =>
+                  setNewQuestion({
+                    ...newQuestion,
+                    [`option_${opt}`]: e.target.value,
+                  })
+                }
+              />
+            ))}
+            <div className="correct-answer">
+              <label>Chọn đáp án đúng: </label>
+              {["A", "B", "C", "D"].map((opt) => (
+                <label key={opt}>
+                  <input
+                    type="radio"
+                    name="correct_answer"
+                    value={opt}
+                    checked={newQuestion.correct_answer === opt}
+                    onChange={() =>
+                      setNewQuestion({
+                        ...newQuestion,
+                        correct_answer: opt,
+                      })
+                    }
+                  />{" "}
+                  {opt}
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={handleAddOrEditQuestion}
+              className="save-btn"
+            >
+              ✅ {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+            </button>
+          </div>
+        )}
+
+      </div>
+
+      {/* SIDEBAR: Thông tin kỳ thi */}
+      <div className="sidebar-container">
+      <div className="exam-form-title">Thông tin kỳ thi</div>
+
+{/* Tên kỳ thi & Mã đề */}
+<div className="exam-form-row">
+  <div className="exam-form-group">
+    <label className="exam-form-label">Tên kỳ thi</label>
+    <input
+      type="text"
+      className="exam-form-input"
+      value={examData.exam_title}
+      onChange={(e) =>
+        setExamData({ ...examData, exam_title: e.target.value })
+      }
+    />
+  </div>
+</div>
+
+{/* Loại kỳ thi & Khối */}
+<div className="exam-form-row">
+  <div className="exam-form-group">
+    <label className="exam-form-label">Loại kỳ thi</label>
+    <select
+      className="exam-form-select"
+      value={examData.exam_type}
+      onChange={(e) =>
+        setExamData({ ...examData, exam_type: e.target.value })
+      }
+    >
+      <option value="midterm">Giữa kỳ</option>
+      <option value="final">Cuối kỳ</option>
+    </select>
+  </div>
+  <div className="exam-form-group">
+    <label className="exam-form-label">Khối</label>
+    <select
+      className="exam-form-select"
+      value={examData.grade}
+      onChange={(e) =>
+        setExamData({ ...examData, grade: e.target.value })
+      }
+    >
+      <option value="10">Lớp 10</option>
+      <option value="11">Lớp 11</option>
+      <option value="12">Lớp 12</option>
+    </select>
+  </div>
+</div>
+
+
+{/* Thời lượng */}
+<div className="exam-form-row">
+  <div className="exam-form-group">
+    <label className="exam-form-label">Thời lượng (phút)</label>
+    <input
+      type="number"
+      className="exam-form-input"
+      value={examData.duration}
+      onChange={(e) =>
+        setExamData({ ...examData, duration: e.target.value })
+      }
+      placeholder="Nhập số phút"
+      min="1"
+    />
+  </div>
+</div>
+      </div>
+    </div>
+  );
+}
+
+export default TeacherExamCode;
