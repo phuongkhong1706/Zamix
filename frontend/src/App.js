@@ -16,6 +16,7 @@ import StudentHomeTab from "./components/student/tabs/StudentHomeTab";
 import StudentDoExam from "./components/student/tabs/doExam/StudentDoExam";
 import StudentDoExamDetail from "./components/student/tabs/doExam/StudentDoExamDetail";
 import StudentNewsTab from "./components/student/tabs/StudentNewsTab";
+import StudentPractice from "./components/student/tabs/practice/StudentPractice";
 
 /* Chức năng teacher */
 import TeacherMenu from "./components/teacher/TeacherMenu"
@@ -83,6 +84,8 @@ function App() {
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
         <Route path="/exam/:id" element={<StudentDoExamDetail />} />
         <Route path="/student/news" element={<StudentLayout> <StudentNewsTab /> </StudentLayout>}/>
+        <Route path="/student/practice" element={<StudentLayout> <StudentPractice /> </StudentLayout>}/>
+
 
         {/* Các trang giao diện Teacher */}
         <Route path="/teacher/home" element={<TeacherLayout> <TeacherHomeTab /> </TeacherLayout>}/>

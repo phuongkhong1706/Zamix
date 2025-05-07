@@ -78,12 +78,13 @@ function StudentMenu() {
         <li className={activePath === "/student/do_exam" ? "active" : ""}>
           <Link to="/student/do_exam" className="menu-link">Vào thi</Link>
         </li>
+        <li className={activePath === "/student/practice" ? "active" : ""}>
+          <Link to="/student/practice" className="menu-link">Luyện tập</Link>
+        </li>
         <li className={activePath === "/student/news" ? "active" : ""}>
           <Link to="/student/news" className="menu-link">Tin tức</Link> 
         </li>
-        <li className={activePath === "/student/the-le" ? "active" : ""}>
-          <Link to="/student/the-le" className="menu-link">Thể lệ</Link>
-        </li>
+        
 {/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
         {/* Tab "Kết quả" có submenu */}
         <li
