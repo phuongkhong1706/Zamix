@@ -39,7 +39,7 @@ function StudentDoExam() {
   });
 
   const handleExamClick = (id) => {
-    navigate(`/exam/${id}`); // 👈 Điều hướng đến trang làm bài thi
+    navigate(`/student/do_exam/verify_exam/${id}`); // 👈 Điều hướng đến trang làm bài thi
   };
 
   return (

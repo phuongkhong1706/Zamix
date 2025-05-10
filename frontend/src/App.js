@@ -18,7 +18,9 @@ import StudentDoExamDetail from "./components/student/tabs/doExam/StudentDoExamD
 import StudentNewsTab from "./components/student/tabs/StudentNewsTab";
 import StudentPractice from "./components/student/tabs/practice/StudentPractice";
 import StudentStatistics from "./components/student/tabs/StudentStatistics";
-
+import StudentVerifyExam from "./components/student/tabs/doExam/StudentVerifyExam";
+import StudentVerifyPractice from "./components/student/tabs/practice/StudentVerifyPractice";
+import StudentPracticeDetail from "./components/student/tabs/practice/StudentPracticeDetail";
 /* Chức năng teacher */
 import TeacherMenu from "./components/teacher/TeacherMenu"
 import TeacherHomeTab from "./components/teacher/tabs/TeacherHomeTab";
@@ -83,9 +85,12 @@ function App() {
         {/* Các trang giao diện Student */}
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
-        <Route path="/exam/:id" element={<StudentDoExamDetail />} />
+        <Route path="/student/do_exam/verify_exam/:id" element={<StudentLayout> <StudentVerifyExam /> </StudentLayout>}/>
+        <Route path="/student/do_exam/:id" element={<StudentDoExamDetail />} />
         <Route path="/student/news" element={<StudentLayout> <StudentNewsTab /> </StudentLayout>}/>
         <Route path="/student/practice" element={<StudentLayout> <StudentPractice /> </StudentLayout>}/>
+        <Route path="/student/practice/verify_practice" element={<StudentLayout> <StudentVerifyPractice /> </StudentLayout>}/>
+        <Route path="/student/practice/do_practice/:id" element={<StudentPracticeDetail />}/>
         <Route path="/student/result/statistics" element={<StudentLayout> <StudentStatistics /> </StudentLayout>}/>
 
 

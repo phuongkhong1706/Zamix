@@ -75,10 +75,11 @@ function StudentMenu() {
         <li className={activePath === "/student/home" ? "active" : ""}>
           <Link to="/student/home" className="menu-link">Trang chủ</Link>
         </li>
-        <li className={activePath === "/student/do_exam" ? "active" : ""}>
+        <li className={activePath.startsWith("/student/do_exam") ? "active" : ""}>
           <Link to="/student/do_exam" className="menu-link">Vào thi</Link>
         </li>
-        <li className={activePath === "/student/practice" ? "active" : ""}>
+
+        <li className={activePath.startsWith("/student/practice") ? "active" : ""}>
           <Link to="/student/practice" className="menu-link">Luyện tập</Link>
         </li>
         <li className={activePath === "/student/news" ? "active" : ""}>
