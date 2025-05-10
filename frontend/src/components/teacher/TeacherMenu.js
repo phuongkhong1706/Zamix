@@ -93,8 +93,8 @@ function TeacherMenu() {
             </li>
           </ul>
         </li>
-        <li className={activePath === "/teacher/news" ? "active" : ""}>
-          <Link to="/teacher/news" className="menu-link">Tin tức</Link> 
+        <li className={activePath === "/teacher/documents" ? "active" : ""}>
+          <Link to="/teacher/documents" className="menu-link">Tài liệu</Link> 
         </li>
         <li className={activePath === "/teacher/the-le" ? "active" : ""}>
           <Link to="/teacher/the-le" className="menu-link">Thể lệ</Link>

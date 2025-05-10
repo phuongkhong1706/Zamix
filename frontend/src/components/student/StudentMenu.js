@@ -30,7 +30,7 @@ function StudentMenu() {
 
   // Xác định tab cha có active hay không
   const isParentActive =
-    activePath.startsWith("/student/ket-qua/diem-thi") || activePath.startsWith("/student/ket-qua/danh-gia");  
+    activePath.startsWith("/student/result/score") || activePath.startsWith("/student/result/statistics");  
   
     const handleUserMenuToggle = () => {
     setIsUserMenuOpen(!isUserMenuOpen); // Đảo ngược trạng thái của menu con
@@ -95,11 +95,11 @@ function StudentMenu() {
         >
           <span className="menu-link">Kết quả</span> <span className="dropdown-icon"></span>
           <ul className={`submenu ${isDropdownOpen ? "open" : ""}`}>
-            <li className={activePath === "/student/ket-qua/diem-thi" ? "submenu-active" : ""}>
-              <Link to="/student/ket-qua/diem-thi">Điểm thi</Link>
+            <li className={activePath === "/student/result/score" ? "submenu-active" : ""}>
+              <Link to="/student/result/score">Điểm thi</Link>
             </li>
-            <li className={activePath === "/student/ket-qua/danh-gia" ? "submenu-active" : ""}>
-              <Link to="/student/ket-qua/danh-gia">Đánh giá</Link>
+            <li className={activePath === "/student/result/statistics" ? "submenu-active" : ""}>
+              <Link to="/student/result/statistics">Đánh giá</Link>
             </li>
           </ul>
         </li>
