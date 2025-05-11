@@ -35,33 +35,36 @@ export default function LatexInputKaTeX({ value, onChange }) {
     onChange(val);
   };
 
-  return (
-    <div style={{ marginBottom: "15px" }}>
-      <textarea
-        value={localValue}
-        onChange={handleChange}
-        rows={5}
-        style={{
-          width: "100%",
-          padding: "8px",
-          fontFamily: "monospace",
-          border: "1px solid #ccc",
-          borderRadius: "4px",
-        }}
-        placeholder='Nhập văn bản LaTeX của bạn'
-      />
-      <div
-        style={{
-          marginTop: "10px",
-          background: "#f8f8f8",
-          padding: "10px",
-          minHeight: "40px",
-        }}
-      >
-        {renderWithLatex(localValue)}
-      </div>
+return (
+  <div style={{ marginBottom: "15px", width: "100%" }}>
+    <textarea
+      value={localValue}
+      onChange={handleChange}
+      rows={5}
+      style={{
+        width: "100%",
+        padding: "8px",
+        fontFamily: "monospace",
+        border: "1px solid #ccc",
+        borderRadius: "4px",
+        boxSizing: "border-box"
+      }}
+      placeholder="Nhập văn bản LaTeX của bạn"
+    />
+    <div
+      style={{
+        marginTop: "10px",
+        background: "#f8f8f8",
+        padding: "10px",
+        minHeight: "40px",
+        border: "1px solid #eee",
+        borderRadius: "4px",
+      }}
+    >
+      {renderWithLatex(localValue)}
     </div>
-  );
-}
+  </div>
+);
 
+}
 export { renderWithLatex };

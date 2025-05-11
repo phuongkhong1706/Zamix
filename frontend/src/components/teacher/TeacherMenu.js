@@ -96,8 +96,8 @@ function TeacherMenu() {
         <li className={activePath === "/teacher/documents" ? "active" : ""}>
           <Link to="/teacher/documents" className="menu-link">Tài liệu</Link> 
         </li>
-        <li className={activePath === "/teacher/the-le" ? "active" : ""}>
-          <Link to="/teacher/the-le" className="menu-link">Thể lệ</Link>
+        <li className={activePath === "/teacher/rules" ? "active" : ""}>
+          <Link to="/teacher/rules" className="menu-link">Thể lệ</Link>
         </li>
 {/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
         {/* Tab "Kết quả" có submenu */}

@@ -164,15 +164,16 @@ function TeacherExamCode() {
             <h4>{editingIndex !== null ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}</h4>
 
             <div className="form-section">
-              <label>Nội dung câu hỏi:</label>
+              <label style={{ marginBottom: "10px", display: "block" }}>Nội dung câu hỏi:</label>
               <LatexInputKaTeX
                 value={newQuestion.content}
                 onChange={(value) => setNewQuestion({ ...newQuestion, content: value })}
+                style={{ width: "90%", minHeight: "100px" }} // nếu component hỗ trợ style
               />
             </div>
 
             <div className="form-section">
-              <label>Danh sách đáp án:</label>
+              <label style={{ marginBottom: "10px", display: "block" }}>Danh sách đáp án:</label>
               {newQuestion.options.map((opt, idx) => (
                 <div key={opt.id} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
                   <LatexInputKaTeX
@@ -196,7 +197,20 @@ function TeacherExamCode() {
                   </button>
                 </div>
               ))}
-              <button onClick={handleAddOption} style={{ marginTop: "10px" }}>➕ Thêm đáp án</button>
+              <button
+                onClick={handleAddOption}
+                style={{
+                  marginTop: "10px",
+                  padding: "10px 20px", // Tăng chiều cao của nút
+                  borderRadius: "8px",  // Bo góc
+                  backgroundColor: "#ffffff", // Màu nền trắng
+                  border: "1px solid #ccc", // Đường viền mờ
+                  cursor: "pointer", // Đổi con trỏ khi hover
+                  fontWeight: "bold", // Đậm chữ
+                }}
+              >
+                ➕ Thêm đáp án
+              </button>
             </div>
 
             <button onClick={handleAddOrEditQuestion} className="save-btn">

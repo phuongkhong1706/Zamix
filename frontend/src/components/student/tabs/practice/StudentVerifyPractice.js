@@ -31,9 +31,9 @@ function StudentVerifyPractice() {
   };
 
   const practiceResults = [
-    { id: 1, score: 8.5 },
-    { id: 2, score: 7.0 },
-    { id: 3, score: 9.25 },
+  { id: 1, score: 8.5, submittedAt: "2025-05-11T10:30:00", durationInMinutes: 95 },
+  { id: 2, score: 7.0, submittedAt: "2025-05-10T14:15:00", durationInMinutes: 78 },
+  { id: 3, score: 9.25, submittedAt: "2025-05-09T16:45:00", durationInMinutes: 105 },
   ];
 
   return (
@@ -58,33 +58,23 @@ function StudentVerifyPractice() {
         </div>
 
         <div style={agreementWrapperStyle}>
-          <label>
-            <input
-              type="checkbox"
-              checked={agreed}
-              onChange={(e) => setAgreed(e.target.checked)}
-            />{" "}
-            Tôi đã đọc và đồng ý chấp hành quy định phòng thi
-          </label>
           <button
             onClick={handleStartExam}
-            disabled={!agreed}
             style={{
               marginLeft: "auto",
               marginTop: "10px",
               padding: "10px 20px",
-              backgroundColor: agreed ? "#0b3d91" : "#ccc",
+              backgroundColor: "#0b3d91",
               color: "white",
               border: "none",
               borderRadius: "8px",
-              cursor: agreed ? "pointer" : "not-allowed",
+              cursor: "pointer",
               fontWeight: "bold",
             }}
           >
-            Vào thi
+            Vào thi thử
           </button>
         </div>
-
         <div style={resultBoxStyle}>
           <h3 style={sectionTitleStyle}>Kết quả bài thi thử</h3>
           <table style={tableStyle}>
@@ -92,24 +82,41 @@ function StudentVerifyPractice() {
               <tr>
                 <th style={tableCellStyle}>STT</th>
                 <th style={tableCellStyle}>Điểm</th>
+                <th style={tableCellStyle}>Thời gian nộp bài</th>
+                <th style={tableCellStyle}>Thời gian làm bài</th>
                 <th style={tableCellStyle}>Thao tác</th>
               </tr>
             </thead>
             <tbody>
-              {practiceResults.map((result, index) => (
-                <tr key={result.id}>
-                  <td style={tableCellStyle}>{index + 1}</td>
-                  <td style={tableCellStyle}>{result.score}</td>
-                  <td style={tableCellStyle}>
-                    <button
-                      style={viewButtonStyle}
-                      onClick={() => alert(`Xem bài thi thử ID ${result.id}`)}
-                    >
-                      Xem
-                    </button>
-                  </td>
-                </tr>
-              ))}
+              {practiceResults.map((result, index) => {
+                const date = new Date(result.submittedAt);
+                const submittedTime = date.toLocaleString("vi-VN", {
+                  hour12: false,
+                  dateStyle: "short",
+                  timeStyle: "short",
+                });
+
+                const hours = Math.floor(result.durationInMinutes / 60);
+                const minutes = result.durationInMinutes % 60;
+                const durationFormatted = `${hours} giờ ${minutes} phút`;
+
+                return (
+                  <tr key={result.id}>
+                    <td style={tableCellStyle}>{index + 1}</td>
+                    <td style={tableCellStyle}>{result.score}</td>
+                    <td style={tableCellStyle}>{submittedTime}</td>
+                    <td style={tableCellStyle}>{durationFormatted}</td>
+                    <td style={tableCellStyle}>
+                      <button
+                        style={viewButtonStyle}
+                        onClick={() => navigate(`/student/practice/review?id=${result.id}`)} 
+                      >
+                        Xem
+                      </button>
+                    </td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>

@@ -17,17 +17,23 @@ import StudentDoExam from "./components/student/tabs/doExam/StudentDoExam";
 import StudentDoExamDetail from "./components/student/tabs/doExam/StudentDoExamDetail";
 import StudentNewsTab from "./components/student/tabs/StudentNewsTab";
 import StudentPractice from "./components/student/tabs/practice/StudentPractice";
-import StudentStatistics from "./components/student/tabs/StudentStatistics";
+import StudentStatistics from "./components/student/tabs/result/evaluate/StudentStatistics";
 import StudentVerifyExam from "./components/student/tabs/doExam/StudentVerifyExam";
 import StudentVerifyPractice from "./components/student/tabs/practice/StudentVerifyPractice";
 import StudentPracticeDetail from "./components/student/tabs/practice/StudentPracticeDetail";
+import StudentPracticeReview from "./components/student/tabs/practice/StudentPracticeReview"
+import StudentScoreExam from "./components/student/tabs/result/score/StudentScoreExam"
+import StudentScoreReviewExam from "./components/student/tabs/result/score/StudentScoreReviewExam";
+import StudentScoreRemarkExam from "./components/student/tabs/result/score/StudentScoreRemarkExam";
+
 /* Chức năng teacher */
 import TeacherMenu from "./components/teacher/TeacherMenu"
 import TeacherHomeTab from "./components/teacher/tabs/TeacherHomeTab";
 import TeacherExamManagement from "./components/teacher/tabs/exams/TeacherExamManagement";
 import TeacherExamAdd from "./components/teacher/tabs/exams/TeacherExamAdd";
 import TeacherExamCode from "./components/teacher/tabs/exams/TeacherExamCode";
-
+import TeacherDocument from "./components/teacher/tabs/documents/TeacherDocument"
+import TeacherRule from "./components/teacher/tabs/rules/TeacherRule"
 /* Định dạng trang web Guest (có menu) */
 function GuestLayout({ children }) {
   return (
@@ -91,6 +97,10 @@ function App() {
         <Route path="/student/practice" element={<StudentLayout> <StudentPractice /> </StudentLayout>}/>
         <Route path="/student/practice/verify_practice" element={<StudentLayout> <StudentVerifyPractice /> </StudentLayout>}/>
         <Route path="/student/practice/do_practice/:id" element={<StudentPracticeDetail />}/>
+        <Route path="/student/practice/review" element={<StudentPracticeReview />}/>
+        <Route path="/student/result/score" element={<StudentLayout> <StudentScoreExam /> </StudentLayout>}/>
+        <Route path="/student/result/score/review_exam" element={<StudentLayout> <StudentScoreReviewExam /> </StudentLayout>}/>
+        <Route path="/student/result/score/remark_exam" element={<StudentLayout> <StudentScoreRemarkExam /> </StudentLayout>}/>
         <Route path="/student/result/statistics" element={<StudentLayout> <StudentStatistics /> </StudentLayout>}/>
 
 
@@ -99,6 +109,8 @@ function App() {
         <Route path="/teacher/exams/exam_management" element={<TeacherLayout> <TeacherExamManagement /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management/exam_add" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management/exam_add/exam_code" element={<TeacherExamCode />} />
+        <Route path="/teacher/documents" element={<TeacherLayout> <TeacherDocument /> </TeacherLayout>} />
+        <Route path="/teacher/rules" element={<TeacherLayout> <TeacherRule/> </TeacherLayout>} />
       </Routes>
     </Router>
   );
