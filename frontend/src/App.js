@@ -108,6 +108,7 @@ function App() {
         <Route path="/teacher/home" element={<TeacherLayout> <TeacherHomeTab /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management" element={<TeacherLayout> <TeacherExamManagement /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management/exam_add" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>}/>
+        <Route path="/teacher/exams/exam_management/exam_add/:examId" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>} />
         <Route path="/teacher/exams/exam_management/exam_add/exam_code" element={<TeacherExamCode />} />
         <Route path="/teacher/documents" element={<TeacherLayout> <TeacherDocument /> </TeacherLayout>} />
         <Route path="/teacher/rules" element={<TeacherLayout> <TeacherRule/> </TeacherLayout>} />

@@ -1,0 +1,209 @@
+import React, { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import "../../../../styles/exam-teacher/TeacherExamManagement.css";
+import iconDetail from "../../../../assets/icon/icon-detail.png";
+import iconEdit from "../../../../assets/icon/icon-edit.png";
+import iconDelete from "../../../../assets/icon/icon-delete.png";
+import iconExport from "../../../../assets/icon/icon-export.png";
+import iconAdd from "../../../../assets/icon/icon-add.png";
+import iconSearchWhite from "../../../../assets/icon/icon-search-white.png";
+
+const getStatusClass = (status) => {
+  switch (status) {
+    case "Chưa bắt đầu":
+      return "status-upcoming";
+    case "Đang diễn ra":
+      return "status-ongoing";
+    case "Đã kết thúc":
+      return "status-finished";
+    default:
+      return "";
+  }
+};
+
+const getBadgeClass = (grade) => {
+  switch (grade) {
+    case "Lớp 10":
+      return "badge-grade-10";
+    case "Lớp 11":
+      return "badge-grade-11";
+    case "Lớp 12":
+      return "badge-grade-12";
+    default:
+      return "";
+  }
+};
+
+const getExamTypeClass = (type) => {
+  switch (type) {
+    case "Giữa kỳ":
+      return "exam-midterm";
+    case "Cuối kỳ":
+      return "exam-final";
+    default:
+      return "";
+  }
+};
+
+
+
+const initialExams = [
+  {
+    id: 1,
+    title: "Kiểm tra cuối học kỳ II khối 12 - Năm học 2022-2023",
+    grade: "Lớp 12",
+    examType: "Cuối kỳ",
+    status: "Đã kết thúc",
+    students: "Đã có 5 học sinh vào làm",
+    created: 1,
+    active: 1,
+  },
+  {
+    id: 2,
+    title: "Thi cuối kỳ I",
+    grade: "Lớp 10",
+    examType: "Cuối kỳ",
+    status: "Chưa bắt đầu",
+    students: "Đã có 0 học sinh vào làm",
+    created: 1,
+    active: 1,
+  },
+  {
+    id: 3,
+    title: "Thi giữa kỳ",
+    grade: "Lớp 11",
+    examType: "Giữa kỳ",
+    status: "Đang diễn ra",
+    students: "Đã có 2 học sinh vào làm",
+    created: 2,
+    active: 2,
+  },
+];
+
+export default function TeacherExamManagement() {
+    const navigate = useNavigate();
+  const [exams, setExams] = useState(initialExams);
+  const [filters, setFilters] = useState({
+    grade: "",
+    examType: "",
+    status: "",
+  });
+  const [filteredExams, setFilteredExams] = useState(initialExams);
+
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
+  useEffect(() => {
+    const filtered = exams.filter((exam) => {
+      const matchGrade = filters.grade ? exam.grade === filters.grade : true;
+      const matchType = filters.examType ? exam.examType === filters.examType : true;
+      const matchStatus = filters.status ? exam.status === filters.status : true;
+      return matchGrade && matchType && matchStatus;
+    });
+    setFilteredExams(filtered);
+  }, [filters, exams]);
+
+  return (
+    <div className="exam-container">
+      {/* Header */}
+      <div className="exam-header">
+        <h2>Danh sách kỳ thi</h2>
+        <button
+            className="btn add"
+            onClick={() => navigate("/teacher/exams/exam_management/exam_add")}
+        >
+            <img src={iconAdd} alt="icon" className="btn-icon" />
+            Thêm kỳ thi
+        </button>
+      </div>
+
+      {/* Filters */}
+      <div className="exam-filters">
+        <div className="filter-left">
+          <input type="text" placeholder="Nhập từ khóa tìm kiếm" />
+          <button className="btn search">
+            <img src={iconSearchWhite} alt="icon" className="btn-icon" />
+            Tìm kiếm
+          </button>
+        </div>
+        <div className="filter-right">
+          <select name="grade" onChange={handleFilterChange}>
+            <option value="">Chọn khối</option>
+            <option value="Lớp 10">Lớp 10</option>
+            <option value="Lớp 11">Lớp 11</option>
+            <option value="Lớp 12">Lớp 12</option>
+          </select>
+          <select name="examType" onChange={handleFilterChange}>
+            <option value="">Loại kỳ thi</option>
+            <option value="Giữa kỳ">Giữa kỳ</option>
+            <option value="Cuối kỳ">Cuối kỳ</option>
+          </select>
+          <select name="status" onChange={handleFilterChange}>
+            <option value="">Trạng thái</option>
+            <option value="Chưa bắt đầu">Chưa bắt đầu</option>
+            <option value="Đang diễn ra">Đang diễn ra</option>
+            <option value="Đã kết thúc">Đã kết thúc</option>
+          </select>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div className="exam-table-wrapper">
+        <table className="exam-table">
+          <thead>
+            <tr>
+              <th>STT</th>
+              <th>Tên</th>
+              <th>Trạng thái</th>
+              <th>Số lượng đề thi</th>
+              <th>Tác vụ</th>
+            </tr>
+          </thead>
+          <tbody>
+            {filteredExams.map((exam, index) => (
+              <tr key={exam.id}>
+                <td>{index + 1}</td>
+                <td>
+                  <div className="exam-title">{exam.title}</div>
+                  <span className={badge ${getBadgeClass(exam.grade)}}>{exam.grade}</span>
+                  <span className={badge exam-type ${getExamTypeClass(exam.examType)}}>{exam.examType}</span>
+                </td>
+                <td>
+                  <div className={status ${getStatusClass(exam.status)}}>{exam.status}</div>
+                  <div className="students">{exam.students}</div>
+                </td>
+                <td>
+                  <div>Số đề đã tạo: <strong>{exam.created}</strong></div>
+                  <div>Số đề đang hoạt động: <strong>{exam.active}</strong></div>
+                </td>
+                <td>
+                  <div className="action-buttons">
+                    <button className="btn detail">
+                      <img src={iconDetail} alt="icon" className="btn-icon" />Chi tiết
+                    </button>
+                    <button className="btn edit">
+                      <img src={iconEdit} alt="icon" className="btn-icon" />Chỉnh sửa
+                    </button>
+                    <button className="btn delete">
+                      <img src={iconDelete} alt="icon" className="btn-icon" />Xóa
+                    </button>
+                    <button className="btn export">
+                      <img src={iconExport} alt="icon" className="btn-icon" />Xuất dữ liệu
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+            {filteredExams.length === 0 && (
+              <tr>
+                <td colSpan="5" style={{ textAlign: "center", padding: "16px" }}>Không tìm thấy kỳ thi nào.</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}

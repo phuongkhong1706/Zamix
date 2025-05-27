@@ -1,6 +1,6 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
-from datetime import timedelta
+from django.utils.timezone import now
 
 class Item(models.Model):
     name = models.CharField(max_length=200)
@@ -25,30 +25,34 @@ class UserInformation(models.Model):
     def __str__(self):
         return self.full_name
 
+from django.conf import settings
+from django.db import models
+from django.utils.timezone import now
+
 class Exam(models.Model):
-    EXAM_TYPES = [
-        ('midterm', 'Giữa kỳ'),
-        ('final', 'Cuối kỳ'),
-    ]
+    class GradeChoices(models.IntegerChoices):
+        GRADE_10 = 10, 'Lớp 10'
+        GRADE_11 = 11, 'Lớp 11'
+        GRADE_12 = 12, 'Lớp 12'
 
-    GRADE_CHOICES = [
-        (10, 'Lớp 10'),
-        (11, 'Lớp 11'),
-        (12, 'Lớp 12'),
-    ]
+    class StatusChoices(models.TextChoices):
+        ACTIVE = 'active', 'Đang diễn ra'
+        UPCOMING = 'upcoming', 'Chưa bắt đầu'
+        FINISHED = 'finished', 'Đã kết thúc'
 
-    title = models.CharField(max_length=255)
-    grade = models.IntegerField(choices=GRADE_CHOICES)
-    type = models.CharField(max_length=10, choices=EXAM_TYPES)
-    time_start = models.DateTimeField()
-    time_end = models.DateTimeField()
-    duration = models.IntegerField(default=3600)  # Lưu thời gian kỳ thi bằng giây (mặc định 3600 giây = 1 giờ)
+    name = models.CharField(max_length=255, null=False)
+    grade = models.IntegerField(choices=GradeChoices.choices, null=False)
+    type = models.CharField(max_length=50, null=False)
+    time_start = models.DateTimeField(null=False)
+    time_end = models.DateTimeField(null=False)
+    status = models.CharField(max_length=20, choices=StatusChoices.choices, null=False, default='upcoming')
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
     def __str__(self):
-        return f"{self.title} - Lớp {self.grade}"
+        return f"{self.name} - Lớp {self.grade}"
 
     @property
-    def status(self):
-        from django.utils.timezone import now
+    def get_status_display_custom(self):
         current = now()
         if self.time_start <= current <= self.time_end:
             return "Kỳ thi đang diễn ra"
@@ -56,6 +60,10 @@ class Exam(models.Model):
             return "Kỳ thi chưa bắt đầu"
         else:
             return "Kỳ thi đã kết thúc"
+
+    class Meta:
+        db_table = 'exams'
+
         
 class ExamQuestion(models.Model):
     EXAM_TYPES = [
@@ -91,3 +99,74 @@ class ExamQuestion(models.Model):
 
     def __str__(self):
         return f"Câu hỏi {self.id_question} - Lớp {self.grade} - {self.get_type_display()}"
+
+# -------------------- DOCUMENT --------------------
+class Document(models.Model):
+    class GradeChoices(models.TextChoices):
+        GRADE_10 = '10', 'Lớp 10'
+        GRADE_11 = '11', 'Lớp 11'
+        GRADE_12 = '12', 'Lớp 12'
+
+    doc_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, null=False)
+    file_url = models.CharField(max_length=500, null=False)
+    description = models.TextField(null=True, blank=True)
+    grade = models.CharField(max_length=20, choices=GradeChoices.choices, null=True, blank=True)
+    created_at = models.DateTimeField(default=now)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'documents'
+        verbose_name = 'Tài liệu'
+        verbose_name_plural = 'Danh sách tài liệu'
+
+
+# -------------------- EXAM SHIFT --------------------
+class ExamShift(models.Model):
+    shift_id = models.AutoField(primary_key=True)
+    exam = models.ForeignKey('Exam', on_delete=models.CASCADE)
+    name = models.CharField(max_length=100, null=False)
+    date = models.DateField(null=False)
+    start_time = models.TimeField(null=False)
+    end_time = models.TimeField(null=False)
+
+    def __str__(self):
+        return f"{self.name} - {self.date}"
+
+    class Meta:
+        db_table = 'exam_shift'
+        verbose_name = 'Kíp thi'
+        verbose_name_plural = 'Danh sách kíp thi'
+
+
+# -------------------- TEST --------------------
+class Test(models.Model):
+    class GradeChoices(models.TextChoices):
+        GRADE_10 = '10', 'Lớp 10'
+        GRADE_11 = '11', 'Lớp 11'
+        GRADE_12 = '12', 'Lớp 12'
+
+    class LevelChoices(models.TextChoices):
+        BASIC = 'Cơ bản', 'Cơ bản'
+        MEDIUM = 'Trung bình', 'Trung bình'
+        HARD = 'Khó', 'Khó'
+
+    test_id = models.AutoField(primary_key=True)
+    shift = models.ForeignKey(ExamShift, on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=255, null=False)
+    grade = models.CharField(max_length=20, choices=GradeChoices.choices, null=False)
+    duration_minutes = models.IntegerField(null=False)
+    created_at = models.DateTimeField(default=now)
+    level = models.CharField(max_length=10, choices=LevelChoices.choices, null=True)
+    doc = models.ForeignKey(Document, on_delete=models.SET_NULL, null=True)
+
+    def __str__(self):
+        return f"{self.name} - {self.get_grade_display()}"
+
+    class Meta:
+        db_table = 'tests'
+        verbose_name = 'Đề thi'
+        verbose_name_plural = 'Danh sách đề thi'

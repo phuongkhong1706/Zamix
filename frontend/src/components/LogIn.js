@@ -14,34 +14,40 @@ function Login({ onLoginSuccess }) {
   const handleBlur = (field, value) => {
     setFocusedField((prev) => (prev === field && !value.trim() ? "" : prev));
   };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
     try {
       const response = await fetch("http://localhost:8000/api/login/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, password }),
       });
-  
+
       const data = await response.json();
+
       if (!response.ok) {
         alert(data.error || "Đăng nhập thất bại!");
         return;
       }
-  
+
       if (!data.role || !data.email) {
         alert("Dữ liệu từ API không hợp lệ!");
         return;
       }
-  
+
       // Lưu thông tin vào localStorage
       const userData = {
         email: data.email,
         full_name: data.full_name || data.email,
         role: data.role,
+        token: data.token, // nếu bạn muốn lưu token
+        refresh_token: data.refresh_token,
+        user_id: data.user_id || data.id,
       };
       localStorage.setItem("user", JSON.stringify(userData));
-  
+
       // Điều hướng dựa trên role
       if (data.role === "student") {
         navigate("/student/home");
@@ -50,16 +56,15 @@ function Login({ onLoginSuccess }) {
       } else if (data.role === "admin") {
         navigate("/admin/home");
       } else {
-        navigate("/guest/home"); // Mặc định cho user không xác định
+        navigate("/guest/home");
       }
-  
+
       onLoginSuccess(userData.role);
     } catch (error) {
       console.error("Lỗi khi đăng nhập:", error);
       alert("Có lỗi xảy ra, vui lòng thử lại!");
     }
   };
-  
   
 
   return (

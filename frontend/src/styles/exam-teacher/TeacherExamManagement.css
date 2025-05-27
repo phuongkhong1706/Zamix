@@ -217,7 +217,14 @@
   background-color: #116430; /* đậm hơn */
 }
 
+.btn.toggle {
+  background-color: #6b21a8;
+  color: white;
+}
 
+.btn.toggle:hover {
+  background-color: #6b21a8; /* đậm hơn */
+}
 .btn-icon {
   width: 16px;
   height: 16px;

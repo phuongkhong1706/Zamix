@@ -127,6 +127,17 @@ align-items: center;
 .btn.addcode:hover{
   background-color: #572e5a;
 }
+
+.btn.addexam {
+  background-color: #6f3e76;
+  color: white;
+  font-weight: bold;
+  height: 35px;
+}
+.btn.addexam:hover{
+  background-color: #572e5a;
+}
+
 /**#######################################*/
 .time-range {
   display: flex;

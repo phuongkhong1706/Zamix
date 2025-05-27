@@ -136,7 +136,8 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 REST_FRAMEWORK = {
     'DEFAULT_RENDERER_CLASSES': (
-        'rest_framework.renderers.JSONRenderer',  # Chỉ trả về JSON
+        'rest_framework.renderers.JSONRenderer',
+        'rest_framework_simplejwt.authentication.JWTAuthentication',  
     ),
     # 'DEFAULT_AUTHENTICATION_CLASSES': (
     #     'rest_framework.authentication.TokenAuthentication',  # Thêm xác thực bằng Token
