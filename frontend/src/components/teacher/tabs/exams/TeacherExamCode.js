@@ -1,7 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect} from "react";
 import LatexInputKaTeX, { renderWithLatex } from "./LatexInputKaTeX.js";
 import { v4 as uuidv4 } from "uuid";
-
+import { useParams } from 'react-router-dom';
+import axios from 'axios';
+import "../../../../styles/exam-teacher/TeacherExamAdd.css";
 import "../../../../styles/SidebarNavigation.css";
 import "../../../../styles/exam-teacher/TeacherExamCode.css";
 import iconAddQuestion from "../../../../assets/icon/icon-add.png";
@@ -9,20 +11,143 @@ import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png";
 import iconCorrect from "../../../../assets/icon/icon-correct.png";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
-
+import { FaSave } from "react-icons/fa";
 function TeacherExamCode() {
-  const [examData, setExamData] = useState({
-    exam_title: "",
-    exam_code: "",
-    exam_type: "",
-    grade: "",
-    start_time: "",
-    duration: "",
-  });
-
   const [newQuestions, setNewQuestions] = useState([]);
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const { testId } = useParams(); // Lấy testId từ URL
+  const [examData, setExamData] = useState({
+  name: "",
+  level: "",
+  grade: "",
+  duration_minutes: 0,
+  exam_type: "",
+  shift: {
+    shift_id: "",
+    name: "",
+    date: "",
+    start_time: "",
+    end_time: ""
+  }
+});
+
+  const [, setTestList] = useState([]);
+  const handleSave = async () => {
+    const userJson = localStorage.getItem("user");
+    let token = null;
+
+    if (userJson) {
+      try {
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+      } catch (error) {
+        console.error("Lỗi khi parse user từ localStorage:", error);
+      }
+    }
+
+    if (!token) {
+      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    const data = {
+      name: examData.name,
+      level: examData.level,
+      grade: examData.grade,
+      duration_minutes: examData.duration_minutes,// nếu trường bạn lưu tên là `duration`, 
+      exam_type: examData.exam_type,
+      shift_id: examData.shift.shift_id
+    };
+
+    const method = testId ? "PUT" : "POST";
+    const url = testId
+      ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}/`
+      : "http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/";
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(data),
+      });
+
+      const resText = await res.text();
+      if (res.ok) {
+        alert(testId ? "Cập nhật đề thi thành công!" : "Tạo đề thi thành công!");
+        // navigate("/teacher/exams");
+      } else {
+        const errorJson = JSON.parse(resText);
+        alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu kỳ thi:", error);
+      alert("Không thể kết nối tới server.");
+    }
+  };
+  useEffect(() => {
+  const fetchTestDetail = async () => {
+    // 🔐 Lấy token từ localStorage
+    const userJson = localStorage.getItem("user");
+    let token = null;
+
+    if (userJson) {
+      try {
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+      } catch (error) {
+        console.error("❌ Lỗi khi parse user từ localStorage:", error);
+      }
+    }
+
+    // ⚠️ Nếu không có token thì dừng lại
+    if (!token) {
+      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    // 📦 Gọi API với header Authorization
+    try {
+      const response = await axios.get(
+        `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const data = response.data;
+      console.log('✅ Dữ liệu lấy được từ API:', data);
+
+      // 📝 Cập nhật state
+      setExamData({
+        name: data.name || '',
+        level: data.level || '',
+        grade: data.grade || '',
+        duration_minutes: data.duration_minutes || '',
+        exam_type: data.exam_type || '',
+        shift: data.shift || {
+          shift_id: '',
+          name: '',
+          date: '',
+          start_time: '',
+          end_time: ''
+        }
+      });
+
+      setTestList(data.tests || []);
+    } catch (error) {
+      console.error('❌ Lỗi khi lấy dữ liệu đề thi:', error);
+    }
+  };
+
+  fetchTestDetail();
+}, [testId]);
+
 
   const createNewQuestion = () => ({
     content: "",
@@ -112,8 +237,8 @@ function TeacherExamCode() {
           <input
             type="text"
             className="border p-2 rounded"
-            value={examData.exam_code}
-            onChange={(e) => setExamData({ ...examData, exam_code: e.target.value })}
+            value={examData.name}
+            onChange={(e) => setExamData({ ...examData, name: e.target.value })}
             placeholder="Nhập mã đề"
           />
         </h2>
@@ -222,39 +347,27 @@ function TeacherExamCode() {
 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
-        <div className="exam-form-title">Thông tin kỳ thi</div>
+        <div className="exam-form-title">Thông tin đề thi</div>
 
-        {/* Các trường thông tin kỳ thi */}
         <div className="exam-form-row">
           <div className="exam-form-group">
-            <label className="exam-form-label">Tên kỳ thi</label>
+            <label className="exam-form-label">Mức độ đề thi</label>
             <input
               type="text"
               className="exam-form-input"
-              value={examData.exam_title}
-              onChange={(e) => setExamData({ ...examData, exam_title: e.target.value })}
+              value={examData.level}
+              onChange={(e) => setExamData({ ...examData, level: e.target.value })}
             />
           </div>
         </div>
 
         <div className="exam-form-row">
-          <div className="exam-form-group">
-            <label className="exam-form-label">Loại kỳ thi</label>
-            <select
-              className="exam-form-select"
-              value={examData.exam_type}
-              onChange={(e) => setExamData({ ...examData, exam_type: e.target.value })}
-            >
-              <option value="">-- Chọn loại --</option>
-              <option value="midterm">Giữa kỳ</option>
-              <option value="final">Cuối kỳ</option>
-            </select>
-          </div>
 
           <div className="exam-form-group">
             <label className="exam-form-label">Khối</label>
             <select
               className="exam-form-select"
+              style={{ minWidth: '245px' }}
               value={examData.grade}
               onChange={(e) => setExamData({ ...examData, grade: e.target.value })}
             >
@@ -272,12 +385,40 @@ function TeacherExamCode() {
             <input
               type="number"
               className="exam-form-input"
-              value={examData.duration}
-              onChange={(e) => setExamData({ ...examData, duration: e.target.value })}
+              value={examData.duration_minutes}
+              onChange={(e) => setExamData({ ...examData, duration_minutes: e.target.value })}
               min="1"
               placeholder="Nhập số phút"
             />
           </div>
+        </div>
+
+        <div className="exam-form-row">
+          <div className="exam-form-group">
+            <label className="exam-form-label">Ca thi</label>
+            <input
+              type="number"
+              className="exam-form-input"
+              value={examData.shift?.shift_id || ""}
+              onChange={(e) =>
+                setExamData({
+                  ...examData,
+                  shift: {
+                    ...examData.shift,
+                    shift_id: e.target.value
+                  }
+                })
+              }
+              min="1"
+              placeholder="Nhập ca thi"
+            />
+          </div>
+        </div>
+
+        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", marginRight: "9px" }}>
+          <button className="btn addcode" onClick={handleSave}>
+            <FaSave className="btn-icon" /> {testId ? "Cập nhật" : "Lưu"}
+          </button>
         </div>
       </div>
     </div>

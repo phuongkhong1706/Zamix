@@ -31,9 +31,9 @@ function StudentVerifyPractice() {
   };
 
   const practiceResults = [
-  { id: 1, score: 8.5, submittedAt: "2025-05-11T10:30:00", durationInMinutes: 95 },
-  { id: 2, score: 7.0, submittedAt: "2025-05-10T14:15:00", durationInMinutes: 78 },
-  { id: 3, score: 9.25, submittedAt: "2025-05-09T16:45:00", durationInMinutes: 105 },
+    { id: 1, score: 8.5, submittedAt: "2025-05-11T10:30:00", durationInMinutes: 95 },
+    { id: 2, score: 7.0, submittedAt: "2025-05-10T14:15:00", durationInMinutes: 78 },
+    { id: 3, score: 9.25, submittedAt: "2025-05-09T16:45:00", durationInMinutes: 105 },
   ];
 
   return (
@@ -58,6 +58,15 @@ function StudentVerifyPractice() {
         </div>
 
         <div style={agreementWrapperStyle}>
+          <label style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <input
+              type="checkbox"
+              checked={agreed}
+              onChange={(e) => setAgreed(e.target.checked)}
+            />
+            Tôi đồng ý chấp hành nội quy phòng thi
+          </label>
+
           <button
             onClick={handleStartExam}
             style={{
@@ -75,6 +84,7 @@ function StudentVerifyPractice() {
             Vào thi thử
           </button>
         </div>
+
         <div style={resultBoxStyle}>
           <h3 style={sectionTitleStyle}>Kết quả bài thi thử</h3>
           <table style={tableStyle}>
@@ -109,7 +119,7 @@ function StudentVerifyPractice() {
                     <td style={tableCellStyle}>
                       <button
                         style={viewButtonStyle}
-                        onClick={() => navigate(`/student/practice/review?id=${result.id}`)} 
+                        onClick={() => navigate(`/student/practice/review?id=${result.id}`)}
                       >
                         Xem
                       </button>

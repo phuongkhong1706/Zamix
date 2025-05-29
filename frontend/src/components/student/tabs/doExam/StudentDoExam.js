@@ -63,7 +63,7 @@ function StudentDoExam() {
                 style={{ ...cardStyle, cursor: 'pointer' }} // 👈 Thêm cursor
                 onClick={() => handleExamClick(exam.id)} // 👈 Bắt sự kiện click
               >
-                <h3 style={headerStyle}>{exam.title}</h3>
+                <h3 style={headerStyle}>{exam.name}</h3>
                 <p><strong>Loại:</strong> {typeDisplayMap[exam.type] || exam.type}</p>
                 <p><strong>Thời gian làm bài:</strong> {exam.duration}</p>
                 <p>🟢 <strong>Bắt đầu:</strong> {formatTime(exam.time_start)}</p>

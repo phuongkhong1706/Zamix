@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Item
-from .models import Exam, ExamQuestion, UserInformation, Test
+from .models import Exam, ExamQuestion, UserInformation, Test, ExamShift
 
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
@@ -52,11 +52,35 @@ class ExamsSerializer(serializers.ModelSerializer):
             'time_start', 'time_end', 'user_id', 'full_name'
         ]
 
+class ExamShiftSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = ExamShift
+        fields = ['shift_id', 'name', 'date', 'start_time', 'end_time']
+
 class TestSerializer(serializers.ModelSerializer):
-    grade_display = serializers.CharField(source='get_grade_display', read_only=True)
-    level_display = serializers.CharField(source='get_level_display', read_only=True)
+    shift = ExamShiftSerializer(read_only=True)
+    shift_id = serializers.PrimaryKeyRelatedField(
+        queryset=ExamShift.objects.all(), source='shift', write_only=True
+    )
+    exam_type = serializers.SerializerMethodField()  # 🔥 thêm trường này
+
+    def get_exam_type(self, obj):
+        try:
+            return obj.shift.exam.type if obj.shift and obj.shift.exam else None
+        except AttributeError:
+            return None
 
     class Meta:
         model = Test
-        # Bỏ created_at và doc
-        fields = ['test_id', 'name', 'grade', 'grade_display', 'duration_minutes', 'level', 'level_display', 'shift']
+        fields = [
+            'test_id',
+            'name',
+            'grade',
+            'duration_minutes',
+            'created_at',
+            'level',
+            'doc',
+            'shift',
+            'shift_id',
+            'exam_type',  # ✅ Trường mới
+        ]

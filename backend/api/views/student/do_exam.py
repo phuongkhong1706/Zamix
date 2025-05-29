@@ -2,13 +2,13 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from ...models import Exam
-from ...serializers import ExamQuestionSerializer, ExamSerializer
+from ...serializers import ExamQuestionSerializer, ExamsSerializer
 
 class StudentDoExamView(APIView):
     def get(self, request):
         exams = Exam.objects.all()
         if exams.exists():
-            serializer = ExamSerializer(exams, many=True)
+            serializer = ExamsSerializer(exams, many=True)
             return Response(serializer.data, status=status.HTTP_200_OK)
         else:
             return Response({"message": "Không có kỳ thi nào"}, status=status.HTTP_200_OK)
@@ -21,9 +21,9 @@ class StudentDoExamDetailView(APIView):
             serializer = ExamQuestionSerializer(questions, many=True)
             
             return Response({
-                "exam_title": exam.title,
+                "exam_title": exam.name,
                 "exam_id": exam.id,
-                "duration": exam.duration,
+                "duration": 3600,
                 "questions": serializer.data
             }, status=status.HTTP_200_OK)
         except Exam.DoesNotExist:

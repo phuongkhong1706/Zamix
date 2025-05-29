@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 
-function StudentScoreExam() {
+function TeacherScoreExam() {
   const navigate = useNavigate();
   const [studentName, setStudentName] = useState("");
   const [selectedSemester, setSelectedSemester] = useState("");
@@ -12,11 +12,11 @@ function StudentScoreExam() {
   const [appealClicked, setAppealClicked] = useState(false);
 
   const handleReviewExam = () => {
-    navigate("/student/result/score/review_exam");
+    navigate("/teacher/result/score/review_exam");
   };
 
   const handleRemarkExam = () => {
-    navigate("/student/result/score/remark_exam");
+    navigate("/teacher/result/score/remark_exam");
   };
 
   const inputWrapperStyle = {
@@ -40,15 +40,22 @@ function StudentScoreExam() {
 
   // Dữ liệu giả gồm 10 dòng với các cột bạn yêu cầu và bổ sung thêm khối (grade)
   const examScores = [
-    { id: 1, examTitle: "Kiểm tra Toán giữa kỳ lần 1", semester: "Giữa kỳ", examDate: "2025-03-10", slot: "1", score: 9.1, grade: "12" },
-    { id: 2, examTitle: "Kiểm tra Toán giữa kỳ lần 2", semester: "Giữa kỳ", examDate: "2025-03-11", slot: "2", score: 8.3, grade: "12" },
-    { id: 3, examTitle: "Kiểm tra Toán cuối kỳ lần 1", semester: "Cuối kỳ", examDate: "2025-06-18", slot: "3", score: 7.8, grade: "12" },
-    { id: 4, examTitle: "Kiểm tra Toán cuối kỳ lần 2", semester: "Cuối kỳ", examDate: "2025-07-18", slot: "3", score: 7.8, grade: "12" },
+    { id: 1, studentName: "Nguyễn Văn A", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "1", score: 8.5, grade: "10" },
+    { id: 2, studentName: "Trần Thị B", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "2", score: 7.2, grade: "11" },
+    { id: 3, studentName: "Lê Văn C", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-10", slot: "1", score: 9.1, grade: "12" },
+    { id: 4, studentName: "Phạm Thị D", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-11", slot: "2", score: 8.3, grade: "10" },
+    { id: 5, studentName: "Hoàng Văn E", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-18", slot: "3", score: 7.8, grade: "11" },
+    { id: 6, studentName: "Đỗ Thị F", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-09", slot: "1", score: 8.7, grade: "12" },
+    { id: 7, studentName: "Vũ Văn G", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-19", slot: "4", score: 9.0, grade: "10" },
+    { id: 8, studentName: "Trịnh Thị H", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-12", slot: "3", score: 7.6, grade: "11" },
+    { id: 9, studentName: "Bùi Văn I", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-20", slot: "2", score: 8.2, grade: "12" },
+    { id: 10, studentName: "Ngô Thị K", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-13", slot: "4", score: 7.9, grade: "10" },
   ];
 
   // Filter theo tên học sinh, kỳ thi, đợt thi, ca thi, ngày thi và khối (grade)
   const filteredScores = examScores.filter((item) => {
     return (
+      item.studentName.toLowerCase().includes(studentName.toLowerCase()) &&
       (selectedSemester ? item.semester === selectedSemester : true) &&
       (selectedSlot ? item.slot === selectedSlot : true) &&
       (selectedDate ? item.examDate === selectedDate : true) &&
@@ -135,6 +142,7 @@ function StudentScoreExam() {
           <thead>
             <tr>
               <th style={tableCellStyle}>STT</th>
+              <th style={tableCellStyle}>Họ và tên học sinh</th>
               <th style={tableCellStyle}>Kỳ thi</th>
               <th style={tableCellStyle}>Đợt thi</th>
               <th style={tableCellStyle}>Ngày thi</th>
@@ -149,6 +157,7 @@ function StudentScoreExam() {
               filteredScores.map((item, index) => (
                 <tr key={item.id}>
                   <td style={tableCellStyle}>{index + 1}</td>
+                  <td style={tableCellStyle}>{item.studentName}</td>
                   <td style={tableCellStyle}>{item.examTitle}</td>
                   <td style={tableCellStyle}>{item.semester}</td>
                   <td style={tableCellStyle}>
@@ -162,7 +171,7 @@ function StudentScoreExam() {
                       Xem
                     </button>{" "}
                     <button style={appealButtonStyle} onClick={handleRemarkExam}>
-                      Phúc tra
+                      Yêu cầu phúc tra
                     </button>
                   </td>
                 </tr>
@@ -263,4 +272,4 @@ const appealButtonStyle = {
   fontWeight: "bold",
 };
 
-export default StudentScoreExam;
+export default TeacherScoreExam;

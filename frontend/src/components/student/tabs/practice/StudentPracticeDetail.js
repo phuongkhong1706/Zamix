@@ -1,10 +1,11 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import "../../../../styles/CountdownTimer.css";
 import "../../../../styles/SidebarNavigation.css";
 
 function CountdownTimer({ durationInSeconds, onEnd }) {
   const [timeLeft, setTimeLeft] = useState(durationInSeconds);
+  const onEndCalled = useRef(false);
 
   useEffect(() => {
     if (!durationInSeconds || isNaN(durationInSeconds)) return;
@@ -17,8 +18,8 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
       const remaining = Math.max(0, Math.round((end - now) / 1000));
       setTimeLeft(remaining);
 
-      if (remaining <= 0) {
-        clearInterval(interval);
+      if (remaining <= 0 && !onEndCalled.current) {
+        onEndCalled.current = true;
         onEnd?.();
       }
     };
@@ -27,7 +28,7 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
     const interval = setInterval(tick, 1000);
 
     return () => clearInterval(interval);
-  }, []); // 👈 để [] để chỉ chạy 1 lần khi mount
+  }, [durationInSeconds, onEnd]);
 
   const percentage = ((durationInSeconds - timeLeft) / durationInSeconds) * 100;
 
@@ -51,53 +52,52 @@ function StudentPracticeDetail() {
   const [answers, setAnswers] = useState({});
   const questionRefs = useRef([]);
 
-    useEffect(() => {
-  // Giả lập dữ liệu từ API sau 1 giây
-  const mockData = {
-    exam_title: "Đề Thi Thử Lập Trình Căn Bản",
-    duration: 300, // 5 phút
-    questions: [
-      {
-        id_question: 1,
-        content: "Ngôn ngữ lập trình nào sau đây được sử dụng phổ biến trong phát triển web?",
-        option_a: "Python",
-        option_b: "C++",
-        option_c: "HTML",
-        option_d: "Java",
-      },
-      {
-        id_question: 2,
-        content: "React là thư viện dùng cho:",
-        option_a: "Back-end",
-        option_b: "Front-end",
-        option_c: "Database",
-        option_d: "AI",
-      },
-      {
-        id_question: 3,
-        content: "Lệnh nào dùng để khai báo biến trong JavaScript?",
-        option_a: "`var`",
-        option_b: "`int`",
-        option_c: "`string`",
-        option_d: "`const`",
-      },
-    ],
-  };
+  useEffect(() => {
+    // Giả lập dữ liệu từ API sau 1 giây
+    const mockData = {
+      exam_title: "Đề Thi Thử Lập Trình Căn Bản",
+      duration: 300, // 5 phút
+      questions: [
+        {
+          id_question: 1,
+          content: "Ngôn ngữ lập trình nào sau đây được sử dụng phổ biến trong phát triển web?",
+          option_a: "Python",
+          option_b: "C++",
+          option_c: "HTML",
+          option_d: "Java",
+        },
+        {
+          id_question: 2,
+          content: "React là thư viện dùng cho:",
+          option_a: "Back-end",
+          option_b: "Front-end",
+          option_c: "Database",
+          option_d: "AI",
+        },
+        {
+          id_question: 3,
+          content: "Lệnh nào dùng để khai báo biến trong JavaScript?",
+          option_a: "`var`",
+          option_b: "`int`",
+          option_c: "`string`",
+          option_d: "`const`",
+        },
+      ],
+    };
 
-  const timer = setTimeout(() => {
-    setExamData(mockData);
-  }, 1000);
+    const timer = setTimeout(() => {
+      setExamData(mockData);
+    }, 1000);
 
-  return () => clearTimeout(timer);
-}, [id]);
+    return () => clearTimeout(timer);
+  }, [id]);
 
-
-  const handleAnswerChange = (questionIndex, answer) => {
+  const handleAnswerChange = useCallback((questionIndex, answer) => {
     setAnswers((prev) => ({
       ...prev,
       [questionIndex]: answer,
     }));
-  };
+  }, []);
 
   if (!examData) return <div style={{ marginTop: "40px" }}>Đang tải đề thi...</div>;
 
@@ -107,7 +107,7 @@ function StudentPracticeDetail() {
       <div style={{ flex: 1, paddingRight: "280px" }}>
         <h2>{examData.exam_title}</h2>
         <hr />
-        {examData.questions && examData.questions.map((q, index) => (
+        {examData.questions.map((q, index) => (
           <div
             key={q.id_question || index}
             ref={(el) => (questionRefs.current[index] = el)}

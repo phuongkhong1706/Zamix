@@ -29,6 +29,19 @@ from django.conf import settings
 from django.db import models
 from django.utils.timezone import now
 
+class Topic(models.Model):
+    topic_id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=255, null=False)
+
+    def __str__(self):
+        return self.name
+
+    class Meta:
+        db_table = 'topics'
+        verbose_name = 'Chủ đề'
+        verbose_name_plural = 'Danh sách chủ đề'
+
+
 class Exam(models.Model):
     class GradeChoices(models.IntegerChoices):
         GRADE_10 = 10, 'Lớp 10'
@@ -47,6 +60,7 @@ class Exam(models.Model):
     time_end = models.DateTimeField(null=False)
     status = models.CharField(max_length=20, choices=StatusChoices.choices, null=False, default='upcoming')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    topics = models.ManyToManyField(Topic, through='ExamTopic', related_name='exams')
 
     def __str__(self):
         return f"{self.name} - Lớp {self.grade}"
@@ -63,6 +77,20 @@ class Exam(models.Model):
 
     class Meta:
         db_table = 'exams'
+
+
+class ExamTopic(models.Model):
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+    topic = models.ForeignKey(Topic, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"{self.exam.name} - {self.topic.name}"
+
+    class Meta:
+        db_table = 'exam_topic'
+        unique_together = ('exam', 'topic')
+        verbose_name = 'Kỳ thi - Chủ đề'
+        verbose_name_plural = 'Danh sách kỳ thi - chủ đề'
 
         
 class ExamQuestion(models.Model):
@@ -107,11 +135,18 @@ class Document(models.Model):
         GRADE_11 = '11', 'Lớp 11'
         GRADE_12 = '12', 'Lớp 12'
 
+    class LevelChoices(models.TextChoices):
+        BASIC = 'basic', 'Cơ bản'
+        INTERMEDIATE = 'intermediate', 'Trung bình'
+        ADVANCED = 'advanced', 'Khó'
+
     doc_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=False)
     file_url = models.CharField(max_length=500, null=False)
     description = models.TextField(null=True, blank=True)
     grade = models.CharField(max_length=20, choices=GradeChoices.choices, null=True, blank=True)
+    level = models.CharField(max_length=20, choices=LevelChoices.choices, null=True, blank=True)  # ✅ Thêm trường này
+    topic = models.ForeignKey('Topic', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(default=now)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
 

@@ -109,11 +109,11 @@ function TeacherMenu() {
         >
           <span className="menu-link">Kết quả</span> <span className="dropdown-icon"></span>
           <ul className={`submenu ${isResultDropDownOpen ? "open" : ""}`}>
-            <li className={activePath === "/teacher/ket-qua/diem-thi" ? "submenu-active" : ""}>
-              <Link to="/teacher/ket-qua/diem-thi">Điểm thi</Link>
+            <li className={activePath === "/teacher/result/score" ? "submenu-active" : ""}>
+              <Link to="/teacher/result/score">Điểm thi</Link>
             </li>
-            <li className={activePath === "/teacher/ket-qua/danh-gia" ? "submenu-active" : ""}>
-              <Link to="/teacher/ket-qua/danh-gia">Đánh giá</Link>
+            <li className={activePath === "/teacher/result/statistics" ? "submenu-active" : ""}>
+              <Link to="/teacher/result/statistics">Đánh giá</Link>
             </li>
           </ul>
         </li>

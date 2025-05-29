@@ -82,8 +82,8 @@ function StudentMenu() {
         <li className={activePath.startsWith("/student/practice") ? "active" : ""}>
           <Link to="/student/practice" className="menu-link">Luyện tập</Link>
         </li>
-        <li className={activePath === "/student/news" ? "active" : ""}>
-          <Link to="/student/news" className="menu-link">Tin tức</Link> 
+        <li className={activePath === "/student/rules" ? "active" : ""}>
+          <Link to="/student/rules" className="menu-link">Thể lệ</Link> 
         </li>
         
 {/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}

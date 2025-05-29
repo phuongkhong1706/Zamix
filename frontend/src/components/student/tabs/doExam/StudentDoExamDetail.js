@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams } from "react-router-dom";
 import "../../../../styles/CountdownTimer.css";
 import "../../../../styles/SidebarNavigation.css";
@@ -27,7 +27,7 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
     const interval = setInterval(tick, 1000);
 
     return () => clearInterval(interval);
-  }, []); // 👈 để [] để chỉ chạy 1 lần khi mount
+  }, [durationInSeconds, onEnd]); // <-- Thêm dependencies
 
   const percentage = ((durationInSeconds - timeLeft) / durationInSeconds) * 100;
 
@@ -64,6 +64,11 @@ function StudentDoExamDetail() {
       [questionIndex]: answer,
     }));
   };
+
+  // Memoize hàm onEnd để tránh re-render gây lỗi useEffect
+  const onEndHandler = useCallback(() => {
+    alert("⏰ Hết giờ làm bài!");
+  }, []);
 
   if (!examData) return <div style={{ marginTop: "40px" }}>Đang tải đề thi...</div>;
 
@@ -104,7 +109,7 @@ function StudentDoExamDetail() {
       <div className="sidebar-container">
         <CountdownTimer
           durationInSeconds={examData.duration}
-          onEnd={() => alert("⏰ Hết giờ làm bài!")}
+          onEnd={onEndHandler}
         />
 
         <button className="sidebar-submit-btn">NỘP BÀI</button>
