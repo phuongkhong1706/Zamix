@@ -9,13 +9,13 @@ function StudentVerifyExam() {
     id,
     title: "Kỳ thi cuối kỳ môn Toán",
     type: "final",
-    time_start: "2025-06-15T08:00:00",
-    time_end: "2025-06-15T10:00:00",
+    time_start: "2025-03-10T08:00:00",
+    time_end: "2025-03-10T10:00:00",
     duration: 7200,
   };
 
   const studentInfo = {
-    fullName: "Nguyễn Văn A",
+    fullName: "Khổng Thị Hoài Phương",
     dob: "2003-08-20",
     studentCode: "SBD001",
   };

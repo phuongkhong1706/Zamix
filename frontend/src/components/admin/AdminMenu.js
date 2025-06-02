@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import "../../styles/Menu.css";
-import logoAmeo from "../../assets/icon/icon-cats.png";
+import logoAmeo from "../../assets/icon/icon-logo.png";
 import searchIcon from "../../assets/icon/icon-search.png";
 import notiIcon from "../../assets/icon/icon-notification.png";
 import userIcon from "../../assets/icon/icon-user.png";
@@ -67,7 +67,7 @@ function AdminMenu() {
       {/* Logo */}
       <div className="logo">
         <img src={logoAmeo} alt="Logo" />
-        <span>Ameo</span>
+        <span>Zamix</span>
       </div>
 
       {/* Menu items */}

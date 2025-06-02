@@ -7,12 +7,13 @@
 }
 
 .signupleftPanel {
-  width: 60%;
-  height: 100vh; /* Đảm bảo phần panel chiếm toàn bộ chiều cao */
+  width: 55%;
   background-color: #6f3e76;
-  display: flex;
-  justify-content: center; /* Căn giữa theo chiều ngang */
-  align-items: center; /* Căn giữa theo chiều dọc */
+  display: relative;
+  /* Dùng CSS Grid để căn giữa */
+  display: grid;
+  place-items: center; /* Căn giữa cả chiều ngang & dọc */
+  height: 100vh; /* Đảm bảo phần panel chiếm toàn bộ chiều cao */
 }
 
 .signupcontent {
@@ -22,9 +23,7 @@
   flex-direction: column;
   align-items: center; /* Căn giữa tất cả phần tử theo chiều ngang */
   justify-content: center;
-  position: absolute;
-  top: 25%;
-  left: 21%;
+  height: 100%;
   transform: translateX(-50%);
 }
 
@@ -59,6 +58,10 @@
   width: 45%;
   background-color: #fff;
   position: relative;
+  /* Dùng CSS Grid để căn giữa */
+  display: grid;
+  place-items: center; /* Căn giữa cả chiều ngang & dọc */
+  height: 100vh;
 }
 
 .signupcurve {
@@ -79,7 +82,7 @@
   position: relative;
   z-index: 2;
   background-color: #fff;
-  padding: 30px 40px 30px 10px;
+  width: 80%;
 }
 
 .signuptitle {
@@ -97,6 +100,7 @@
 .signupinputContainer {
   position: relative;
   margin-bottom: 15px;
+  width: 100%;
 }
 
 .signupinput {
@@ -139,6 +143,7 @@
   display: flex;
   justify-content: space-between;
   gap: 2%; /* Khoảng cách giữa 2 select */
+  width: 100%;
 }
   
 .signupselect {

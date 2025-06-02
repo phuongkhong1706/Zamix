@@ -29,7 +29,7 @@ ChartJS.register(
 );
 
 const TeachersData = [
-  { id: 1, name: 'Nguyễn Văn A', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 1, grade: 'Lớp 10', score: 8.5 },
+  { id: 1, name: 'Khổng Thị Hoài Phương', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 1, grade: 'Lớp 10', score: 8.5 },
   { id: 2, name: 'Trần Thị B', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 2, grade: 'Lớp 11', score: 7.2 },
   { id: 3, name: 'Lê Văn C', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '5/3/2025', shift: 1, grade: 'Lớp 12', score: 6.8 },
   { id: 4, name: 'Phạm Thị D', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '18/6/2025', shift: 3, grade: 'Lớp 10', score: 9.1 },

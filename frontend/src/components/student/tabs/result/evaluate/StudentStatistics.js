@@ -160,11 +160,11 @@ function StudentStatistic() {
         lineHeight: '1.5'
       }}>
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          Học sinh: <strong style={{ marginLeft: '4px' }}>Nguyễn Văn A</strong>
+          Học sinh: <strong style={{ marginLeft: '4px' }}>Khổng Thị Hoài Phương</strong>
         </span>
         <span>|</span>
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>
-          MSSV: <strong style={{ marginLeft: '4px' }}>12345678</strong>
+          MSSV: <strong style={{ marginLeft: '4px' }}>HS104832</strong>
         </span>
         <span>|</span>
         <span style={{ display: 'inline-flex', alignItems: 'center' }}>

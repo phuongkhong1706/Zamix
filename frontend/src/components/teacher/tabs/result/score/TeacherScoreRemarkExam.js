@@ -14,8 +14,8 @@ function TeacherScoreRemarkExam() {
     id: "EX001",
     title: "Kỳ thi cuối kỳ môn Toán",
     type: "final",
-    time_start: "2025-06-15T08:00:00",
-    time_end: "2025-06-15T10:00:00",
+    time_start: "2025-03-10T08:00:00",
+    time_end: "2025-03-10T10:00:00",
     duration: 7200,
     examCode: "MD001", // Mã đề
   };
@@ -23,10 +23,10 @@ function TeacherScoreRemarkExam() {
   // Gán dữ liệu giả lập
   useEffect(() => {
     setFormData({
-      fullName: "Nguyễn Văn A",
+      fullName: "Khổng Thị Hoài Phương",
       className: "12A1",
       dob: "2007-05-20",
-      examDate: "2025-06-15",
+      examDate: "2025-03-10",
       currentScore: "7.5",
       remarkReason: "Em cho rằng có thể có nhầm lẫn trong phần bài làm của em.",
     });

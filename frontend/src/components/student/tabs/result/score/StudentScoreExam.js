@@ -9,7 +9,6 @@ function StudentScoreExam() {
   const [selectedSlot, setSelectedSlot] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
   const [selectedGrade, setSelectedGrade] = useState(""); // Bộ lọc khối (Lớp 10,11,12)
-  const [appealClicked, setAppealClicked] = useState(false);
 
   const handleReviewExam = () => {
     navigate("/student/result/score/review_exam");
@@ -111,23 +110,6 @@ function StudentScoreExam() {
             <option value="11">Lớp 11</option>
             <option value="12">Lớp 12</option>
           </select>
-
-          <button
-            onClick={() => setAppealClicked(!appealClicked)}
-            style={{
-              backgroundColor: appealClicked ? "#800080" : "#fff", // tím hoặc trắng
-              color: appealClicked ? "#fff" : "#000", // chữ trắng hoặc tím
-              border: "1px solid #bbb",
-              borderRadius: "6px",
-              padding: "8px 16px",
-              cursor: "pointer",
-              marginLeft: "10px",
-              fontWeight: "bold",
-              height: "38px"
-            }}
-          >
-            Phúc tra
-          </button>
         </div>
 
         <h3 style={sectionTitleStyle}>Bảng điểm kỳ thi</h3>

@@ -40,7 +40,7 @@ function TeacherScoreExam() {
 
   // Dữ liệu giả gồm 10 dòng với các cột bạn yêu cầu và bổ sung thêm khối (grade)
   const examScores = [
-    { id: 1, studentName: "Nguyễn Văn A", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "1", score: 8.5, grade: "10" },
+    { id: 1, studentName: "Khổng Thị Hoài Phương", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "1", score: 8.5, grade: "10" },
     { id: 2, studentName: "Trần Thị B", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "2", score: 7.2, grade: "11" },
     { id: 3, studentName: "Lê Văn C", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-10", slot: "1", score: 9.1, grade: "12" },
     { id: 4, studentName: "Phạm Thị D", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-11", slot: "2", score: 8.3, grade: "10" },

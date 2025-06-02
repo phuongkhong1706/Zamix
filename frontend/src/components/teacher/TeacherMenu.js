@@ -1,7 +1,7 @@
 import { Link, useLocation } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import "../../styles/Menu.css";
-import logoAmeo from "../../assets/icon/icon-cats.png";
+import logoAmeo from "../../assets/icon/icon-logo.png";
 import searchIcon from "../../assets/icon/icon-search.png";
 import notiIcon from "../../assets/icon/icon-notification.png";
 import userIcon from "../../assets/icon/icon-user.png";
@@ -30,7 +30,7 @@ function TeacherMenu() {
   };
 
   // Xác định tab cha có active hay không
-  const isResultParentActive = activePath.startsWith("/teacher/ket-qua/diem-thi") || activePath.startsWith("/teacher/ket-qua/danh-gia");  
+  const isResultParentActive = activePath.startsWith("/teacher/result/score") || activePath.startsWith("/teacher/result/statistics");  
   const isExamsParentActive = activePath.startsWith("/teacher/exams/exam_management") || activePath.startsWith("/teacher/exams/question_bank");  
   
   const handleUserMenuToggle = () => {
@@ -68,7 +68,7 @@ function TeacherMenu() {
       {/* Logo */}
       <div className="logo">
         <img src={logoAmeo} alt="Logo" />
-        <span>Ameo</span>
+        <span>Zamix</span>
       </div>
 
       {/* Menu items */}

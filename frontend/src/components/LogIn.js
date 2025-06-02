@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import logoAmeoWhite from "../assets/icon/icon-cats-white.png";
+import logoAmeoWhite from "../assets/icon/icon-logo-white.png";
 import "../styles/LogIn.css";
 
 function Login({ onLoginSuccess }) {
@@ -71,9 +71,9 @@ function Login({ onLoginSuccess }) {
     <div className="loginouterContainer">
       <div className="loginleftPanel">
         <div className="logincontent">
-          <img src={logoAmeoWhite} alt="Ameo Logo" className="loginlogo" />
-          <h1 className="loginlogoText">Ameo</h1>
-          <p className="logindescription">We're barely cats</p>
+          <img src={logoAmeoWhite} alt="Zamix Logo" className="loginlogo" />
+          <h1 className="loginlogoText">Zamix</h1>
+          <p className="logindescription">Thi cử thông minh, học tập dễ dàng</p>
           <button className="loginhomeButton" onClick={() => navigate("/guest/home")}>
             Khám phá ngay
           </button>

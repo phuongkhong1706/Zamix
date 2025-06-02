@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logoAmeoWhite from "../assets/icon/icon-cats-white.png";
+import logoAmeoWhite from "../assets/icon/icon-logo-white.png";
 import "../styles/SignUp.css";
 
 const provinces = [
@@ -89,9 +89,9 @@ function Signup() {
     <div className="signupouterContainer">
       <div className="signupleftPanel">
         <div className="signupcontent">
-          <img src={logoAmeoWhite} alt="Ameo Logo" className="signuplogo" />
-          <h1 className="signuplogoText">Ameo</h1>
-          <p className="signupdescription">We're barely cats</p>
+          <img src={logoAmeoWhite} alt="Zamix Logo" className="signuplogo" />
+          <h1 className="signuplogoText">Zamix</h1>
+          <p className="signupdescription">Thi cử thông minh, học tập dễ dàng</p>
           <button className="signuphomeButton" onClick={() => navigate("/guest/home")}>
             Khám phá ngay
           </button>
@@ -292,7 +292,7 @@ function Signup() {
         >
           <path 
             fill="#ffffff" 
-            fill-opacity="1" 
+            fill-opacity="0.25" 
             d="M0,128L30,154.7C60,181,120,235,180,234.7C240,235,300,181,360,165.3C420,149,480,171,540,154.7C600,139,660,85,720,90.7C780,96,840,160,900,165.3C960,171,1020,117,1080,117.3C1140,117,1200,171,1260,208C1320,245,1380,267,1410,277.3L1440,288L1440,0L1410,0C1380,0,1320,0,1260,0C1200,0,1140,0,1080,0C1020,0,960,0,900,0C840,0,780,0,720,0C660,0,600,0,540,0C480,0,420,0,360,0C300,0,240,0,180,0C120,0,60,0,30,0L0,0Z"
           ></path>
         </svg>

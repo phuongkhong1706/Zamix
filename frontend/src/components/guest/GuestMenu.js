@@ -2,7 +2,7 @@ import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useState, useEffect, useRef } from "react";
 import "../../styles/Menu.css";
 import searchIcon from "../../assets/icon/icon-search.png";
-import logoAmeo from "../../assets/icon/icon-cats.png";
+import logoAmeo from "../../assets/icon/icon-logo.png";
 
 
 function GuestMenu() {
@@ -50,7 +50,7 @@ function GuestMenu() {
       {/* Logo */}
       <div className="logo">
         <img src={logoAmeo} alt="Logo" />
-        <span>Ameo</span>
+        <span>Zamix</span>
       </div>
 
       {/* Menu items */}

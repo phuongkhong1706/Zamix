@@ -362,24 +362,6 @@ function TeacherExamCode() {
         </div>
 
         <div className="exam-form-row">
-
-          <div className="exam-form-group">
-            <label className="exam-form-label">Khối</label>
-            <select
-              className="exam-form-select"
-              style={{ minWidth: '245px' }}
-              value={examData.grade}
-              onChange={(e) => setExamData({ ...examData, grade: e.target.value })}
-            >
-              <option value="">-- Chọn khối --</option>
-              <option value="10">Lớp 10</option>
-              <option value="11">Lớp 11</option>
-              <option value="12">Lớp 12</option>
-            </select>
-          </div>
-        </div>
-
-        <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Thời lượng (phút)</label>
             <input
