@@ -3,7 +3,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny
 from rest_framework import status
-from api.models import Exam
+from api.models import Exam, Topic, ExamTopic
 from api.serializers import ExamsSerializer
 from django.utils import timezone
 from api.views.auth.authhelper import get_authenticated_user
@@ -57,55 +57,67 @@ class TeacherDetailExamView(APIView):
             print("User xác thực thành công:", user, type(user))
 
             data = request.data.copy()
-
             required_fields = ["name", "grade", "type", "time_start", "time_end"]
             for field in required_fields:
                 if field not in data:
-                    return Response({"error": f"Missing field: {field}"}, status=status.HTTP_400_BAD_REQUEST)
+                    return Response(
+                        {"message": f"Thiếu trường bắt buộc: {field}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
 
-            time_start = data.get("time_start")
-            time_end = data.get("time_end")
+            # Chuyển đổi thời gian và xác định trạng thái kỳ thi
+            time_start = Exam._meta.get_field("time_start").to_python(data["time_start"])
+            time_end = Exam._meta.get_field("time_end").to_python(data["time_end"])
 
-            print("Raw time_start:", time_start)
-            print("Raw time_end:", time_end)
-
-            start_dt = Exam._meta.get_field("time_start").to_python(time_start)
-            end_dt = Exam._meta.get_field("time_end").to_python(time_end)
-
-            if timezone.is_naive(start_dt):
-                start_dt = timezone.make_aware(start_dt)
-            if timezone.is_naive(end_dt):
-                end_dt = timezone.make_aware(end_dt)
+            if timezone.is_naive(time_start):
+                time_start = timezone.make_aware(time_start)
+            if timezone.is_naive(time_end):
+                time_end = timezone.make_aware(time_end)
 
             current = timezone.now()
-
-            if start_dt <= current <= end_dt:
+            if time_start <= current <= time_end:
                 exam_status = "Đang diễn ra"
-            elif current < start_dt:
+            elif current < time_start:
                 exam_status = "Chưa diễn ra"
             else:
                 exam_status = "Đã kết thúc"
 
+            # Tạo đối tượng Exam
             exam = Exam.objects.create(
                 name=data["name"],
                 grade=int(data["grade"]),
                 type=data["type"],
-                time_start=start_dt,
-                time_end=end_dt,
+                time_start=time_start,
+                time_end=time_end,
                 status=exam_status,
                 user=user
             )
 
+            print("✅ Exam được tạo:", exam.id)
+
+            # ✅ Nếu có topic_ids, tạo các liên kết trong bảng ExamTopic
+            topic_ids = data.get("topic_ids", None)
+            if topic_ids is not None:
+                for topic_id in topic_ids:
+                    topic = Topic.objects.filter(topic_id=topic_id).first()
+                    if topic:
+                        ExamTopic.objects.create(exam=exam, topic=topic)
+                    else:
+                        print(f"⚠️ Topic ID không tồn tại: {topic_id}")
+
             serialized = ExamsSerializer(exam)
-            print("Tạo exam thành công:", serialized.data)
+            print("✅ Tạo kỳ thi và topic thành công:", serialized.data)
             return Response(serialized.data, status=status.HTTP_201_CREATED)
 
         except Exception as e:
-            print("❌ Lỗi bất ngờ xảy ra trong post:")
+            print("❌ Lỗi bất ngờ xảy ra trong POST:")
             import traceback
             traceback.print_exc()
-            return Response({"error": "Internal Server Error", "detail": str(e)}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-
+            return Response(
+                {"message": "Internal Server Error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+        
     def put(self, request, id):
         try:
             print(f"=== Bắt đầu xử lý PUT kỳ thi ID = {id} ===")
@@ -125,20 +137,13 @@ class TeacherDetailExamView(APIView):
                 )
 
             data = request.data.copy()
-
-            # Các trường có thể cập nhật
             updatable_fields = ["name", "grade", "type", "time_start", "time_end"]
 
             for field in updatable_fields:
-                if field in data:
+                if field in data and data[field] is not None:
                     value = data[field]
 
-                    # Bỏ qua nếu giá trị None
-                    if value is None:
-                        continue
-
                     if field in ["time_start", "time_end"]:
-                        # Chuyển datetime string thành đối tượng datetime có timezone
                         dt = Exam._meta.get_field(field).to_python(value)
                         if timezone.is_naive(dt):
                             dt = timezone.make_aware(dt)
@@ -165,8 +170,23 @@ class TeacherDetailExamView(APIView):
 
             exam.save()
 
+            # ✅ Cập nhật danh sách topic_ids
+            topic_ids = data.get("topic_ids", None)
+            if topic_ids is not None:
+                # Xóa các quan hệ cũ
+                ExamTopic.objects.filter(exam=exam).delete()
+
+                # Tạo mới các quan hệ
+                for topic_id in topic_ids:
+                    topic = Topic.objects.filter(topic_id=topic_id).first()
+                    if topic:
+                        ExamTopic.objects.create(exam=exam, topic=topic)
+                    else:
+                        print(f"⚠️ Topic ID không tồn tại: {topic_id}")
+
+            # Serialize và trả về
             serialized = ExamsSerializer(exam)
-            print("Cập nhật kỳ thi thành công:", serialized.data)
+            print("✅ Cập nhật kỳ thi và topic thành công:", serialized.data)
             return Response(serialized.data, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -176,6 +196,7 @@ class TeacherDetailExamView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
     def delete(self, request, id):
         try:
             user, error_response = get_authenticated_user(request)

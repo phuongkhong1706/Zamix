@@ -1,11 +1,25 @@
 from rest_framework import serializers
 from .models import Item
-from .models import Exam, ExamQuestion, UserInformation, Test, ExamShift
+from .models import Exam, ExamQuestion, UserInformation, Test, ExamShift, Topic, Question, Answer
+from django.contrib.auth.models import User
 
+class AnswerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Answer
+        fields = '__all__'
+class QuestionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Question
+        fields = '__all__'
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
         fields = '__all__'
+
+class TopicSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Topic
+        fields = ['topic_id', 'name']
 
 class ExamQuestionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -62,25 +76,19 @@ class TestSerializer(serializers.ModelSerializer):
     shift_id = serializers.PrimaryKeyRelatedField(
         queryset=ExamShift.objects.all(), source='shift', write_only=True
     )
-    exam_type = serializers.SerializerMethodField()  # 🔥 thêm trường này
-
-    def get_exam_type(self, obj):
-        try:
-            return obj.shift.exam.type if obj.shift and obj.shift.exam else None
-        except AttributeError:
-            return None
+    user_id = serializers.PrimaryKeyRelatedField(
+        queryset=User.objects.all(), source='user'
+    )
 
     class Meta:
         model = Test
         fields = [
             'test_id',
             'name',
-            'grade',
             'duration_minutes',
             'created_at',
-            'level',
-            'doc',
+            'type',           
+            'user_id',        
             'shift',
             'shift_id',
-            'exam_type',  # ✅ Trường mới
         ]

@@ -5,6 +5,8 @@ import iconAddCodeExam from "../../../../assets/icon/icon-add.png";
 import { FaSave } from "react-icons/fa";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
+import axios from 'axios';
+
 const TeacherExamAdd = () => {
   const navigate = useNavigate();
   const { examId } = useParams(); // ✅ lấy param từ URL
@@ -16,8 +18,20 @@ const TeacherExamAdd = () => {
   const [timeEnd, setTimeEnd] = useState("");
   const [testList, setTestList] = useState([]);
   const [selectedTopics, setSelectedTopics] = useState([]);
+  const [topics, setTopics] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_topic_exam/")
+      .then((res) => {
+        console.log("Topics:", res.data);
+        setTopics(res.data);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy danh sách chủ đề:", err);
+      });
+  }, []);
   const fetchExamDetail = async (id) => {
-  const userJson = localStorage.getItem("user");
+    const userJson = localStorage.getItem("user");
     let token = null;
 
     if (userJson) {
@@ -119,7 +133,7 @@ const TeacherExamAdd = () => {
     }
   }, [examId]);
 
-    // Hàm lấy danh sách đề thi
+  // Hàm lấy danh sách đề thi
   const fetchTestList = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
@@ -163,61 +177,63 @@ const TeacherExamAdd = () => {
     }
     fetchTestList(); // Lấy danh sách đề thi khi component load
   }, [examId]);
-  
-  const handleSave = async () => {
-    const userJson = localStorage.getItem("user");
-    let token = null;
 
-    if (userJson) {
-      try {
-        const userObj = JSON.parse(userJson);
-        token = userObj.token;
-      } catch (error) {
-        console.error("Lỗi khi parse user từ localStorage:", error);
-      }
-    }
+const handleSave = async () => {
+  const userJson = localStorage.getItem("user");
+  let token = null;
 
-    if (!token) {
-      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
-      return;
-    }
-
-    const data = {
-      name: examName,
-      grade: parseInt(grade),
-      type: examType,
-      time_start: timeStart,
-      time_end: timeEnd,
-    };
-
-    const method = examId ? "PUT" : "POST";
-    const url = examId
-      ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
-      : "http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/";
-
+  if (userJson) {
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
-
-      const resText = await res.text();
-      if (res.ok) {
-        alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
-        // navigate("/teacher/exams");
-      } else {
-        const errorJson = JSON.parse(resText);
-        alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
-      }
+      const userObj = JSON.parse(userJson);
+      token = userObj.token;
     } catch (error) {
-      console.error("Lỗi khi lưu kỳ thi:", error);
-      alert("Không thể kết nối tới server.");
+      console.error("Lỗi khi parse user từ localStorage:", error);
     }
+  }
+
+  if (!token) {
+    alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+    return;
+  }
+
+  const data = {
+    name: examName,
+    grade: parseInt(grade),
+    type: examType,
+    time_start: timeStart,
+    time_end: timeEnd,
+    topic_ids: selectedTopics,  // ✅ thêm danh sách topic được chọn
   };
+
+  const method = examId ? "PUT" : "POST";
+  const url = examId
+    ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
+    : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/`;
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const resText = await res.text();
+    if (res.ok) {
+      alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
+      // navigate("/teacher/exams");
+    } else {
+      const errorJson = JSON.parse(resText);
+      alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
+    }
+  } catch (error) {
+    console.error("Lỗi khi lưu kỳ thi:", error);
+    alert("Không thể kết nối tới server.");
+  }
+};
+
 
   return (
     <div className="add-exam-container">
@@ -274,34 +290,22 @@ const TeacherExamAdd = () => {
           <div className="form-group quarter-width">
             <label>Chủ đề</label>
             <div className="topic-checkbox-list scrollable-box">
-              {[
-                { id: 'dao_ham', label: 'Đạo hàm' },
-                { id: 'tich_phan', label: 'Tích phân' },
-                { id: 'nguyen_ham', label: 'Nguyên hàm' },
-                { id: 'sinh_hoc', label: 'Sinh học' },
-                { id: 'ngu_van', label: 'Ngữ văn' },
-                { id: 'tieng_anh', label: 'Tiếng Anh' },
-                { id: 'lich_su', label: 'Lịch sử' },
-                { id: 'dia_ly', label: 'Địa lý' },
-                { id: 'gdcd', label: 'Giáo dục công dân' },
-                { id: 'cong_nghe', label: 'Công nghệ' },
-                { id: 'tin_hoc', label: 'Tin học' },
-              ].map((topic) => (
-                <div key={topic.id} className="checkbox-item">
+              {topics.map((topic) => (
+                <div key={topic.topic_id} className="checkbox-item">
                   <input
                     type="checkbox"
-                    id={topic.id}
-                    value={topic.id}
-                    checked={selectedTopics.includes(topic.id)}
-                    onChange={(e) => {
-                      if (e.target.checked) {
-                        setSelectedTopics([...selectedTopics, topic.id]);
+                    id={topic.topic_id}
+                    value={topic.topic_id}
+                    checked={selectedTopics.includes(topic.topic_id)}
+                    onChange={() => {
+                      if (selectedTopics.includes(topic.topic_id)) {
+                        setSelectedTopics(selectedTopics.filter((id) => id !== topic.topic_id));
                       } else {
-                        setSelectedTopics(selectedTopics.filter((id) => id !== topic.id));
+                        setSelectedTopics([...selectedTopics, topic.topic_id]);
                       }
                     }}
                   />
-                  <label htmlFor={topic.id}>{topic.label}</label>
+                  <label htmlFor={topic.topic_id}>{topic.name}</label>
                 </div>
               ))}
             </div>
@@ -362,10 +366,9 @@ const TeacherExamAdd = () => {
             <tr>
               <th>STT</th>
               <th>Mã đề</th>
-              <th>Khối</th>
+              <th>Loại đề</th>
               <th>Số lượng câu hỏi</th>
               <th>Thời gian làm bài (phút)</th>
-              <th>Cấp độ</th>
               <th>Ca thi</th>
               <th>Hành động</th>
             </tr>
@@ -376,10 +379,9 @@ const TeacherExamAdd = () => {
                 <tr key={test.test_id}>
                   <td>{index + 1}</td>
                   <td>{test.name}</td>
-                  <td>{test.grade}</td>
+                  <td>{test.type}</td>
                   <td>45</td>
                   <td>{test.duration_minutes}</td>
-                  <td>{test.level}</td>
                   <td>{test.shift.shift_id}</td>
                   <td>
                     <button
@@ -387,7 +389,7 @@ const TeacherExamAdd = () => {
                       onClick={() =>
                         navigate(`/teacher/exams/exam_management/exam_add/exam_code/${test.test_id}`)
                       }
-                      style={{ backgroundColor: "#fff", color: "#000",border: "1px solid #000",}}
+                      style={{ backgroundColor: "#fff", color: "#000", border: "1px solid #000", }}
                     >
                       <img
                         src={iconEdit}

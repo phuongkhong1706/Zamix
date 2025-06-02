@@ -71,8 +71,7 @@ class TeacherDetailTestView(APIView):
 
             # Cập nhật thông tin đề thi
             test.name = data.get('name', test.name)
-            test.level = data.get('level', test.level)
-            test.grade = data.get('grade', test.grade)
+            test.type = data.get('type', test.type)
             test.duration_minutes = data.get('duration_minutes', test.duration_minutes)
             test.save()
 
@@ -103,7 +102,7 @@ class TeacherDetailTestView(APIView):
             print("📥 Dữ liệu đầu vào:", data)
 
             # Kiểm tra dữ liệu cần thiết
-            required_fields = ['name', 'level', 'grade', 'duration_minutes', 'shift_id']
+            required_fields = ['name', 'type', 'duration_minutes', 'shift_id']
             for field in required_fields:
                 if field not in data:
                     return Response(
@@ -124,10 +123,10 @@ class TeacherDetailTestView(APIView):
             # Tạo đề thi mới
             test = Test.objects.create(
                 name=data['name'],
-                level=data['level'],
-                grade=data['grade'],
+                type=data['type'],
                 duration_minutes=data['duration_minutes'],
-                shift=shift
+                shift=shift,
+                user=user 
             )
 
             serialized = TestSerializer(test)

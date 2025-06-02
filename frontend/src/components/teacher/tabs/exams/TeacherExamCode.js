@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react";
+import React, { useState, useEffect } from "react";
 import LatexInputKaTeX, { renderWithLatex } from "./LatexInputKaTeX.js";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from 'react-router-dom';
@@ -18,19 +18,17 @@ function TeacherExamCode() {
   const [editingIndex, setEditingIndex] = useState(null);
   const { testId } = useParams(); // Lấy testId từ URL
   const [examData, setExamData] = useState({
-  name: "",
-  level: "",
-  grade: "",
-  duration_minutes: 0,
-  exam_type: "",
-  shift: {
-    shift_id: "",
     name: "",
-    date: "",
-    start_time: "",
-    end_time: ""
-  }
-});
+    type: "",
+    duration_minutes: 0,
+    shift: {
+      shift_id: "",
+      name: "",
+      date: "",
+      start_time: "",
+      end_time: ""
+    }
+  });
 
   const [, setTestList] = useState([]);
   const handleSave = async () => {
@@ -53,10 +51,8 @@ function TeacherExamCode() {
 
     const data = {
       name: examData.name,
-      level: examData.level,
-      grade: examData.grade,
+      type: examData.type,
       duration_minutes: examData.duration_minutes,// nếu trường bạn lưu tên là `duration`, 
-      exam_type: examData.exam_type,
       shift_id: examData.shift.shift_id
     };
 
@@ -88,65 +84,177 @@ function TeacherExamCode() {
       alert("Không thể kết nối tới server.");
     }
   };
-  useEffect(() => {
-  const fetchTestDetail = async () => {
-    // 🔐 Lấy token từ localStorage
+  const handleSaveTest = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
+    let userId = null;
 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
-        token = userObj.token;
+        token = userObj.token;          // token nằm ở root
+        userId = userObj.user_id;       // user_id cũng nằm ở root
       } catch (error) {
-        console.error("❌ Lỗi khi parse user từ localStorage:", error);
+        console.error("Lỗi khi parse user từ localStorage:", error);
       }
     }
 
-    // ⚠️ Nếu không có token thì dừng lại
     if (!token) {
       alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
 
-    // 📦 Gọi API với header Authorization
-    try {
-      const response = await axios.get(
-        `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}`,
-        {
+    if (!testId) {
+      alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
+      return;
+    }
+
+    for (const question of newQuestions) {
+      const questionData = {
+        test: testId,
+        content: question.content,
+        type: question.type || "single",
+        score: question.score || 1.0,
+        level: question.level || 1,
+        is_gened_by_model: question.is_gened_by_model || false,
+        created_by_question: question.created_by_question || false,
+        user: userId, // Truyền user id vào đây
+      };
+
+      const method = question.id ? "PUT" : "POST";
+      const questionUrl = question.id
+        ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
+        : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
+
+      try {
+        console.log("📤 Gửi câu hỏi:", method, questionUrl);
+        console.log("📦 Dữ liệu câu hỏi:", questionData);
+
+        const res = await fetch(questionUrl, {
+          method,
           headers: {
+            "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
+          body: JSON.stringify(questionData),
+        });
+
+        const resJson = await res.json();
+        console.log("✅ Phản hồi câu hỏi:", resJson);
+
+        if (!res.ok) {
+          console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
+          alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
+          return;
         }
-      );
 
-      const data = response.data;
-      console.log('✅ Dữ liệu lấy được từ API:', data);
+        const questionId = resJson.id || resJson.question_id; // Lấy id câu hỏi từ response
 
-      // 📝 Cập nhật state
-      setExamData({
-        name: data.name || '',
-        level: data.level || '',
-        grade: data.grade || '',
-        duration_minutes: data.duration_minutes || '',
-        exam_type: data.exam_type || '',
-        shift: data.shift || {
-          shift_id: '',
-          name: '',
-          date: '',
-          start_time: '',
-          end_time: ''
+        for (const option of question.options || []) {
+          const answerData = {
+            question: questionId,
+            content: option.text,
+            is_correct: option.id === question.correct_option_id,
+            user: userId, // Truyền user id vào đây
+          };
+
+          const answerMethod = option.answer_id ? "PUT" : "POST";
+          const answerUrl = option.answer_id
+            ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
+            : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
+
+          console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
+          console.log("📦 Dữ liệu đáp án:", answerData);
+
+          const answerRes = await fetch(answerUrl, {
+            method: answerMethod,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(answerData),
+          });
+
+          const answerResJson = await answerRes.json();
+          console.log("✅ Phản hồi đáp án:", answerResJson);
+
+          if (!answerRes.ok) {
+            console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
+            alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
+            return;
+          }
         }
-      });
 
-      setTestList(data.tests || []);
-    } catch (error) {
-      console.error('❌ Lỗi khi lấy dữ liệu đề thi:', error);
+      } catch (error) {
+        console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
+        alert("Không thể kết nối tới server.");
+        return;
+      }
     }
+
+    alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
   };
 
-  fetchTestDetail();
-}, [testId]);
+
+
+
+  useEffect(() => {
+    const fetchTestDetail = async () => {
+      // 🔐 Lấy token từ localStorage
+      const userJson = localStorage.getItem("user");
+      let token = null;
+
+      if (userJson) {
+        try {
+          const userObj = JSON.parse(userJson);
+          token = userObj.token;
+        } catch (error) {
+          console.error("❌ Lỗi khi parse user từ localStorage:", error);
+        }
+      }
+
+      // ⚠️ Nếu không có token thì dừng lại
+      if (!token) {
+        alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+        return;
+      }
+
+      // 📦 Gọi API với header Authorization
+      try {
+        const response = await axios.get(
+          `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
+
+        const data = response.data;
+        console.log('✅ Dữ liệu lấy được từ API:', data);
+
+        // 📝 Cập nhật state
+        setExamData({
+          name: data.name || '',
+          type: data.type || '',
+          duration_minutes: data.duration_minutes || '',
+          shift: data.shift || {
+            shift_id: '',
+            name: '',
+            date: '',
+            start_time: '',
+            end_time: ''
+          }
+        });
+
+        setTestList(data.tests || []);
+      } catch (error) {
+        console.error('❌ Lỗi khi lấy dữ liệu đề thi:', error);
+      }
+    };
+
+    fetchTestDetail();
+  }, [testId]);
 
 
   const createNewQuestion = () => ({
@@ -272,7 +380,7 @@ function TeacherExamCode() {
         ))}
 
         {/* NÚT THÊM CÂU HỎI */}
-        <div style={{ marginTop: "20px" }}>
+        <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
           <button onClick={handleToggleQuestionForm} className="btn addquestion">
             <img
               src={showNewQuestionForm ? iconCancelQuestion : iconAddQuestion}
@@ -281,22 +389,52 @@ function TeacherExamCode() {
             />
             {showNewQuestionForm ? (editingIndex !== null ? "Huỷ sửa" : "Huỷ thêm") : "Thêm câu hỏi"}
           </button>
+
+          <button onClick={handleSaveTest} className="btn addquestion">
+            <span className="btn-icon">💾</span>
+            Lưu đề thi
+          </button>
         </div>
+
 
         {/* FORM THÊM/SỬA */}
         {showNewQuestionForm && (
           <div className="question-form">
             <h4>{editingIndex !== null ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}</h4>
 
+            {/* Nội dung câu hỏi */}
             <div className="form-section">
               <label style={{ marginBottom: "10px", display: "block" }}>Nội dung câu hỏi:</label>
               <LatexInputKaTeX
                 value={newQuestion.content}
                 onChange={(value) => setNewQuestion({ ...newQuestion, content: value })}
-                style={{ width: "90%", minHeight: "100px" }} // nếu component hỗ trợ style
+                style={{ width: "90%", minHeight: "100px" }}
               />
             </div>
 
+            {/* Mức độ câu hỏi - ComboBox */}
+            <div className="form-section">
+              <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
+              <select
+                value={newQuestion.level || ""}
+                onChange={(e) => setNewQuestion({ ...newQuestion, level: parseInt(e.target.value, 10) })}
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc",
+                  marginBottom: "15px",
+                }}
+              >
+                <option value="" disabled>Chọn mức độ</option>
+                <option value="1">1 - Dễ</option>
+                <option value="2">2 - Trung bình</option>
+                <option value="3">3 - Khó</option>
+                <option value="4">4 - Rất khó</option>
+              </select>
+            </div>
+
+            {/* Danh sách đáp án */}
             <div className="form-section">
               <label style={{ marginBottom: "10px", display: "block" }}>Danh sách đáp án:</label>
               {newQuestion.options.map((opt, idx) => (
@@ -326,23 +464,27 @@ function TeacherExamCode() {
                 onClick={handleAddOption}
                 style={{
                   marginTop: "10px",
-                  padding: "10px 20px", // Tăng chiều cao của nút
-                  borderRadius: "8px",  // Bo góc
-                  backgroundColor: "#ffffff", // Màu nền trắng
-                  border: "1px solid #ccc", // Đường viền mờ
-                  cursor: "pointer", // Đổi con trỏ khi hover
-                  fontWeight: "bold", // Đậm chữ
+                  padding: "10px 20px",
+                  borderRadius: "8px",
+                  backgroundColor: "#ffffff",
+                  border: "1px solid #ccc",
+                  cursor: "pointer",
+                  fontWeight: "bold",
                 }}
               >
                 ➕ Thêm đáp án
               </button>
             </div>
 
-            <button onClick={handleAddOrEditQuestion} className="save-btn">
-              ✅ {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
-            </button>
+            {/* Nút hành động */}
+            <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
+              <button onClick={handleAddOrEditQuestion} className="save-btn">
+                ✅ {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+              </button>
+            </div>
           </div>
         )}
+
       </div>
 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
@@ -351,12 +493,12 @@ function TeacherExamCode() {
 
         <div className="exam-form-row">
           <div className="exam-form-group">
-            <label className="exam-form-label">Mức độ đề thi</label>
+            <label className="exam-form-label">Loại đề thi</label>
             <input
               type="text"
               className="exam-form-input"
-              value={examData.level}
-              onChange={(e) => setExamData({ ...examData, level: e.target.value })}
+              value={examData.type}
+              onChange={(e) => setExamData({ ...examData, type: e.target.value })}
             />
           </div>
         </div>

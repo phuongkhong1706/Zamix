@@ -1,6 +1,7 @@
 from django.db import models
 from django.core.validators import MinLengthValidator
 from django.utils.timezone import now
+from django.contrib.auth.models import User
 
 class Item(models.Model):
     name = models.CharField(max_length=200)
@@ -179,29 +180,66 @@ class ExamShift(models.Model):
 
 # -------------------- TEST --------------------
 class Test(models.Model):
-    class GradeChoices(models.TextChoices):
-        GRADE_10 = '10', 'Lớp 10'
-        GRADE_11 = '11', 'Lớp 11'
-        GRADE_12 = '12', 'Lớp 12'
-
     class LevelChoices(models.TextChoices):
         BASIC = 'Cơ bản', 'Cơ bản'
         MEDIUM = 'Trung bình', 'Trung bình'
         HARD = 'Khó', 'Khó'
 
+    class TypeChoices(models.TextChoices):
+        MOCK = 'Thi thử', 'Thi thử'
+        REAL = 'Thi thật', 'Thi thật'
+
     test_id = models.AutoField(primary_key=True)
-    shift = models.ForeignKey(ExamShift, on_delete=models.SET_NULL, null=True)
+    shift = models.ForeignKey('ExamShift', on_delete=models.SET_NULL, null=True)
     name = models.CharField(max_length=255, null=False)
-    grade = models.CharField(max_length=20, choices=GradeChoices.choices, null=False)
     duration_minutes = models.IntegerField(null=False)
     created_at = models.DateTimeField(default=now)
-    level = models.CharField(max_length=10, choices=LevelChoices.choices, null=True)
-    doc = models.ForeignKey(Document, on_delete=models.SET_NULL, null=True)
+    type = models.CharField(max_length=20, choices=TypeChoices.choices, null=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
 
     def __str__(self):
-        return f"{self.name} - {self.get_grade_display()}"
+        return f"{self.name} - {self.get_type_display()}"
 
     class Meta:
         db_table = 'tests'
         verbose_name = 'Đề thi'
         verbose_name_plural = 'Danh sách đề thi'
+
+class Question(models.Model):
+    class QuestionType(models.TextChoices):
+        SINGLE_CHOICE = 'single', 'Trắc nghiệm 1 đáp án'
+        MULTIPLE_CHOICE = 'multiple', 'Trắc nghiệm nhiều đáp án'
+        TEXT = 'text', 'Tự luận'
+
+    question_id = models.BigAutoField(primary_key=True)
+    test = models.ForeignKey('Test', on_delete=models.CASCADE)
+    content = models.TextField()
+    type = models.CharField(max_length=20, choices=QuestionType.choices)
+    score = models.FloatField()
+    level = models.IntegerField()
+    is_gened_by_model = models.BooleanField(default=False)
+    created_by_question = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # ✅ Dùng auth_user
+
+    def __str__(self):
+        return f"Câu hỏi {self.question_id} - {self.content[:50]}..."
+
+    class Meta:
+        db_table = 'questions'
+        verbose_name = 'Câu hỏi'
+        verbose_name_plural = 'Danh sách câu hỏi'
+
+class Answer(models.Model):
+    answer_id = models.BigAutoField(primary_key=True)
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='answers')
+    content = models.TextField()
+    is_correct = models.BooleanField(default=False)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # ✅ Dùng auth_user
+
+    def __str__(self):
+        return f"Đáp án {self.answer_id} - {'✔' if self.is_correct else '✘'}"
+
+    class Meta:
+        db_table = 'answers'
+        verbose_name = 'Đáp án'
+        verbose_name_plural = 'Danh sách đáp án'
