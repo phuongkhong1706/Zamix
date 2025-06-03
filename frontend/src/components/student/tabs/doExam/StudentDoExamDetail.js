@@ -23,11 +23,11 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
       }
     };
 
-    tick(); // Cập nhật ngay khi bắt đầu
+    tick();
     const interval = setInterval(tick, 1000);
 
     return () => clearInterval(interval);
-  }, [durationInSeconds, onEnd]); // <-- Thêm dependencies
+  }, [durationInSeconds, onEnd]);
 
   const percentage = ((durationInSeconds - timeLeft) / durationInSeconds) * 100;
 
@@ -52,11 +52,57 @@ function StudentDoExamDetail() {
   const questionRefs = useRef([]);
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/student/do_exam/exams/${id}/`)
-      .then((res) => res.json())
-      .then((data) => setExamData(data))
-      .catch((err) => console.error("❌ Lỗi khi lấy dữ liệu kỳ thi:", err));
+    if (!id) return;
+
+    const fetchExam = async () => {
+      try {
+        console.log("🔄 Bắt đầu fetch danh sách test với exam id:", id);
+        const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
+
+        if (!res.ok) {
+          throw new Error(`API trả về lỗi status: ${res.status}`);
+        }
+
+        const testList = await res.json();
+        console.log("✅ testList nhận được từ API:", testList);
+
+        if (!Array.isArray(testList) || testList.length === 0) {
+          throw new Error("Danh sách bài test rỗng hoặc không hợp lệ");
+        }
+
+        // Kiểm tra kỹ từng phần tử trong testList
+        testList.forEach((test, idx) => {
+          console.log(`Test ${idx}:`, test);
+        });
+
+        const validTests = testList.filter(test => test && test.test_id);
+
+        if (validTests.length === 0) {
+          throw new Error("Không có bài test nào hợp lệ");
+        }
+
+        const randomIndex = Math.floor(Math.random() * validTests.length);
+        const chosenTestId = validTests[randomIndex].test_id;
+        console.log("🎯 Chọn test id:", chosenTestId);
+
+        const detailRes = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${chosenTestId}/`);
+
+        if (!detailRes.ok) {
+          throw new Error(`API detailTest trả về lỗi status: ${detailRes.status}`);
+        }
+
+        const detailData = await detailRes.json();
+        console.log("✅ Chi tiết đề thi nhận được:", detailData);
+
+        setExamData(detailData);
+      } catch (err) {
+        console.error("❌ Lỗi khi lấy đề thi:", err);
+      }
+    };
+
+    fetchExam();
   }, [id]);
+
 
   const handleAnswerChange = (questionIndex, answer) => {
     setAnswers((prev) => ({
@@ -65,7 +111,6 @@ function StudentDoExamDetail() {
     }));
   };
 
-  // Memoize hàm onEnd để tránh re-render gây lỗi useEffect
   const onEndHandler = useCallback(() => {
     alert("⏰ Hết giờ làm bài!");
   }, []);
@@ -74,11 +119,10 @@ function StudentDoExamDetail() {
 
   return (
     <div style={{ display: "flex", padding: "20px", marginTop: "40px" }}>
-      {/* MAIN CONTENT - Câu hỏi */}
       <div style={{ flex: 1, paddingRight: "280px" }}>
         <h2>{examData.exam_title}</h2>
         <hr />
-        {examData.questions && examData.questions.map((q, index) => (
+        {examData.questions?.map((q, index) => (
           <div
             key={q.id_question || index}
             ref={(el) => (questionRefs.current[index] = el)}
@@ -114,9 +158,7 @@ function StudentDoExamDetail() {
 
         <button className="sidebar-submit-btn">NỘP BÀI</button>
 
-        <p className="sidebar-warning">
-          Khôi phục/lưu bài làm &gt;
-        </p>
+        <p className="sidebar-warning">Khôi phục/lưu bài làm &gt;</p>
         <p className="sidebar-note">
           Chú ý: bạn có thể click vào số thứ tự câu hỏi trong bài để đánh dấu review
         </p>

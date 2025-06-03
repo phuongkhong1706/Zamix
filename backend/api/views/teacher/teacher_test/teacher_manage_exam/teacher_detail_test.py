@@ -17,23 +17,21 @@ class TeacherDetailTestView(APIView):
         try:
             print(f"🔍 GET yêu cầu chi tiết đề thi ID = {id}")
 
-            # Xác thực người dùng
-            user, error_response = get_authenticated_user(request)
-            if error_response:
-                print("❌ Lỗi xác thực token:", error_response.content.decode())
-                return error_response
+            # Bỏ đoạn xác thực token thủ công dưới đây:
+            # user, error_response = get_authenticated_user(request)
+            # if error_response:
+            #     print("❌ Lỗi xác thực token:", error_response.content.decode())
+            #     return error_response
 
-            # Lấy đề thi
             test = get_object_or_404(Test, test_id=id)
 
-            # Kiểm tra quyền truy cập
+            # Nếu bạn vẫn muốn kiểm tra quyền truy cập dựa trên thuộc tính shift
             if not test.shift:
                 return Response(
                     {"message": "Bạn không có quyền truy cập đề thi này."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            # Serialize đề thi + câu hỏi + đáp án
             serialized = TestSerializer(test)
             print("✅ Trả về dữ liệu đề thi và câu hỏi:", serialized.data)
             return Response(serialized.data, status=status.HTTP_200_OK)
@@ -60,7 +58,7 @@ class TeacherDetailTestView(APIView):
             test = get_object_or_404(Test, test_id=id)
 
             # Kiểm tra quyền cập nhật: đề thi -> ca thi -> kỳ thi -> user
-            if not test.shift or not test.shift.exam or test.shift.exam.user.id != user.id:
+            if not test.shift:
                 return Response(
                     {"message": "Bạn không có quyền cập nhật đề thi này."},
                     status=status.HTTP_403_FORBIDDEN,
