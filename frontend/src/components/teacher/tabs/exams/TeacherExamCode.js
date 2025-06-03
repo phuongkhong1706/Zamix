@@ -12,6 +12,8 @@ import iconCorrect from "../../../../assets/icon/icon-correct.png";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import { FaSave } from "react-icons/fa";
+
+
 function TeacherExamCode() {
   const [newQuestions, setNewQuestions] = useState([]);
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
@@ -29,31 +31,31 @@ function TeacherExamCode() {
       end_time: ""
     }
   });
-
-  const [, setTestList] = useState([]);
   const handleSave = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
 
+    // Lấy token từ localStorage
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
         token = userObj.token;
       } catch (error) {
-        console.error("Lỗi khi parse user từ localStorage:", error);
+        console.error("❌ Lỗi khi parse user từ localStorage:", error);
       }
     }
 
     if (!token) {
-      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      alert("⚠️ Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
 
+    // Dữ liệu gửi đi
     const data = {
       name: examData.name,
       type: examData.type,
-      duration_minutes: examData.duration_minutes,// nếu trường bạn lưu tên là `duration`, 
-      shift_id: examData.shift.shift_id
+      duration_minutes: examData.duration_minutes,
+      shift_id: examData.shift?.shift_id, // thêm ? để tránh lỗi nếu shift null
     };
 
     const method = testId ? "PUT" : "POST";
@@ -72,18 +74,33 @@ function TeacherExamCode() {
       });
 
       const resText = await res.text();
+
       if (res.ok) {
-        alert(testId ? "Cập nhật đề thi thành công!" : "Tạo đề thi thành công!");
-        // navigate("/teacher/exams");
+        const responseData = JSON.parse(resText);
+        const newTestId = responseData.test_id;
+
+        alert(testId ? "✅ Cập nhật đề thi thành công!" : "✅ Tạo đề thi thành công!");
+
+        // Nếu là POST thì redirect lại với test_id trong URL
+        if (!testId && newTestId) {
+          const basePath = window.location.pathname.endsWith("/")
+            ? window.location.pathname
+            : window.location.pathname + "/";
+          const newUrl = `${basePath}${newTestId}/`;
+          window.location.replace(newUrl); // reload lại trang với testId mới
+        }
+
       } else {
         const errorJson = JSON.parse(resText);
-        alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
+        alert(`❌ Lỗi: ${errorJson.message || errorJson.error || "Không xác định"}`);
       }
+
     } catch (error) {
-      console.error("Lỗi khi lưu kỳ thi:", error);
-      alert("Không thể kết nối tới server.");
+      console.error("❌ Lỗi khi lưu kỳ thi:", error);
+      alert("🚫 Không thể kết nối tới server.");
     }
   };
+
   const handleSaveTest = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
@@ -233,11 +250,12 @@ function TeacherExamCode() {
         const data = response.data;
         console.log('✅ Dữ liệu lấy được từ API:', data);
 
-        // 📝 Cập nhật state
+        // 📝 Cập nhật thông tin chung của đề thi
         setExamData({
           name: data.name || '',
           type: data.type || '',
           duration_minutes: data.duration_minutes || '',
+          created_at: data.created_at || '',
           shift: data.shift || {
             shift_id: '',
             name: '',
@@ -247,10 +265,34 @@ function TeacherExamCode() {
           }
         });
 
-        setTestList(data.tests || []);
+        // 📝 Cập nhật danh sách câu hỏi và đáp án
+        if (Array.isArray(data.questions)) {
+          const formattedQuestions = data.questions.map((question) => ({
+            question_id: question.question_id,
+            content: question.content,
+            type: question.type,
+            level: question.level,
+            score: question.score,
+            is_gened_by_model: question.is_gened_by_model,
+            created_by_question: question.created_by_question,
+            correct_option_id: question.answers.find(a => a.is_correct)?.answer_id || null,
+            options: question.answers?.map((answer) => ({
+              id: answer.answer_id,
+              text: answer.content,
+              is_correct: answer.is_correct,
+              user: answer.user,
+            })) || [],
+          }));
+
+          setNewQuestions(formattedQuestions);
+        } else {
+          setNewQuestions([]);
+        }
+
       } catch (error) {
         console.error('❌ Lỗi khi lấy dữ liệu đề thi:', error);
       }
+
     };
 
     fetchTestDetail();
@@ -365,7 +407,7 @@ function TeacherExamCode() {
             </div>
             <p><strong>Câu {index + 1}:</strong> {renderWithLatex(q.content)}</p>
             <ul>
-              {q.options.map((opt, idx) => (
+              {q.options?.map((opt, idx) => (
                 <li key={opt.id}>
                   <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text)}
                   {q.correct_option_id === opt.id && (
@@ -378,6 +420,8 @@ function TeacherExamCode() {
             </ul>
           </div>
         ))}
+
+
 
         {/* NÚT THÊM CÂU HỎI */}
         <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>

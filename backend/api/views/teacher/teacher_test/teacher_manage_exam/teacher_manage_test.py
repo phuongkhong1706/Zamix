@@ -8,15 +8,16 @@ from api.serializers import TestSerializer
 class TeacherManageTestView(APIView):
     permission_classes = [AllowAny]
 
-    def get(self, request):
+    def get(self, request, exam_id):
         grade_param = request.query_params.get("grade")
         level_param = request.query_params.get("level")
         shift_param = request.query_params.get("shift_id")
 
-        tests = Test.objects.all()
+        # Lọc theo exam_id trước
+        tests = Test.objects.filter(exam_id=exam_id)
 
         if grade_param:
-            tests = tests.filter(grade=grade_param)
+            tests = tests.filter(shift__exam__grade=grade_param)
 
         if level_param:
             tests = tests.filter(level=level_param)

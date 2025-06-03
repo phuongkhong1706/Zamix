@@ -13,6 +13,7 @@ urlpatterns = [
     path('teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/', TeacherDetailExamView.as_view(), name='teacher_detail_exam'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/<int:id>/', TeacherDetailExamView.as_view(), name='teacher_detail_exam_id'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_test/', TeacherManageTestView.as_view(), name='teacher_manage_test'),
+    path('teacher/teacher_test/teacher_manage_exam/teacher_manage_test/<int:exam_id>/', TeacherManageTestView.as_view(), name='teacher_manage_test_id'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_detail_test/', TeacherDetailTestView.as_view(), name='teacher_detail_test'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_detail_test/<int:id>/', TeacherDetailTestView.as_view(), name='teacher_detail_test_id'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_topic_exam/', TeacherManageTopicExam.as_view(), name='teacher_manage_topic_exam'),

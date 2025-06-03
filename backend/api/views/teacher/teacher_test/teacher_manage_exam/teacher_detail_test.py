@@ -26,16 +26,16 @@ class TeacherDetailTestView(APIView):
             # Lấy đề thi
             test = get_object_or_404(Test, test_id=id)
 
-            # Kiểm tra quyền truy cập: đề thi -> ca thi -> kỳ thi -> user
-            if not test.shift or not test.shift.exam or test.shift.exam.user.id != user.id:
+            # Kiểm tra quyền truy cập
+            if not test.shift:
                 return Response(
                     {"message": "Bạn không có quyền truy cập đề thi này."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            # Serialize và trả về
+            # Serialize đề thi + câu hỏi + đáp án
             serialized = TestSerializer(test)
-            print("✅ Trả về dữ liệu đề thi:", serialized.data)
+            print("✅ Trả về dữ liệu đề thi và câu hỏi:", serialized.data)
             return Response(serialized.data, status=status.HTTP_200_OK)
 
         except Exception as e:
@@ -45,6 +45,7 @@ class TeacherDetailTestView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
     def put(self, request, id):
         try:
             print(f"✏️ PUT cập nhật đề thi ID = {id}")

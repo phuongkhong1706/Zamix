@@ -6,11 +6,31 @@ from django.contrib.auth.models import User
 class AnswerSerializer(serializers.ModelSerializer):
     class Meta:
         model = Answer
-        fields = '__all__'
+        fields = [
+            'answer_id',
+            'content',
+            'is_correct',
+            'user',
+        ]
+
 class QuestionSerializer(serializers.ModelSerializer):
+    answers = AnswerSerializer(many=True, read_only=True)  # 👈 dùng related_name="answers"
+
     class Meta:
         model = Question
-        fields = '__all__'
+        fields = [
+            'question_id',
+            'content',
+            'type',
+            'score',
+            'level',
+            'is_gened_by_model',
+            'created_by_question',
+            'user',
+            'test',
+            'answers',  # 👈 thêm vào cuối cùng
+        ]
+
 class ItemSerializer(serializers.ModelSerializer):
     class Meta:
         model = Item
@@ -44,7 +64,8 @@ class ExamSerializer(serializers.ModelSerializer):
 class ExamsSerializer(serializers.ModelSerializer):
     status_display = serializers.SerializerMethodField()
     grade_display = serializers.SerializerMethodField()
-    full_name = serializers.SerializerMethodField()  # thêm dòng này
+    full_name = serializers.SerializerMethodField()
+    topics = serializers.SerializerMethodField()
 
     def get_status_display(self, obj):
         return obj.get_status_display_custom
@@ -59,17 +80,23 @@ class ExamsSerializer(serializers.ModelSerializer):
         except UserInformation.DoesNotExist:
             return None
 
+    def get_topics(self, obj):
+        from .models import ExamTopic  # tránh import vòng lặp
+        exam_topics = ExamTopic.objects.filter(exam=obj).select_related('topic')
+        return TopicSerializer([et.topic for et in exam_topics], many=True).data
+
     class Meta:
         model = Exam
         fields = [
-            'id', 'name', 'grade_display', 'type', 'status', 'status_display',
-            'time_start', 'time_end', 'user_id', 'full_name'
+            'id', 'name', 'grade', 'grade_display', 'type', 'status', 'status_display',
+            'time_start', 'time_end', 'user_id', 'full_name',
+            'regrade_start_time', 'regrade_end_time', 'topics'
         ]
 
 class ExamShiftSerializer(serializers.ModelSerializer):
     class Meta:
         model = ExamShift
-        fields = ['shift_id', 'name', 'date', 'start_time', 'end_time']
+        fields = ['shift_id', 'start_time', 'end_time']
 
 class TestSerializer(serializers.ModelSerializer):
     shift = ExamShiftSerializer(read_only=True)
@@ -79,6 +106,7 @@ class TestSerializer(serializers.ModelSerializer):
     user_id = serializers.PrimaryKeyRelatedField(
         queryset=User.objects.all(), source='user'
     )
+    questions = QuestionSerializer(source='question_set', many=True, read_only=True)
 
     class Meta:
         model = Test
@@ -87,8 +115,9 @@ class TestSerializer(serializers.ModelSerializer):
             'name',
             'duration_minutes',
             'created_at',
-            'type',           
-            'user_id',        
+            'type',
+            'user_id',
             'shift',
             'shift_id',
+            'questions',  # 👈 thêm danh sách câu hỏi (kèm đáp án)
         ]

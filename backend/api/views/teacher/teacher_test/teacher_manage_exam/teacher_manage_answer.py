@@ -1,12 +1,10 @@
-# api/views/teacher/answers.py
-
 import traceback
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
 from django.shortcuts import get_object_or_404
 
-from api.models import Answer, Question
+from api.models import Answer, Question, User
 from api.serializers import AnswerSerializer
 from api.views.auth.authhelper import get_authenticated_user
 
@@ -16,7 +14,7 @@ class TeacherManageAnswerView(APIView):
         try:
             print("📝 POST tạo đáp án mới")
 
-            user, error_response = get_authenticated_user(request)
+            user_from_token, error_response = get_authenticated_user(request)
             if error_response:
                 print("❌ Lỗi xác thực token:", error_response.content.decode())
                 return error_response
@@ -34,16 +32,20 @@ class TeacherManageAnswerView(APIView):
 
             question = get_object_or_404(Question, question_id=data['question'])
 
-            if question.test.user.id != user.id:
+            if question.test.user.id != user_from_token.id:
                 return Response(
                     {"message": "Bạn không có quyền thêm đáp án cho câu hỏi này."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
+            # Lấy user từ request nếu có
+            user_obj = get_object_or_404(User, id=data['user']) if 'user' in data else question.user
+
             answer = Answer.objects.create(
                 question=question,
                 content=data['content'],
-                is_correct=data['is_correct']
+                is_correct=data['is_correct'],
+                user=user_obj
             )
 
             serialized = AnswerSerializer(answer)
@@ -57,40 +59,46 @@ class TeacherManageAnswerView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-    
+
     def put(self, request, answer_id):
-            try:
-                print("✏️ PUT cập nhật đáp án")
+        try:
+            print("✏️ PUT cập nhật đáp án")
 
-                user, error_response = get_authenticated_user(request)
-                if error_response:
-                    print("❌ Lỗi xác thực token:", error_response.content.decode())
-                    return error_response
+            user_from_token, error_response = get_authenticated_user(request)
+            if error_response:
+                print("❌ Lỗi xác thực token:", error_response.content.decode())
+                return error_response
 
-                data = request.data
-                print("📥 Dữ liệu đầu vào:", data)
+            data = request.data
+            print("📥 Dữ liệu đầu vào:", data)
 
-                answer = get_object_or_404(Answer,answers=answer_id)
+            answer = get_object_or_404(Answer, id=answer_id)
 
-                if answer.question.test.user.id != user.id:
-                    return Response(
-                        {"message": "Bạn không có quyền cập nhật đáp án này."},
-                        status=status.HTTP_403_FORBIDDEN,
-                    )
-
-                # Cập nhật các trường nếu có
-                answer.content = data.get('content', answer.content)
-                answer.is_correct = data.get('is_correct', answer.is_correct)
-                answer.save()
-
-                serialized = AnswerSerializer(answer)
-                print("✅ Cập nhật đáp án thành công:", serialized.data)
-                return Response(serialized.data, status=status.HTTP_200_OK)
-
-            except Exception as e:
-                print("❌ Lỗi bất ngờ khi cập nhật đáp án:")
-                traceback.print_exc()
+            if answer.question.test.user.id != user_from_token.id:
                 return Response(
-                    {"message": "Internal Server Error", "detail": str(e)},
-                    status=status.HTTP_500_INTERNAL_SERVER_ERROR
+                    {"message": "Bạn không có quyền cập nhật đáp án này."},
+                    status=status.HTTP_403_FORBIDDEN,
                 )
+
+            # Cập nhật các trường nếu có
+            answer.content = data.get('content', answer.content)
+            answer.is_correct = data.get('is_correct', answer.is_correct)
+
+            # Cập nhật user nếu được truyền
+            if 'user' in data:
+                user_obj = get_object_or_404(User, id=data['user'])
+                answer.user = user_obj
+
+            answer.save()
+
+            serialized = AnswerSerializer(answer)
+            print("✅ Cập nhật đáp án thành công:", serialized.data)
+            return Response(serialized.data, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            print("❌ Lỗi bất ngờ khi cập nhật đáp án:")
+            traceback.print_exc()
+            return Response(
+                {"message": "Internal Server Error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

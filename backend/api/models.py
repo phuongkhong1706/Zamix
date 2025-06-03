@@ -59,9 +59,11 @@ class Exam(models.Model):
     type = models.CharField(max_length=50, null=False)
     time_start = models.DateTimeField(null=False)
     time_end = models.DateTimeField(null=False)
+    regrade_start_time = models.DateTimeField(null=True, blank=True)  
+    regrade_end_time = models.DateTimeField(null=True, blank=True)    
     status = models.CharField(max_length=20, choices=StatusChoices.choices, null=False, default='upcoming')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
-    topics = models.ManyToManyField(Topic, through='ExamTopic', related_name='exams')
+    topics = models.ManyToManyField('Topic', through='ExamTopic', related_name='exams')
 
     def __str__(self):
         return f"{self.name} - Lớp {self.grade}"
@@ -79,6 +81,32 @@ class Exam(models.Model):
     class Meta:
         db_table = 'exams'
 
+class Test(models.Model):
+    class LevelChoices(models.TextChoices):
+        BASIC = 'Cơ bản', 'Cơ bản'
+        MEDIUM = 'Trung bình', 'Trung bình'
+        HARD = 'Khó', 'Khó'
+
+    class TypeChoices(models.TextChoices):
+        MOCK = 'Thi thử', 'Thi thử'
+        REAL = 'Thi chính thức', 'Thi chính thức'
+
+    test_id = models.AutoField(primary_key=True)
+    shift = models.ForeignKey('ExamShift', on_delete=models.SET_NULL, null=True)
+    name = models.CharField(max_length=255, null=False)
+    duration_minutes = models.IntegerField(null=False)
+    created_at = models.DateTimeField(default=now)
+    type = models.CharField(max_length=20, choices=TypeChoices.choices, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    exam = models.ForeignKey('Exam', on_delete=models.SET_NULL, null=True, blank=True)  # ➕ Trường mới
+
+    def __str__(self):
+        return f"{self.name} - {self.get_type_display()}"
+
+    class Meta:
+        db_table = 'tests'
+        verbose_name = 'Đề thi'
+        verbose_name_plural = 'Danh sách đề thi'
 
 class ExamTopic(models.Model):
     exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
@@ -163,14 +191,11 @@ class Document(models.Model):
 # -------------------- EXAM SHIFT --------------------
 class ExamShift(models.Model):
     shift_id = models.AutoField(primary_key=True)
-    exam = models.ForeignKey('Exam', on_delete=models.CASCADE)
-    name = models.CharField(max_length=100, null=False)
-    date = models.DateField(null=False)
-    start_time = models.TimeField(null=False)
-    end_time = models.TimeField(null=False)
+    start_time = models.TimeField(null=True)
+    end_time = models.TimeField(null=True)
 
     def __str__(self):
-        return f"{self.name} - {self.date}"
+        return f"Kíp thi {self.shift_id} ({self.start_time} - {self.end_time})"
 
     class Meta:
         db_table = 'exam_shift'
@@ -195,7 +220,8 @@ class Test(models.Model):
     duration_minutes = models.IntegerField(null=False)
     created_at = models.DateTimeField(default=now)
     type = models.CharField(max_length=20, choices=TypeChoices.choices, null=True)
-    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True)
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, null=True)
+    exam = models.ForeignKey('Exam', on_delete=models.SET_NULL, null=True, blank=True)  # ➕ Trường mới
 
     def __str__(self):
         return f"{self.name} - {self.get_type_display()}"
@@ -204,6 +230,7 @@ class Test(models.Model):
         db_table = 'tests'
         verbose_name = 'Đề thi'
         verbose_name_plural = 'Danh sách đề thi'
+
 
 class Question(models.Model):
     class QuestionType(models.TextChoices):
