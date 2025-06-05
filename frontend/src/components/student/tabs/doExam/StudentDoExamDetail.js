@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../../../styles/CountdownTimer.css";
 
-
 function CountdownTimer({ durationInSeconds, onEnd }) {
   durationInSeconds = durationInSeconds * 60;
   const [timeLeft, setTimeLeft] = useState(durationInSeconds);
@@ -55,31 +54,7 @@ function StudentDoExamDetail() {
   const questionRefs = useRef([]);
   const [chosenTestId, setChosenTestId] = useState(null);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchExam = async () => {
-      try {
-        const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
-        const testList = await res.json();
-
-        const validTests = testList.filter(test => test && test.test_id);
-        const randomIndex = Math.floor(Math.random() * validTests.length);
-        const testId = validTests[randomIndex].test_id;
-
-        setChosenTestId(testId);
-
-        const detailRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`);
-        const detailData = await detailRes.json();
-        console.log("📝 Test Detail Response:", detailData);
-        setExamData(detailData);
-      } catch (err) {
-        console.error("❌ Lỗi khi lấy đề thi:", err);
-      }
-    };
-
-    fetchExam();
-  }, [id]);
+  const handleSubmitExamRef = useRef();
 
   const handleAnswerChange = (questionIndex, answer) => {
     setAnswers((prev) => ({
@@ -88,11 +63,7 @@ function StudentDoExamDetail() {
     }));
   };
 
-  const onEndHandler = useCallback(() => {
-    alert("⏰ Hết giờ làm bài!");
-  }, []);
-
-  const handleSubmitExam = async () => {
+  const handleSubmitExam = useCallback(async () => {
     if (!examData || !chosenTestId) {
       alert("❌ Không thể gửi bài vì chưa có dữ liệu đề thi.");
       return;
@@ -119,7 +90,6 @@ function StudentDoExamDetail() {
       return;
     }
 
-    // Chuẩn bị câu trả lời gửi đi
     const formattedAnswers = examData.questions.map((question, index) => ({
       question_id: question.question_id,
       selected_option: answers[index] || null,
@@ -134,7 +104,6 @@ function StudentDoExamDetail() {
     console.log("📤 Gửi dữ liệu nộp bài:", submissionData);
 
     try {
-      // Gửi bài thi
       const res = await fetch("http://127.0.0.1:8000/api/student/student_test/student_do_exam/", {
         method: "POST",
         headers: {
@@ -152,7 +121,6 @@ function StudentDoExamDetail() {
       const result = await res.json();
       console.log("✅ Nộp bài thành công:", result);
 
-      // Lấy kết quả thi
       const scoreRes = await fetch(
         `http://127.0.0.1:8000/api/student/student_test/student_do_exam/?student_id=${studentId}&test_id=${chosenTestId}`,
         {
@@ -168,11 +136,8 @@ function StudentDoExamDetail() {
       }
 
       const scoreData = await scoreRes.json();
-
-      // Lấy exam_name từ examData
       const examName = examData.exam_name || examData.exam?.name || "Tên đề thi";
 
-      // Điều hướng đến trang kết quả, truyền exam_name cùng dữ liệu điểm
       navigate("/student/do_exam/result_exam", {
         state: {
           correctAnswers: scoreData.correct_answers,
@@ -184,10 +149,45 @@ function StudentDoExamDetail() {
       console.error("❌ Lỗi khi gửi bài hoặc lấy kết quả:", err);
       alert("❌ Gửi bài thất bại hoặc không thể lấy kết quả. Vui lòng thử lại.");
     }
-  };
+  }, [examData, chosenTestId, answers, navigate]);
 
+  // Gán function vào ref để onEnd gọi được
+  useEffect(() => {
+    handleSubmitExamRef.current = handleSubmitExam;
+  }, [handleSubmitExam]);
 
+  const onEndHandler = useCallback(() => {
+    alert("⏰ Hết giờ làm bài!");
+    if (handleSubmitExamRef.current) {
+      handleSubmitExamRef.current();
+    }
+  }, []);
 
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchExam = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
+        const testList = await res.json();
+
+        const validTests = testList.filter(test => test && test.test_id);
+        const randomIndex = Math.floor(Math.random() * validTests.length);
+        const testId = validTests[randomIndex].test_id;
+
+        setChosenTestId(testId);
+
+        const detailRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`);
+        const detailData = await detailRes.json();
+        console.log("📝 Test Detail Response:", detailData);
+        setExamData(detailData);
+      } catch (err) {
+        console.error("❌ Lỗi khi lấy đề thi:", err);
+      }
+    };
+
+    fetchExam();
+  }, [id]);
 
   if (!examData) return <div style={{ marginTop: "40px" }}>Đang tải đề thi...</div>;
 

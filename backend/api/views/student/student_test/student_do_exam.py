@@ -1,4 +1,5 @@
 import traceback
+import string
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -10,6 +11,7 @@ from api.views.auth.authhelper import get_authenticated_user
 class StudentDoTestView(APIView):
     def post(self, request):
         try:
+            # Xác thực người dùng
             user, error_response = get_authenticated_user(request)
             if error_response:
                 return error_response
@@ -26,51 +28,50 @@ class StudentDoTestView(APIView):
 
             test = get_object_or_404(Test, test_id=test_id)
 
-            # Map ký tự A,B,C,D thành index 0,1,2,3
-            option_map = {'A': 0, 'B': 1, 'C': 2, 'D': 3}
+            # 🔥 XÓA TOÀN BỘ đáp án cũ của học sinh này cho đề thi hiện tại
+            StudentAnswer.objects.filter(student=user, test=test).delete()
+
+            # ⚙️ Tạo dynamic option_map từ A-Z: {'A': 0, ..., 'Z': 25}
+            option_map = {char: idx for idx, char in enumerate(string.ascii_uppercase)}
 
             for answer_item in answers:
                 question_id = answer_item.get('question_id')
                 selected_option = answer_item.get('selected_option')
 
-                if not question_id or selected_option is None:
-                    # Bỏ qua câu hỏi không có lựa chọn
-                    continue
+                if not question_id:
+                    continue  # Bỏ qua nếu thiếu question_id
 
                 question = get_object_or_404(Question, question_id=question_id)
-
-                # Lấy tất cả đáp án cho câu hỏi theo thứ tự answer_id tăng dần (hoặc thứ tự bạn muốn)
                 answer_list = list(Answer.objects.filter(question=question).order_by('answer_id'))
 
-                # Lấy index dựa trên selected_option
-                index = option_map.get(selected_option.upper())
+                answer = None
+                is_correct = False
 
-                if index is None or index >= len(answer_list):
-                    print(f"⚠️ Lựa chọn '{selected_option}' không hợp lệ cho câu hỏi {question_id}")
-                    continue
+                if selected_option:
+                    index = option_map.get(selected_option.upper())
+                    if index is not None and index < len(answer_list):
+                        answer = answer_list[index]
+                        is_correct = answer.is_correct
+                    else:
+                        print(f"⚠️ Lựa chọn '{selected_option}' không hợp lệ cho câu hỏi {question_id}")
 
-                answer = answer_list[index]
-
-                # Lấy đúng đáp án, và is_correct
-                is_correct = answer.is_correct
-
-                # Cập nhật hoặc tạo StudentAnswer
-                StudentAnswer.objects.update_or_create(
+                # 📝 Dù chọn hay không chọn, vẫn tạo bản ghi
+                StudentAnswer.objects.create(
                     student=user,
                     test=test,
                     question=question,
-                    defaults={
-                        'answer': answer,
-                        'is_correct': is_correct
-                    }
+                    answer=answer,
+                    is_correct=is_correct
                 )
 
-            return Response({"message": "Đã lưu bài làm thành công."}, status=status.HTTP_200_OK)
+            return Response({"message": "✅ Đã lưu bài làm thành công."}, status=status.HTTP_200_OK)
 
         except Exception as e:
             traceback.print_exc()
-            return Response({"message": "Lỗi hệ thống", "detail": str(e)},
-                            status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({
+                "message": "❌ Lỗi hệ thống.",
+                "detail": str(e)
+            }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
     def get(self, request):
         try:

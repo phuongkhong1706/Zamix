@@ -32,7 +32,8 @@ import TeacherHomeTab from "./components/teacher/tabs/TeacherHomeTab";
 import TeacherExamManagement from "./components/teacher/tabs/exams/TeacherExamManagement";
 import TeacherExamAdd from "./components/teacher/tabs/exams/TeacherExamAdd";
 import TeacherExamCode from "./components/teacher/tabs/exams/TeacherExamCode";
-import TeacherDocument from "./components/teacher/tabs/documents/TeacherDocument"
+import TeacherListDocument from "./components/teacher/tabs/documents/TeacherListDocument"
+import TeacherAddDocument from "./components/teacher/tabs/documents/TeacherAddDocument";
 import TeacherRule from "./components/teacher/tabs/rules/TeacherRule"
 import TeacherScoreExam from "./components/teacher/tabs/result/score/TeacherScoreExam"
 import TeacherScoreReviewExam from "./components/teacher/tabs/result/score/TeacherScoreReviewExam";
@@ -107,7 +108,8 @@ function App() {
         <Route path="/teacher/exams/exam_management/exam_add/:examId" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>} />
         <Route path="/teacher/exams/exam_management/exam_add/exam_code/:testId" element={<TeacherExamCode />} />
         <Route path="/teacher/exams/exam_management/exam_add/exam_code/" element={<TeacherExamCode />} />
-        <Route path="/teacher/documents" element={<TeacherLayout> <TeacherDocument /> </TeacherLayout>} />
+        <Route path="/teacher/listdocuments" element={<TeacherLayout> <TeacherListDocument /> </TeacherLayout>} />
+        <Route path="/teacher/listdocuments/adddocuments" element={<TeacherLayout> <TeacherAddDocument /> </TeacherLayout>} />
         <Route path="/teacher/rules" element={<TeacherLayout> <TeacherRule/> </TeacherLayout>} />
         <Route path="/teacher/result/score" element={<TeacherLayout> <TeacherScoreExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/score/review_exam" element={<TeacherLayout> <TeacherScoreReviewExam /> </TeacherLayout>}/>
