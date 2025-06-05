@@ -30,13 +30,13 @@ function TeacherMenu() {
   };
 
   // Xác định tab cha có active hay không
-  const isResultParentActive = activePath.startsWith("/teacher/result/score") || activePath.startsWith("/teacher/result/statistics");  
-  const isExamsParentActive = activePath.startsWith("/teacher/exams/exam_management") || activePath.startsWith("/teacher/exams/question_bank");  
-  
+  const isResultParentActive = activePath.startsWith("/teacher/result/score") || activePath.startsWith("/teacher/result/statistics");
+  const isExamsParentActive = activePath.startsWith("/teacher/exams/exam_management") || activePath.startsWith("/teacher/exams/question_bank");
+
   const handleUserMenuToggle = () => {
     setIsUserMenuOpen(!isUserMenuOpen); // Đảo ngược trạng thái của menu con
   };
-  
+
   // Đóng menu khi click ra ngoài
   useEffect(() => {
     function handleClickOutside(event) {
@@ -93,13 +93,13 @@ function TeacherMenu() {
             </li>
           </ul>
         </li>
-        <li className={activePath === "/teacher/listdocuments" ? "active" : ""}>
-          <Link to="/teacher/listdocuments" className="menu-link">Tài liệu</Link> 
+        <li className={activePath.startsWith("/teacher/listdocuments") ? "active" : ""}>
+          <Link to="/teacher/listdocuments" className="menu-link">Tài liệu</Link>
         </li>
         <li className={activePath === "/teacher/rules" ? "active" : ""}>
           <Link to="/teacher/rules" className="menu-link">Thể lệ</Link>
         </li>
-{/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
+        {/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
         {/* Tab "Kết quả" có submenu */}
         <li
           className={`has-submenu ${isResultDropDownOpen ? "submenu-hover" : ""} ${isResultParentActive ? "submenu-active" : ""}`}
@@ -121,7 +121,7 @@ function TeacherMenu() {
 
       {/* User section */}
       <div className="user-section">
-      <div
+        <div
           className={`search-container ${isSearchExpanded ? "expanded" : ""}`}
           onClick={handleSearchFocus}
         >

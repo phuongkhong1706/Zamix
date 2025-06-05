@@ -1,5 +1,6 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import axios from "axios";
 import iconAddCodeExam from "../../../../assets/icon/icon-add.png";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
@@ -10,44 +11,88 @@ const TeacherListDocument = () => {
   const navigate = useNavigate();
 
   const [searchKeyword, setSearchKeyword] = useState("");
-  const [filters, setFilters] = useState({
-    level: "",
-    grade: "",
-    topic: "",
-  });
+  const [filters, setFilters] = useState({ level: "", grade: "", topic: "" });
+  const [documents, setDocuments] = useState([]);
 
-  const documents = [
-    {
-      id: 1,
-      name: "Ôn tập cuối kỳ",
-      topic: "Đạo hàm",
-      grade: "Lớp 12",
-      level: "Trung bình",
-    },
-    {
-      id: 2,
-      name: "Tổng hợp hình học",
-      topic: "Hình học không gian",
-      grade: "Lớp 11",
-      level: "Khó",
-    },
-  ];
+  useEffect(() => {
+    const fetchDocuments = async () => {
+      try {
+        const params = {};
+
+        if (filters.grade) params.grade = filters.grade;
+        if (filters.level) params.level = filters.level;
+        if (filters.topic) params.topic_id = filters.topic;
+
+        const response = await axios.get(
+          "http://localhost:8000/api/teacher/teacher_document/teacher_manage_document/",
+          { params }
+        );
+
+        console.log("Dữ liệu lấy từ backend:", response.data);
+        setDocuments(response.data);
+      } catch (error) {
+        console.error("Lỗi khi lấy danh sách tài liệu:", error);
+      }
+    };
+
+    fetchDocuments();
+  }, [filters]);
 
   const handleFilterChange = (e) => {
     const { name, value } = e.target;
     setFilters((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSearch = () => {
-    // You can add more advanced search logic here if needed
+  const handleEditDocument = (docId) => {
+    navigate(`/teacher/listdocuments/fixdocument/${docId}`);
+  };
+  const handleDelete = async (docId) => {
+    const userJson = localStorage.getItem("user");
+    let token = null;
+
+    if (userJson) {
+      try {
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+      } catch (error) {
+        console.error("Lỗi khi parse user từ localStorage:", error);
+      }
+    }
+
+    if (!token) {
+      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    const confirmDelete = window.confirm("Bạn có chắc muốn xóa tài liệu này?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await axios.delete(
+        `http://localhost:8000/api/teacher/teacher_document/teacher_detail_document/${docId}/`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+      alert("Xoá tài liệu thành công!");
+      // TODO: Điều hướng lại hoặc cập nhật danh sách tài liệu
+      window.location.reload(); 
+    } catch (err) {
+      console.error("❌ Lỗi khi xoá tài liệu:", err);
+      alert("Đã xảy ra lỗi khi xoá tài liệu.");
+    }
   };
 
   const filteredDocuments = documents.filter((doc) => {
-    const keywordMatch = doc.name.toLowerCase().includes(searchKeyword.toLowerCase());
-    const levelMatch = !filters.level || doc.level === filters.level;
-    const gradeMatch = !filters.grade || doc.grade === filters.grade;
-    const topicMatch = !filters.topic || doc.topic === filters.topic;
-    return keywordMatch && levelMatch && gradeMatch && topicMatch;
+    const keyword = searchKeyword.toLowerCase();
+    return (
+      doc.name.toLowerCase().includes(keyword) ||
+      (doc.topic_name && doc.topic_name.toLowerCase().includes(keyword)) ||
+      (doc.grade && doc.grade.toLowerCase().includes(keyword)) ||
+      (doc.level && doc.level.toLowerCase().includes(keyword))
+    );
   });
 
   const styles = {
@@ -159,7 +204,7 @@ const TeacherListDocument = () => {
         </button>
 
         <div style={styles.filterWrapper}>
-          <div className="filter-left" style={styles.filterLeft}>
+          <div style={styles.filterLeft}>
             <input
               type="text"
               placeholder="Nhập từ khóa tìm kiếm"
@@ -167,52 +212,46 @@ const TeacherListDocument = () => {
               onChange={(e) => setSearchKeyword(e.target.value)}
               style={styles.inputStyle}
             />
-            <button
-              className="btn search"
-              style={styles.searchButtonStyle}
-              onClick={handleSearch}
-            >
-              <img
-                src={iconSearchWhite}
-                alt="icon"
-                className="btn-icon"
-                style={styles.btnIconStyle}
-              />
+            <button style={styles.searchButtonStyle}>
+              <img src={iconSearchWhite} alt="icon" style={styles.btnIconStyle} />
               Tìm kiếm
             </button>
           </div>
 
-          <div className="filter-right" style={styles.filterRight}>
+          <div style={styles.filterRight}>
             <select
               name="level"
               onChange={handleFilterChange}
               style={styles.selectStyle}
+              value={filters.level}
             >
-              <option value="">Mức độ</option>
+              <option value="">Tất cả mức độ</option>
               <option value="Cơ bản">Cơ bản</option>
               <option value="Trung bình">Trung bình</option>
-              <option value="Khó">Nâng cao</option>
+              <option value="Nâng cao">Nâng cao</option>
             </select>
             <select
               name="grade"
               onChange={handleFilterChange}
               style={styles.selectStyle}
+              value={filters.grade}
             >
-              <option value="">Khối</option>
-              <option value="Lớp 10">Lớp 10</option>
-              <option value="Lớp 11">Lớp 11</option>
-              <option value="Lớp 12">Lớp 12</option>
+              <option value="">Tất cả khối</option>
+              <option value="10">Lớp 10</option>
+              <option value="11">Lớp 11</option>
+              <option value="12">Lớp 12</option>
             </select>
             <select
               name="topic"
               onChange={handleFilterChange}
               style={styles.selectStyle}
+              value={filters.topic}
             >
-              <option value="">Chủ đề</option>
-              <option value="Đạo hàm">Đạo hàm</option>
-              <option value="Tích phân">Tích phân</option>
-              <option value="Nguyên hàm">Nguyên hàm</option>
-              <option value="Hình học không gian">Hình học không gian</option>
+              <option value="">Tất cả chủ đề</option>
+              <option value="1">Đạo hàm</option>
+              <option value="2">Tích phân</option>
+              <option value="3">Nguyên hàm</option>
+              <option value="4">Hình học không gian</option>
             </select>
           </div>
         </div>
@@ -225,63 +264,47 @@ const TeacherListDocument = () => {
               <th style={styles.th}>Chủ đề</th>
               <th style={styles.th}>Khối</th>
               <th style={styles.th}>Độ khó</th>
+              <th style={styles.th}>Link tài liệu</th>
               <th style={styles.th}>Hành động</th>
             </tr>
           </thead>
           <tbody>
             {filteredDocuments.map((doc, index) => (
-              <tr key={doc.id}>
+              <tr key={doc.doc_id}>
                 <td style={styles.td}>{index + 1}</td>
                 <td style={styles.td}>{doc.name}</td>
-                <td style={styles.td}>{doc.topic}</td>
-                <td style={styles.td}>{doc.grade}</td>
-                <td style={styles.td}>{doc.level}</td>
+                <td style={styles.td}>{doc.topic_name || "Chưa có chủ đề"}</td>
+                <td style={styles.td}>{`Lớp ${doc.grade}`}</td>
+                <td style={styles.td}>
+                  {{
+                    basic: "Cơ bản",
+                    intermediate: "Trung bình",
+                    advanced: "Khó",
+                  }[doc.level] || doc.level}
+                </td>
+                <td style={styles.td}>
+                  <a
+                    href={`http://localhost:8000${doc.file_url.startsWith('/media/documents/documents/')
+                      ? doc.file_url.replace('/media/documents/documents/', '/media/documents/')
+                      : doc.file_url
+                      }`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                  >
+                    Xem
+                  </a>
+                </td>
                 <td style={styles.td}>
                   <button
-                    className="btn btn-sm btn-edit"
-                    style={{
-                      backgroundColor: "#fff",
-                      color: "#000",
-                      border: "1px solid #000",
-                      padding: "4px 10px",
-                      marginRight: "8px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
+                    className="btn edit"
+                    style={{ marginRight: "8px" }}
+                    onClick={() => handleEditDocument(doc.doc_id)}
                   >
-                    <img
-                      src={iconEdit}
-                      alt="Edit"
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        marginRight: "4px",
-                        verticalAlign: "middle",
-                      }}
-                    />
-                    Sửa
+                    <img src={iconEdit} alt="icon" className="btn-icon" />
+                    Chỉnh sửa
                   </button>
-                  <button
-                    className="btn btn-sm btn-delete"
-                    style={{
-                      backgroundColor: "#fff",
-                      color: "#000",
-                      border: "1px solid #000",
-                      padding: "4px 10px",
-                      borderRadius: "4px",
-                      cursor: "pointer",
-                    }}
-                  >
-                    <img
-                      src={iconDelete}
-                      alt="Delete"
-                      style={{
-                        width: "16px",
-                        height: "16px",
-                        marginRight: "4px",
-                        verticalAlign: "middle",
-                      }}
-                    />
+                  <button className="btn delete" onClick={() => handleDelete(doc.doc_id)}>
+                    <img src={iconDelete} alt="icon" className="btn-icon" />
                     Xóa
                   </button>
                 </td>
