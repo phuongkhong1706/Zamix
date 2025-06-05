@@ -107,6 +107,9 @@ class TestSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), source='user'
     )
     questions = QuestionSerializer(source='question_set', many=True, read_only=True)
+    
+    # Thêm field exam_name lấy tên exam qua quan hệ exam
+    exam_name = serializers.CharField(source='exam.name', read_only=True)
 
     class Meta:
         model = Test
@@ -119,5 +122,7 @@ class TestSerializer(serializers.ModelSerializer):
             'user_id',
             'shift',
             'shift_id',
-            'questions',  # 👈 thêm danh sách câu hỏi (kèm đáp án)
+            'exam_id',
+            'exam_name',   # 👈 thêm field này để lấy tên exam
+            'questions',
         ]

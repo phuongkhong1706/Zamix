@@ -18,6 +18,7 @@ import StudentRule from "./components/student/tabs/rules/StudentRule";
 import StudentPractice from "./components/student/tabs/practice/StudentPractice";
 import StudentStatistics from "./components/student/tabs/result/evaluate/StudentStatistics";
 import StudentVerifyExam from "./components/student/tabs/doExam/StudentVerifyExam";
+import StudentResultExam from "./components/student/tabs/doExam/StudentResultExam";
 import StudentVerifyPractice from "./components/student/tabs/practice/StudentVerifyPractice";
 import StudentPracticeDetail from "./components/student/tabs/practice/StudentPracticeDetail";
 import StudentPracticeReview from "./components/student/tabs/practice/StudentPracticeReview"
@@ -86,6 +87,7 @@ function App() {
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
         <Route path="/student/do_exam/verify_exam/:id" element={<StudentLayout> <StudentVerifyExam /> </StudentLayout>}/>
+        <Route path="/student/do_exam/result_exam" element={<StudentLayout> <StudentResultExam /> </StudentLayout>} />
         <Route path="/student/do_exam/:id" element={<StudentDoExamDetail />} />
         <Route path="/student/rules" element={<StudentLayout> <StudentRule/> </StudentLayout>} />
         <Route path="/student/practice" element={<StudentLayout> <StudentPractice /> </StudentLayout>}/>
