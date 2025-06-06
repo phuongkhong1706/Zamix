@@ -1,83 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiMinus } from "react-icons/fi";
 
 function StudentPractice() {
   const navigate = useNavigate();
-
-  const exams = [
-    {
-      id: 1,
-      title: "Giải tích 1 - Giữa kỳ",
-      duration: 45,
-      total_questions: 20,
-      topics: [
-        {
-          name: "Đạo hàm và ứng dụng",
-          lessons: [
-            { id: "1a1", title: "Bài 1: Định nghĩa đạo hàm" },
-            { id: "1a2", title: "Bài 2: Quy tắc đạo hàm" },
-          ],
-        },
-        {
-          name: "Hàm số lũy thừa, mũ và logarit",
-          lessons: [
-            { id: "1b1", title: "Bài 1: Hàm số mũ" },
-            { id: "1b2", title: "Bài 2: Hàm số logarit" },
-          ],
-        },
-        {
-          name: "Tích phân xác định",
-          lessons: [
-            { id: "1c1", title: "Bài 1: Định nghĩa tích phân" },
-            { id: "1c2", title: "Bài 2: Tính tích phân" },
-          ],
-        },
-      ],
-      mock_tests: [
-        { id: "1a", name: "Bài thi thử số 1" },
-        { id: "1b", name: "Bài thi thử số 2" },
-      ],
-    },
-    {
-      id: 2,
-      title: "Đại số tuyến tính - Cuối kỳ",
-      duration: 60,
-      total_questions: 25,
-      topics: [
-        {
-          name: "Ma trận và định thức",
-          lessons: [
-            { id: "2a1", title: "Bài 1: Ma trận cơ bản" },
-            { id: "2a2", title: "Bài 2: Định thức và tính chất" },
-          ],
-        },
-        {
-          name: "Hệ phương trình tuyến tính",
-          lessons: [
-            { id: "2b1", title: "Bài 1: Phương pháp thế" },
-            { id: "2b2", title: "Bài 2: Phương pháp Gauss" },
-          ],
-        },
-        {
-          name: "Không gian vector",
-          lessons: [
-            { id: "2c1", title: "Bài 1: Định nghĩa vector" },
-            { id: "2c2", title: "Bài 2: Tổ hợp tuyến tính" },
-          ],
-        },
-      ],
-      mock_tests: [
-        { id: "2a", name: "Bài thi thử số 1" },
-        { id: "2b", name: "Bài thi thử số 2" },
-        { id: "2c", name: "Bài thi thử số 3" },
-      ],
-    },
-  ];
-
+  const [exams, setExams] = useState([]);
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [expandedTopics, setExpandedTopics] = useState({});
-  
+
+  useEffect(() => {
+    fetch("http://localhost:8000/api/student/student_practice/student_manage_practice/")
+      .then((response) => {
+        if (!response.ok) throw new Error("Lỗi khi gọi API");
+        return response.json();
+      })
+      .then((data) => {
+        console.log("✅ Dữ liệu nhận được từ API:", data);
+        setExams(data);
+      })
+      .catch((error) => {
+        console.error("❌ Lỗi khi fetch dữ liệu:", error);
+      });
+  }, []);
+
   const handleExamClick = (examId) => {
     setSelectedExamId((prevId) => (prevId === examId ? null : examId));
   };
@@ -86,18 +31,14 @@ function StudentPractice() {
     navigate(`/student/practice/verify_practice`);
   };
 
-  const handleTopicClick = (topicName) => {
+  const handleTopicClick = (topicId) => {
     setExpandedTopics((prev) => ({
       ...prev,
-      [topicName]: !prev[topicName],
+      [topicId]: !prev[topicId],
     }));
   };
 
-  const handleLessonClick = (lessonId) => {
-    navigate(`/student/practice/lesson/${lessonId}`);
-  };
-
-  const selectedExam = exams.find((exam) => exam.id === selectedExamId);
+  const selectedExam = exams.find((exam) => exam.exam_id === selectedExamId);
 
   return (
     <div style={mainContentStyle}>
@@ -105,23 +46,23 @@ function StudentPractice() {
       <div style={containerStyle}>
         <div style={leftPanelStyle}>
           {exams.map((exam) => (
-            <div key={exam.id} style={examCardStyle}>
+            <div key={exam.exam_id} style={examCardStyle}>
               <div
                 style={{ ...examTitleStyle, cursor: "pointer" }}
-                onClick={() => handleExamClick(exam.id)}
+                onClick={() => handleExamClick(exam.exam_id)}
               >
-                📚 {exam.title}
+                📚 {exam.exam_name}
               </div>
-              {selectedExamId === exam.id && (
+              {selectedExamId === exam.exam_id && (
                 <div style={mockTestListStyle}>
-                  {exam.mock_tests.map((mock) => (
+                  {exam.test_ids?.map((testId, idx) => (
                     <div
-                      key={mock.id}
+                      key={testId}
                       style={mockTestLinkContainerStyle}
-                      onClick={() => handleMockTestClick(mock.id)}
+                      onClick={() => handleMockTestClick(testId)}
                     >
                       <span>📝</span>
-                      <span style={mockTestLinkStyle}>{mock.name}</span>
+                      <span style={mockTestLinkStyle}>Mock test #{idx + 1}</span>
                     </div>
                   ))}
                 </div>
@@ -133,14 +74,14 @@ function StudentPractice() {
         <div style={rightPanelStyle}>
           {selectedExam ? (
             <>
-              <h3 style={titleStyle}>{selectedExam.title}</h3>
+              <h3 style={titleStyle}>{selectedExam.exam_name}</h3>
               <p style={{ color: "#003366" }}>
                 <strong>TÀI LIỆU THAM KHẢO</strong>
               </p>
 
               <div className="space-y-2">
-                {selectedExam.topics.map((topic, index) => (
-                  <div key={index}>
+                {selectedExam.topics?.map((topic) => (
+                  <div key={topic.topic_id}>
                     <div
                       style={{
                         ...topicCardStyle,
@@ -148,36 +89,52 @@ function StudentPractice() {
                         alignItems: "center",
                         cursor: "pointer",
                       }}
-                      onClick={() => handleTopicClick(topic.name)}
+                      onClick={() => handleTopicClick(topic.topic_id)}
                     >
                       <span style={{ marginRight: "8px", color: "#003366", fontSize: "20px" }}>
-                        {expandedTopics[topic.name] ? <FiMinus /> : <FiPlus />}
+                        {expandedTopics[topic.topic_id] ? <FiMinus /> : <FiPlus />}
                       </span>
-                      {topic.name}
+                      {topic.topic_name}
                     </div>
 
-                    {expandedTopics[topic.name] && (
+                    {expandedTopics[topic.topic_id] && topic.list_doc.length > 0 && (
                       <div style={{ paddingLeft: "20px" }}>
-                        {topic.lessons.map((lesson) => (
-                          <div
-                            key={lesson.id}
-                            style={{
-                              ...lessonLinkStyle,
-                              display: "flex",
-                              alignItems: "center",
-                              cursor: "pointer",
-                            }}
-                            onClick={() => handleLessonClick(lesson.id)}
-                          >
-                            <span style={{ textDecoration: "underline", color: "#0b3d91" }}>
-                              {lesson.title}
-                            </span>
-                          </div>
-                        ))}
+                        {topic.list_doc.map((doc, index) => {
+                          let fileUrl = doc.file_url;
+
+                          // Sửa lại URL nếu bị lặp "/documents/documents/"
+                          if (fileUrl.startsWith("/media/documents/documents/")) {
+                            fileUrl = fileUrl.replace("/media/documents/documents/", "/media/documents/");
+                          }
+
+                          // Nếu URL là tương đối, thêm domain vào
+                          if (fileUrl.startsWith("/")) {
+                            fileUrl = `http://localhost:8000${fileUrl}`;
+                          }
+
+                          return (
+                            <div key={doc.doc_id} style={lessonLinkStyle}>
+                              <a
+                                href={fileUrl}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                style={{ color: "#0b3d91", textDecoration: "underline" }}
+                              >
+                                📄 Xem tài liệu #{index + 1}
+                              </a>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
-                  </div>
 
+
+                    {expandedTopics[topic.topic_id] && topic.list_doc.length === 0 && (
+                      <p style={{ paddingLeft: "30px", fontStyle: "italic", color: "gray" }}>
+                        (Chưa có tài liệu)
+                      </p>
+                    )}
+                  </div>
                 ))}
               </div>
             </>
@@ -260,9 +217,6 @@ const topicCardStyle = {
 const lessonLinkStyle = {
   fontSize: "15px",
   marginBottom: "8px",
-  cursor: "pointer",
-  color: "#0055aa",
-  textDecoration: "underline",
 };
 
 const titleStyle = {
