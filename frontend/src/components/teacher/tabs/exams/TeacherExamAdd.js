@@ -356,7 +356,7 @@ const TeacherExamAdd = () => {
             `}
           </style>
         </div>
-        <div className="exam-row" style={{ marginTop: '-95px' }}>
+        <div className="exam-row" >
           <div className="form-group half-width">
             <label>Thời gian phúc tra</label>
             <div className="time-range">

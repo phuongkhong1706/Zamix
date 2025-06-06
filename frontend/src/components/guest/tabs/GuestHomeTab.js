@@ -1,4 +1,7 @@
 import React, { useState, useEffect } from 'react';
+import GuestHeroSection from './GuestHomeTab/GuestHeroSection';
+import GuestFeaturesSection from './GuestHomeTab/GuestFeaturesSection';
+import GuestFooter from './GuestHomeTab/GuestFooter';
 
 function GuestHomeTab() {
   const [data, setData] = useState(null);
@@ -12,6 +15,9 @@ function GuestHomeTab() {
 
   return (
     <div>
+      <GuestHeroSection /> {/* Đây là chỗ thêm vào */}
+      <GuestFeaturesSection />
+      <GuestFooter />
       {data ? (
         <>
           <p>{data.content}</p>
@@ -23,4 +29,4 @@ function GuestHomeTab() {
   );
 }
 
-export default GuestHomeTab; // mac dinh hien thi hometab
+export default GuestHomeTab;

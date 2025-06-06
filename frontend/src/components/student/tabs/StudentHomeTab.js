@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import StudentHeroSection from './home/StudentHeroSection';
 
 function StudentHomeTab() {
   const [data, setData] = useState(null);
@@ -12,6 +13,7 @@ function StudentHomeTab() {
 
   return (
     <div>
+      <StudentHeroSection />
       {data ? (
         <>
           <p>{data.content}</p>

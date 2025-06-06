@@ -1,0 +1,261 @@
+.hero-section {
+  height: 60vh; /* Hoặc 50vh nếu muốn thấp hơn nữa */
+  width: 100vw;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  margin-left: -20px;
+  padding: 0;
+}
+
+.hero-background {
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(ellipse at center, transparent 30%, rgba(0, 0, 0, 0.8) 70%),
+    url('https://images.unsplash.com/photo-1522202176988-66273c2fd55f?ixlib=rb-4.0.3&auto=format&fit=crop&w=2071&q=80');
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+.purple-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(to right, rgba(111, 62, 118, 0.8), rgba(108, 49, 160, 0.7), rgba(83, 77, 201, 0.9));
+}
+
+.hero-content {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+}
+
+.container {
+  max-width: 1500px;
+}
+
+.grid-layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 3rem;
+  align-items: center;
+}
+
+.left-content,
+.right-content {
+  transition: all 1s ease-out;
+}
+
+.hidden-left {
+  opacity: 0;
+  transform: translateX(-3rem);
+}
+
+.hidden-right {
+  opacity: 0;
+  transform: translateX(3rem);
+}
+
+.visible {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.hero-title {
+  color: white;
+  font-size: 3rem;
+  font-weight: bold;
+  line-height: 1.2;
+}
+
+.gradient-text {
+  background: linear-gradient(to right, #facc15, #fb923c);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.hero-description {
+  font-size: 1.25rem;
+  color: #f3e8ff;
+  max-width: 40rem;
+  line-height: 1.6;
+}
+
+.button-group {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding-top: 1rem;
+}
+
+.btn {
+  padding: 1rem 2rem;
+  font-weight: 600;
+  font-size: 1.125rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+}
+
+.get-started {
+  background: white;
+  color: #6f3e76;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+}
+
+.get-started:hover {
+  background: #f9fafb;
+  transform: scale(1.15);
+}
+
+.learn-more {
+  background: transparent;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  backdrop-filter: blur(4px);
+}
+
+.learn-more:hover {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(255, 255, 255, 0.5);
+  transform: scale(1.15);
+}
+
+.image-wrapper {
+  position: relative;
+}
+
+.circle-deco {
+  position: absolute;
+  border-radius: 9999px;
+  opacity: 0.2;
+  animation: pulse 2s infinite;
+}
+
+.top-left {
+  top: -1rem;
+  left: -1rem;
+  width: 6rem;
+  height: 6rem;
+  background: linear-gradient(to bottom right, #facc15, #fb923c);
+}
+
+.bottom-right {
+  bottom: -2rem;
+  right: -2rem;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(to bottom right, #f472b6, #a78bfa);
+  animation-delay: 1s;
+}
+
+.main-image-box {
+  position: relative;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(12px);
+  border-radius: 1.5rem;
+  padding: 2rem;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+}
+
+.students-image {
+  width: 100%;
+  height: auto;
+  border-radius: 1rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+}
+
+.floating-card {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(4px);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.15);
+  animation: bounce 2s infinite;
+
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+
+.top-right {
+  top: -1.5rem;
+  right: -1.5rem;
+}
+
+.bottom-left {
+  bottom: -1.5rem;
+  left: -1.5rem;
+  animation-delay: 0.5s;
+}
+
+.stat-number {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: #6f3e76;
+}
+
+.stat-label {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.scroll-indicator {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  text-align: center;
+  animation: bounce 2s infinite;
+  transition: opacity 1s;
+}
+
+.arrow-down {
+  width: 1.5rem;
+  height: 1.5rem;
+}
+
+.particles {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.particle {
+  position: absolute;
+  width: 0.5rem;
+  height: 0.5rem;
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  animation: pulse 2s infinite;
+  transition: opacity 1s;
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+
+  50% {
+    transform: translateY(-0.5rem);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    opacity: 0.2;
+  }
+
+  50% {
+    opacity: 1;
+  }
+}

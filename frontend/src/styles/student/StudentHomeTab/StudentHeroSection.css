@@ -1,0 +1,271 @@
+.student-hero-section {
+  position: relative;
+  min-height: 320px;
+  background: linear-gradient(150deg, #6e3f76, #6c31a0, #534dc9);
+  overflow: hidden;
+  color: white;
+  width: 100vw;
+  margin-left: -20px;
+}
+
+.student-hero-visible .student-left,
+.student-hero-visible .student-right,
+.student-hero-visible .student-badge {
+  opacity: 1;
+  transform: translate(0);
+  transition: all 1s ease-out;
+}
+
+.student-container {
+  position: relative;
+  z-index: 10;
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 3rem 1rem;
+}
+
+.student-content {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .student-content {
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+.student-left {
+  flex: 1;
+  opacity: 0;
+  transform: translateX(-20px);
+  transition: all 1s ease-out;
+}
+
+.student-left h1 {
+  font-size: 2.5rem;
+  margin-bottom: 1rem;
+}
+
+.student-left p {
+  font-size: 1.2rem;
+}
+
+.student-highlight {
+  color: #facc15;
+  font-weight: bold;
+}
+
+.student-buttons {
+  margin-top: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .student-buttons {
+    flex-direction: row;
+  }
+}
+
+.student-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 600;
+  border-radius: 9999px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.student-btn-primary {
+  background-color: white;
+  color: #6b21a8;
+}
+
+.student-btn-primary:hover {
+  background-color: #f3f4f6;
+  transform: scale(1.05);
+}
+
+.student-btn-secondary {
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.student-btn-secondary:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+.student-right {
+  flex: 1;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 1s ease-out 0.3s;
+}
+
+.student-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.student-card {
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  padding: 1rem;
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.student-card:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.student-card-value {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.student-card-label {
+  color: #ddd6fe;
+  font-size: 0.875rem;
+}
+
+.student-badge {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  border-radius: 1rem;
+  background: linear-gradient(to right, rgba(250, 204, 21, 0.2), rgba(251, 146, 60, 0.2));
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(250, 204, 21, 0.3);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  opacity: 0;
+  transform: translateY(10px);
+  transition: all 1s ease-out 0.5s;
+}
+
+.student-badge-icon {
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(to bottom right, #facc15, #fb923c);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.student-badge-title {
+  font-weight: 600;
+}
+
+.student-badge-subtitle {
+  font-size: 0.875rem;
+  color: #fde68a;
+}
+
+.student-bottom-gradient {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 2rem;
+  background: linear-gradient(to top, #f9fafb, transparent);
+}
+
+/* Animated background elements */
+.student-hero-background .student-symbol {
+  position: absolute;
+  font-weight: bold;
+  opacity: 0.7;
+  color: #facc15;
+}
+
+.student-symbol-2 { top: 3rem; right: 5rem; font-size: 3rem; animation: pulse 2s infinite; }
+.student-symbol-plus { top: 2rem; right: 8rem; font-size: 2rem; animation: bounce 2s infinite; }
+.student-symbol-1 { top: 4rem; right: 3rem; font-size: 2.5rem; }
+.student-symbol-4 { top: 5rem; right: 10rem; font-size: 2rem; }
+.student-symbol-eq { top: 3rem; right: 12rem; font-size: 1.5rem; }
+.student-symbol-star { top: 2rem; right: 14rem; font-size: 2rem; animation: pulse 2s infinite; }
+.student-symbol-pi { top: 8rem; right: 13rem; font-size: 1.5rem; animation: bounce 2s infinite 300ms; color: #67e8f9; }
+.student-symbol-sum { top: 10rem; right: 9rem; font-size: 1.25rem; color: #6ee7b7; }
+.student-symbol-root { top: 9rem; right: 15rem; font-size: 1.5rem; animation: pulse 2s infinite 500ms; color: #f9a8d4; }
+
+.student-shape {
+  position: absolute;
+  opacity: 0.6;
+}
+
+.student-rotating-square {
+  top: 5rem;
+  right: 4rem;
+  width: 3rem;
+  height: 3rem;
+  background: linear-gradient(to bottom right, #facc15, #fb923c);
+  transform: rotate(45deg);
+  animation: spin-slow 10s linear infinite;
+}
+
+.student-bouncing-circle {
+  top: 8rem;
+  right: 6rem;
+  width: 2rem;
+  height: 2rem;
+  background: linear-gradient(to bottom right, #86efac, #34d399);
+  border-radius: 50%;
+  animation: bounce 2s infinite;
+}
+
+.student-pulsing-square {
+  top: 6rem;
+  right: 16rem;
+  width: 2.5rem;
+  height: 2.5rem;
+  background: linear-gradient(to bottom right, #93c5fd, #22d3ee);
+  transform: rotate(12deg);
+  animation: pulse 2s infinite;
+}
+
+.student-rotated-diamond {
+  top: 11rem;
+  right: 5rem;
+  width: 1.5rem;
+  height: 1.5rem;
+  background: linear-gradient(to bottom right, #f9a8d4, #fb7185);
+  transform: rotate(45deg);
+}
+
+.student-rotated-bar {
+  top: 12rem;
+  right: 11rem;
+  width: 4rem;
+  height: 0.5rem;
+  background: linear-gradient(to right, #d8b4fe, #a5b4fc);
+  transform: rotate(-12deg);
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.1); opacity: 1; }
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-10px); }
+}
+
+@keyframes spin-slow {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
