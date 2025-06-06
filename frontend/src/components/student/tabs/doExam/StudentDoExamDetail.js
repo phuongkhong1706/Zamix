@@ -1,9 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
-import { useParams } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import "../../../../styles/CountdownTimer.css";
-import "../../../../styles/SidebarNavigation.css";
 
 function CountdownTimer({ durationInSeconds, onEnd }) {
+  durationInSeconds = durationInSeconds * 60;
   const [timeLeft, setTimeLeft] = useState(durationInSeconds);
 
   useEffect(() => {
@@ -32,6 +32,7 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
   const percentage = ((durationInSeconds - timeLeft) / durationInSeconds) * 100;
 
   const formatTime = (seconds) => {
+    if (isNaN(seconds)) return "00:00";
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
     return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
@@ -46,63 +47,14 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
 }
 
 function StudentDoExamDetail() {
+  const navigate = useNavigate();
   const { id } = useParams();
   const [examData, setExamData] = useState(null);
   const [answers, setAnswers] = useState({});
   const questionRefs = useRef([]);
+  const [chosenTestId, setChosenTestId] = useState(null);
 
-  useEffect(() => {
-    if (!id) return;
-
-    const fetchExam = async () => {
-      try {
-        console.log("🔄 Bắt đầu fetch danh sách test với exam id:", id);
-        const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
-
-        if (!res.ok) {
-          throw new Error(`API trả về lỗi status: ${res.status}`);
-        }
-
-        const testList = await res.json();
-        console.log("✅ testList nhận được từ API:", testList);
-
-        if (!Array.isArray(testList) || testList.length === 0) {
-          throw new Error("Danh sách bài test rỗng hoặc không hợp lệ");
-        }
-
-        // Kiểm tra kỹ từng phần tử trong testList
-        testList.forEach((test, idx) => {
-          console.log(`Test ${idx}:`, test);
-        });
-
-        const validTests = testList.filter(test => test && test.test_id);
-
-        if (validTests.length === 0) {
-          throw new Error("Không có bài test nào hợp lệ");
-        }
-
-        const randomIndex = Math.floor(Math.random() * validTests.length);
-        const chosenTestId = validTests[randomIndex].test_id;
-        console.log("🎯 Chọn test id:", chosenTestId);
-
-        const detailRes = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${chosenTestId}/`);
-
-        if (!detailRes.ok) {
-          throw new Error(`API detailTest trả về lỗi status: ${detailRes.status}`);
-        }
-
-        const detailData = await detailRes.json();
-        console.log("✅ Chi tiết đề thi nhận được:", detailData);
-
-        setExamData(detailData);
-      } catch (err) {
-        console.error("❌ Lỗi khi lấy đề thi:", err);
-      }
-    };
-
-    fetchExam();
-  }, [id]);
-
+  const handleSubmitExamRef = useRef();
 
   const handleAnswerChange = (questionIndex, answer) => {
     setAnswers((prev) => ({
@@ -111,9 +63,131 @@ function StudentDoExamDetail() {
     }));
   };
 
+  const handleSubmitExam = useCallback(async () => {
+    if (!examData || !chosenTestId) {
+      alert("❌ Không thể gửi bài vì chưa có dữ liệu đề thi.");
+      return;
+    }
+
+    const userJson = localStorage.getItem("user");
+    let token = null;
+    let studentId = null;
+
+    if (userJson) {
+      try {
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+        studentId = userObj.user_id;
+      } catch (error) {
+        console.error("❌ Lỗi khi parse user từ localStorage:", error);
+        alert("Lỗi khi đọc thông tin người dùng. Vui lòng đăng nhập lại.");
+        return;
+      }
+    }
+
+    if (!token) {
+      alert("❌ Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    const formattedAnswers = examData.questions.map((question, index) => ({
+      question_id: question.question_id,
+      selected_option: answers[index] || null,
+    }));
+
+    const submissionData = {
+      test_id: chosenTestId,
+      student_id: studentId,
+      answers: formattedAnswers,
+    };
+
+    console.log("📤 Gửi dữ liệu nộp bài:", submissionData);
+
+    try {
+      const res = await fetch("http://127.0.0.1:8000/api/student/student_test/student_do_exam/", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify(submissionData),
+      });
+
+      if (!res.ok) {
+        const errText = await res.text();
+        throw new Error(`Server trả về lỗi: ${res.status} - ${errText}`);
+      }
+
+      const result = await res.json();
+      console.log("✅ Nộp bài thành công:", result);
+
+      const scoreRes = await fetch(
+        `http://127.0.0.1:8000/api/student/student_test/student_do_exam/?student_id=${studentId}&test_id=${chosenTestId}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      if (!scoreRes.ok) {
+        const errText = await scoreRes.text();
+        throw new Error(`Lỗi khi lấy kết quả thi: ${scoreRes.status} - ${errText}`);
+      }
+
+      const scoreData = await scoreRes.json();
+      const examName = examData.exam_name || examData.exam?.name || "Tên đề thi";
+
+      navigate("/student/do_exam/result_exam", {
+        state: {
+          correctAnswers: scoreData.correct_answers,
+          totalQuestions: scoreData.total_questions,
+          examName: examName,
+        },
+      });
+    } catch (err) {
+      console.error("❌ Lỗi khi gửi bài hoặc lấy kết quả:", err);
+      alert("❌ Gửi bài thất bại hoặc không thể lấy kết quả. Vui lòng thử lại.");
+    }
+  }, [examData, chosenTestId, answers, navigate]);
+
+  // Gán function vào ref để onEnd gọi được
+  useEffect(() => {
+    handleSubmitExamRef.current = handleSubmitExam;
+  }, [handleSubmitExam]);
+
   const onEndHandler = useCallback(() => {
     alert("⏰ Hết giờ làm bài!");
+    if (handleSubmitExamRef.current) {
+      handleSubmitExamRef.current();
+    }
   }, []);
+
+  useEffect(() => {
+    if (!id) return;
+
+    const fetchExam = async () => {
+      try {
+        const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
+        const testList = await res.json();
+
+        const validTests = testList.filter(test => test && test.test_id);
+        const randomIndex = Math.floor(Math.random() * validTests.length);
+        const testId = validTests[randomIndex].test_id;
+
+        setChosenTestId(testId);
+
+        const detailRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`);
+        const detailData = await detailRes.json();
+        console.log("📝 Test Detail Response:", detailData);
+        setExamData(detailData);
+      } catch (err) {
+        console.error("❌ Lỗi khi lấy đề thi:", err);
+      }
+    };
+
+    fetchExam();
+  }, [id]);
 
   if (!examData) return <div style={{ marginTop: "40px" }}>Đang tải đề thi...</div>;
 
@@ -124,39 +198,45 @@ function StudentDoExamDetail() {
         <hr />
         {examData.questions?.map((q, index) => (
           <div
-            key={q.id_question || index}
+            key={q.question_id || index}
             ref={(el) => (questionRefs.current[index] = el)}
             style={questionStyle}
           >
             <p><strong>Câu {index + 1}:</strong> {q.content}</p>
             <ul style={{ listStyleType: "none", paddingLeft: 0 }}>
-              {["A", "B", "C", "D"].map((option) => (
-                <li key={option} style={{ marginBottom: "6px" }}>
-                  <label style={{ cursor: "pointer" }}>
-                    <input
-                      type="radio"
-                      name={`question_${index}`}
-                      value={option}
-                      checked={answers[index] === option}
-                      onChange={() => handleAnswerChange(index, option)}
-                      style={{ marginRight: "8px" }}
-                    />
-                    {option}. {q[`option_${option.toLowerCase()}`]}
-                  </label>
-                </li>
-              ))}
+              {q.answers?.map((answer, idx) => {
+                const optionLabel = String.fromCharCode(65 + idx); // A, B, C,...
+                return (
+                  <li key={answer.answer_id} style={{ marginBottom: "6px" }}>
+                    <label style={{ cursor: "pointer" }}>
+                      <input
+                        type="radio"
+                        name={`question_${index}`}
+                        value={optionLabel}
+                        checked={answers[index] === optionLabel}
+                        onChange={() => handleAnswerChange(index, optionLabel)}
+                        style={{ marginRight: "8px" }}
+                      />
+                      {optionLabel}. {answer.content}
+                    </label>
+                  </li>
+                );
+              })}
             </ul>
           </div>
+
         ))}
       </div>
 
       <div className="sidebar-container">
         <CountdownTimer
-          durationInSeconds={examData.duration}
+          durationInSeconds={examData.duration_minutes}
           onEnd={onEndHandler}
         />
 
-        <button className="sidebar-submit-btn">NỘP BÀI</button>
+        <button className="sidebar-submit-btn" onClick={handleSubmitExam}>
+          NỘP BÀI
+        </button>
 
         <p className="sidebar-warning">Khôi phục/lưu bài làm &gt;</p>
         <p className="sidebar-note">

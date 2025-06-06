@@ -2,6 +2,7 @@ from django.db import models
 from django.core.validators import MinLengthValidator
 from django.utils.timezone import now
 from django.contrib.auth.models import User
+import os
 
 class Item(models.Model):
     name = models.CharField(max_length=200)
@@ -158,6 +159,10 @@ class ExamQuestion(models.Model):
         return f"Câu hỏi {self.id_question} - Lớp {self.grade} - {self.get_type_display()}"
 
 # -------------------- DOCUMENT --------------------
+def upload_to_documents(instance, filename):
+    # Lưu vào thư mục documents/
+    return os.path.join('documents', filename)
+
 class Document(models.Model):
     class GradeChoices(models.TextChoices):
         GRADE_10 = '10', 'Lớp 10'
@@ -171,10 +176,10 @@ class Document(models.Model):
 
     doc_id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=255, null=False)
-    file_url = models.CharField(max_length=500, null=False)
+    file_url = models.FileField(upload_to=upload_to_documents, null=False)
     description = models.TextField(null=True, blank=True)
     grade = models.CharField(max_length=20, choices=GradeChoices.choices, null=True, blank=True)
-    level = models.CharField(max_length=20, choices=LevelChoices.choices, null=True, blank=True)  # ✅ Thêm trường này
+    level = models.CharField(max_length=20, choices=LevelChoices.choices, null=True, blank=True)
     topic = models.ForeignKey('Topic', on_delete=models.SET_NULL, null=True, blank=True)
     created_at = models.DateTimeField(default=now)
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
@@ -270,3 +275,22 @@ class Answer(models.Model):
         db_table = 'answers'
         verbose_name = 'Đáp án'
         verbose_name_plural = 'Danh sách đáp án'
+
+class StudentAnswer(models.Model):
+    student_answer_id = models.BigAutoField(primary_key=True)
+
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_answers')  # ✅ Dùng auth_user
+    test = models.ForeignKey('Test', on_delete=models.CASCADE, related_name='student_answers')
+    question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='student_answers')
+    answer = models.ForeignKey(Answer, on_delete=models.SET_NULL, null=True, blank=True)
+
+    is_correct = models.BooleanField(null=True, blank=True)
+
+    def __str__(self):
+        return f"SV: {self.student.username} - Câu {self.question_id} - Đáp án {self.answer_id} - {'✔' if self.is_correct else '✘'}"
+
+    class Meta:
+        db_table = 'student_answer'
+        verbose_name = 'Câu trả lời của sinh viên'
+        verbose_name_plural = 'Danh sách câu trả lời sinh viên'
+        unique_together = ('student', 'test', 'question')

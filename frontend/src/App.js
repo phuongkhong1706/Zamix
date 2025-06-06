@@ -18,6 +18,7 @@ import StudentRule from "./components/student/tabs/rules/StudentRule";
 import StudentPractice from "./components/student/tabs/practice/StudentPractice";
 import StudentStatistics from "./components/student/tabs/result/evaluate/StudentStatistics";
 import StudentVerifyExam from "./components/student/tabs/doExam/StudentVerifyExam";
+import StudentResultExam from "./components/student/tabs/doExam/StudentResultExam";
 import StudentVerifyPractice from "./components/student/tabs/practice/StudentVerifyPractice";
 import StudentPracticeDetail from "./components/student/tabs/practice/StudentPracticeDetail";
 import StudentPracticeReview from "./components/student/tabs/practice/StudentPracticeReview"
@@ -31,7 +32,8 @@ import TeacherHomeTab from "./components/teacher/tabs/TeacherHomeTab";
 import TeacherExamManagement from "./components/teacher/tabs/exams/TeacherExamManagement";
 import TeacherExamAdd from "./components/teacher/tabs/exams/TeacherExamAdd";
 import TeacherExamCode from "./components/teacher/tabs/exams/TeacherExamCode";
-import TeacherDocument from "./components/teacher/tabs/documents/TeacherDocument"
+import TeacherListDocument from "./components/teacher/tabs/documents/TeacherListDocument"
+import TeacherAddDocument from "./components/teacher/tabs/documents/TeacherAddDocument";
 import TeacherRule from "./components/teacher/tabs/rules/TeacherRule"
 import TeacherScoreExam from "./components/teacher/tabs/result/score/TeacherScoreExam"
 import TeacherScoreReviewExam from "./components/teacher/tabs/result/score/TeacherScoreReviewExam";
@@ -86,6 +88,7 @@ function App() {
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
         <Route path="/student/do_exam/verify_exam/:id" element={<StudentLayout> <StudentVerifyExam /> </StudentLayout>}/>
+        <Route path="/student/do_exam/result_exam" element={<StudentLayout> <StudentResultExam /> </StudentLayout>} />
         <Route path="/student/do_exam/:id" element={<StudentDoExamDetail />} />
         <Route path="/student/rules" element={<StudentLayout> <StudentRule/> </StudentLayout>} />
         <Route path="/student/practice" element={<StudentLayout> <StudentPractice /> </StudentLayout>}/>
@@ -105,7 +108,9 @@ function App() {
         <Route path="/teacher/exams/exam_management/exam_add/:examId" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>} />
         <Route path="/teacher/exams/exam_management/exam_add/exam_code/:testId" element={<TeacherExamCode />} />
         <Route path="/teacher/exams/exam_management/exam_add/exam_code/" element={<TeacherExamCode />} />
-        <Route path="/teacher/documents" element={<TeacherLayout> <TeacherDocument /> </TeacherLayout>} />
+        <Route path="/teacher/listdocuments" element={<TeacherLayout> <TeacherListDocument /> </TeacherLayout>} />
+        <Route path="/teacher/listdocuments/adddocuments" element={<TeacherLayout> <TeacherAddDocument /> </TeacherLayout>} />
+        <Route path="/teacher/listdocuments/fixdocument/:documentId" element={<TeacherLayout> <TeacherAddDocument /> </TeacherLayout>} />
         <Route path="/teacher/rules" element={<TeacherLayout> <TeacherRule/> </TeacherLayout>} />
         <Route path="/teacher/result/score" element={<TeacherLayout> <TeacherScoreExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/score/review_exam" element={<TeacherLayout> <TeacherScoreReviewExam /> </TeacherLayout>}/>

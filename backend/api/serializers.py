@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from .models import Item
-from .models import Exam, ExamQuestion, UserInformation, Test, ExamShift, Topic, Question, Answer
+from .models import Exam, ExamQuestion, UserInformation, Test, ExamShift, Topic, Question, Answer, Document
 from django.contrib.auth.models import User
 
 class AnswerSerializer(serializers.ModelSerializer):
@@ -107,6 +107,9 @@ class TestSerializer(serializers.ModelSerializer):
         queryset=User.objects.all(), source='user'
     )
     questions = QuestionSerializer(source='question_set', many=True, read_only=True)
+    
+    # Thêm field exam_name lấy tên exam qua quan hệ exam
+    exam_name = serializers.CharField(source='exam.name', read_only=True)
 
     class Meta:
         model = Test
@@ -119,5 +122,19 @@ class TestSerializer(serializers.ModelSerializer):
             'user_id',
             'shift',
             'shift_id',
-            'questions',  # 👈 thêm danh sách câu hỏi (kèm đáp án)
+            'exam_id',
+            'exam_name',   # 👈 thêm field này để lấy tên exam
+            'questions',
         ]
+
+class DocumentSerializer(serializers.ModelSerializer):
+    topic_name = serializers.SerializerMethodField()  # ✅ Thêm trường topic_name
+
+    class Meta:
+        model = Document
+        fields = '__all__'  # Lấy tất cả các trường mặc định
+        read_only_fields = ['topic_name']  # topic_name chỉ để đọc
+
+    def get_topic_name(self, obj):
+        # Trả về tên chủ đề nếu có
+        return obj.topic.name if obj.topic else None
