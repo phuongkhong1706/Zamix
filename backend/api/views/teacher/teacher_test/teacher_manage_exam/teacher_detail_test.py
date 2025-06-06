@@ -88,3 +88,56 @@ class TeacherDetailTestView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+            
+    def post(self, request):
+        try:
+            print("📝 POST tạo mới đề thi")
+
+            # Xác thực người dùng
+            user, error_response = get_authenticated_user(request)
+            if error_response:
+                print("❌ Lỗi xác thực token:", error_response.content.decode())
+                return error_response
+
+            data = request.data
+            print("📥 Dữ liệu tạo mới:", data)
+
+            # Kiểm tra dữ liệu bắt buộc
+            required_fields = ['name', 'type', 'duration_minutes', 'shift_id']
+            for field in required_fields:
+                if field not in data:
+                    return Response(
+                        {"message": f"Thiếu trường bắt buộc: {field}"},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+
+            # Tìm ca thi (ExamShift) liên kết
+            shift_id = data.get('shift_id')
+            try:
+                shift = ExamShift.objects.get(shift_id=shift_id)
+            except ExamShift.DoesNotExist:
+                return Response(
+                    {"message": f"Không tìm thấy ca thi với id = {shift_id}"},
+                    status=status.HTTP_404_NOT_FOUND
+                )
+
+            # Tạo đề thi mới
+            new_test = Test.objects.create(
+                name=data['name'],
+                type=data['type'],
+                duration_minutes=data['duration_minutes'],
+                shift=shift
+            )
+
+            serialized = TestSerializer(new_test)
+            print("✅ Tạo đề thi thành công:", serialized.data)
+            return Response(serialized.data, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            print("❌ Lỗi bất ngờ trong POST tạo đề thi:")
+            traceback.print_exc()
+            return Response(
+                {"message": "Internal Server Error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+

@@ -329,7 +329,7 @@ const TeacherExamAdd = () => {
           <style>
             {`
               .scrollable-box {
-                max-height: 90px;
+                max-height: 100px;
                 overflow-y: auto;
                 padding: 8px;
                 border: 1px solid #ccc;

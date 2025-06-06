@@ -1,0 +1,103 @@
+.main-container {
+  min-height: 100vh;
+  transition: background-color 0.3s;
+}
+
+.header {
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  border-bottom: 1px solid;
+}
+
+.light-border {
+  border-color: #e5e7eb;
+}
+
+.dark-border {
+  border-color: #374151;
+}
+
+.container {
+  max-width: 1120px;
+  margin: 0 auto;
+  padding: 1rem 1.5rem;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.title {
+  font-size: 1.5rem;
+  font-weight: bold;
+}
+
+.subtitle {
+  margin-top: 0.25rem;
+}
+
+.header-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.select {
+  padding: 0.5rem 1rem;
+  border-radius: 0.5rem;
+  border: 1px solid;
+}
+
+.select-light {
+  border-color: #d1d5db;
+}
+
+.select-dark {
+  border-color: #4b5563;
+}
+
+.toggle-btn {
+  padding: 0.5rem;
+  border-radius: 0.5rem;
+  transition: opacity 0.2s;
+}
+
+.toggle-btn:hover {
+  opacity: 0.8;
+}
+
+.dark-mode {
+  background-color: #374151;
+  color: #facc15;
+}
+
+.light-mode {
+  background-color: #f3f4f6;
+  color: #4b5563;
+}
+
+.export-btn {
+  display: flex;
+  align-items: center;
+  padding: 0.5rem 1rem;
+  background-color: #3b82f6;
+  color: white;
+  border-radius: 0.5rem;
+  transition: background-color 0.2s;
+}
+
+.export-btn:hover {
+  background-color: #2563eb;
+}
+
+.icon {
+  width: 20px;
+  height: 20px;
+}
+
+.icon-sm {
+  width: 16px;
+  height: 16px;
+  margin-right: 0.5rem;
+}
