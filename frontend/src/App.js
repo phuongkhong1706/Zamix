@@ -3,11 +3,11 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 /* Chức năng hệ thống */
 import Login from "./components/LogIn"; // Import trang đăng nhập
 import Signup from "./components/SignUp";
-
+ 
 /* Chức năng khách */
 import GuestMenu from "./components/guest/GuestMenu";
 import GuestHomeTab from "./components/guest/tabs/GuestHomeTab";
-
+ 
 /* Chức năng admin */
 /* Chức năng student */
 import StudentMenu from "./components/student/StudentMenu";
@@ -25,7 +25,7 @@ import StudentPracticeReview from "./components/student/tabs/practice/StudentPra
 import StudentScoreExam from "./components/student/tabs/result/score/StudentScoreExam"
 import StudentScoreReviewExam from "./components/student/tabs/result/score/StudentScoreReviewExam";
 import StudentScoreRemarkExam from "./components/student/tabs/result/score/StudentScoreRemarkExam";
-
+ 
 /* Chức năng teacher */
 import TeacherMenu from "./components/teacher/TeacherMenu"
 import TeacherHomeTab from "./components/teacher/tabs/TeacherHomeTab";
@@ -39,7 +39,7 @@ import TeacherScoreExam from "./components/teacher/tabs/result/score/TeacherScor
 import TeacherScoreReviewExam from "./components/teacher/tabs/result/score/TeacherScoreReviewExam";
 import TeacherScoreRemarkExam from "./components/teacher/tabs/result/score/TeacherScoreRemarkExam";
 import TeacherStatistics from "./components/teacher/tabs/result/evaluate/TeacherStatistics";
-import TeacherQuestionManagement from "./components/teacher/tabs/exams/TeacherQuestionManagement";
+import TeacherQuestionGenerate from "./components/teacher/tabs/exams/TeacherQuestionGenerate";
 /* Định dạng trang web Guest (có menu) */
 function GuestLayout({ children }) {
   return (
@@ -49,7 +49,7 @@ function GuestLayout({ children }) {
     </div>
   );
 }
-
+ 
 /* Định dạng trang web Student (có menu) */
 function StudentLayout({ children }) {
   return (
@@ -59,7 +59,7 @@ function StudentLayout({ children }) {
     </div>
   );
 }
-
+ 
 /* Định dạng trang web Teacher (có menu) */
 function TeacherLayout({ children }) {
   return (
@@ -70,7 +70,7 @@ function TeacherLayout({ children }) {
   );
 }
 /*######################################################################################################################################### */
-
+ 
 function App() {
   return (
     <Router>
@@ -79,11 +79,11 @@ function App() {
         <Route path="/" element={<Navigate to="/guest/home" replace />} />
         {/* Các trang có giao diện Guest */}
         <Route path="/guest/home" element={<GuestLayout> <GuestHomeTab /> </GuestLayout>}/>
-
+ 
         {/* Trang đăng nhập tách biệt, không có GuestMenu */}
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/signup" element={<Signup />} />
-
+ 
         {/* Các trang giao diện Student */}
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>
         <Route path="/student/do_exam" element={<StudentLayout> <StudentDoExam /> </StudentLayout>}/>
@@ -99,15 +99,15 @@ function App() {
         <Route path="/student/result/score/review_exam" element={<StudentLayout> <StudentScoreReviewExam /> </StudentLayout>}/>
         <Route path="/student/result/score/remark_exam" element={<StudentLayout> <StudentScoreRemarkExam /> </StudentLayout>}/>
         <Route path="/student/result/statistics" element={<StudentLayout> <StudentStatistics /> </StudentLayout>}/>
-
-
+ 
+ 
         {/* Các trang giao diện Teacher */}
         <Route path="/teacher/home" element={<TeacherLayout> <TeacherHomeTab /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management" element={<TeacherLayout> <TeacherExamManagement /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management/exam_add" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management/exam_add/:examId" element={<TeacherLayout> <TeacherExamAdd /> </TeacherLayout>} />
-        <Route path="/teacher/exams/exam_management/exam_add/exam_code/:testId" element={<TeacherExamCode />} />
-        <Route path="/teacher/exams/exam_management/exam_add/exam_code/" element={<TeacherExamCode />} />
+        <Route path="/teacher/exams/exam_management/exam_add/:examId/exam_code/:testId" element={<TeacherExamCode />} />
+        <Route path="/teacher/exams/exam_management/exam_add/:examId/exam_code/" element={<TeacherExamCode />} />
         <Route path="/teacher/listdocuments" element={<TeacherLayout> <TeacherListDocument /> </TeacherLayout>} />
         <Route path="/teacher/listdocuments/adddocuments" element={<TeacherLayout> <TeacherAddDocument /> </TeacherLayout>} />
         <Route path="/teacher/listdocuments/fixdocument/:documentId" element={<TeacherLayout> <TeacherAddDocument /> </TeacherLayout>} />
@@ -116,10 +116,11 @@ function App() {
         <Route path="/teacher/result/score/review_exam" element={<TeacherLayout> <TeacherScoreReviewExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/score/remark_exam" element={<TeacherLayout> <TeacherScoreRemarkExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/statistics" element={<TeacherLayout> <TeacherStatistics /> </TeacherLayout>}/>
-        <Route path="/teacher/exams/question_bank" element={<TeacherLayout> <TeacherQuestionManagement /> </TeacherLayout>}/>
+        <Route path="/teacher/exams/question_bank" element={<TeacherLayout> <TeacherQuestionGenerate /> </TeacherLayout>}/>
       </Routes>
     </Router>
   );
 }
-
+ 
 export default App;
+ 

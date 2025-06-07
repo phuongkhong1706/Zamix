@@ -6,11 +6,11 @@ import { FaSave } from "react-icons/fa";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import axios from 'axios';
-
+ 
 const TeacherExamAdd = () => {
   const navigate = useNavigate();
   const { examId } = useParams(); // ✅ lấy param từ URL
-
+ 
   const [examName, setExamName] = useState("");
   const [examType, setExamType] = useState("Giữa kỳ");
   const [grade, setGrade] = useState("12");
@@ -37,7 +37,7 @@ const TeacherExamAdd = () => {
   const fetchExamDetail = async (id) => {
     const userJson = localStorage.getItem("user");
     let token = null;
-
+ 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -47,22 +47,22 @@ const TeacherExamAdd = () => {
         return;
       }
     }
-
+ 
     if (!token) {
       alert("Token không tồn tại. Vui lòng đăng nhập lại.");
       return;
     }
-
+ 
     try {
       const res = await fetch(`http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${id}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+ 
       if (res.ok) {
         const exam = await res.json();
-
+ 
         setExamName(exam.name);
         setExamType(exam.type);
         setGrade(String(exam.grade));
@@ -88,13 +88,13 @@ const TeacherExamAdd = () => {
     } catch (error) {
       console.error("Lỗi kết nối:", error);
     }
-
+ 
   };
-
+ 
   const handleDelete = async (testId) => {
     const userJson = localStorage.getItem("user");
     let token = null;
-
+ 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -103,16 +103,16 @@ const TeacherExamAdd = () => {
         console.error("Lỗi khi parse user từ localStorage:", error);
       }
     }
-
+ 
     if (!token) {
       alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
-
+ 
     const url = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}/`;
-
+ 
     if (!window.confirm("Bạn có chắc chắn muốn xóa đề thi này?")) return;
-
+ 
     try {
       const res = await fetch(url, {
         method: "DELETE",
@@ -120,10 +120,10 @@ const TeacherExamAdd = () => {
           "Authorization": `Bearer ${token}`,
         },
       });
-
+ 
       if (res.status === 204) {
         alert("Xóa đề thi thành công!");
-
+ 
         // Sau khi xóa, cập nhật lại danh sách testList
         setTestList((prevList) => prevList.filter((test) => test.test_id !== testId));
       } else {
@@ -136,19 +136,19 @@ const TeacherExamAdd = () => {
       alert("Không thể kết nối tới server.");
     }
   };
-
+ 
   // ✅ useEffect để gọi API nếu có examId
   useEffect(() => {
     if (examId) {
       fetchExamDetail(examId);
     }
   }, [examId]);
-
+ 
   // Hàm lấy danh sách đề thi
   const fetchTestList = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
-
+ 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -158,19 +158,19 @@ const TeacherExamAdd = () => {
         return;
       }
     }
-
+ 
     if (!token) {
       alert("Token không tồn tại. Vui lòng đăng nhập lại.");
       return;
     }
-
+ 
     try {
       const res = await fetch(`http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${examId}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
-
+ 
       if (res.ok) {
         const tests = await res.json();
         console.log("Dữ liệu trả về từ API:", tests);  // 👈 In dữ liệu ra console
@@ -181,20 +181,20 @@ const TeacherExamAdd = () => {
     } catch (error) {
       console.error("Lỗi kết nối khi lấy danh sách đề thi:", error);
     }
-
+ 
   };
-
+ 
   useEffect(() => {
     if (examId) {
       fetchExamDetail(examId);
     }
     fetchTestList(); // Lấy danh sách đề thi khi component load
   }, [examId]);
-
+ 
   const handleSave = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
-
+ 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -203,12 +203,12 @@ const TeacherExamAdd = () => {
         console.error("Lỗi khi parse user từ localStorage:", error);
       }
     }
-
+ 
     if (!token) {
       alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
-
+ 
     const data = {
       name: examName,
       grade: parseInt(grade),
@@ -219,12 +219,12 @@ const TeacherExamAdd = () => {
       regrade_time_start: timeStartRv,
       regrade_time_end: timeEndRv
     };
-
+ 
     const method = examId ? "PUT" : "POST";
     const url = examId
       ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
       : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/`;
-
+ 
     try {
       const res = await fetch(url, {
         method,
@@ -234,7 +234,7 @@ const TeacherExamAdd = () => {
         },
         body: JSON.stringify(data),
       });
-
+ 
       const resText = await res.text();
       if (res.ok) {
         alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
@@ -248,8 +248,8 @@ const TeacherExamAdd = () => {
       alert("Không thể kết nối tới server.");
     }
   };
-
-
+ 
+ 
   return (
     <div className="add-exam-container">
       <div className="exam-section">
@@ -283,7 +283,7 @@ const TeacherExamAdd = () => {
             </div>
           </div>
         </div>
-
+ 
         <div className="exam-row">
           <div className="form-group half-width">
             <label>Thời gian mở kỳ thi</label>
@@ -325,29 +325,29 @@ const TeacherExamAdd = () => {
               ))}
             </div>
           </div>
-
+ 
           <style>
             {`
               .scrollable-box {
-                max-height: 100px;
+                max-height: 90px;
                 overflow-y: auto;
                 padding: 8px;
                 border: 1px solid #ccc;
                 border-radius: 6px;
                 background-color: #fff;
               }
-
+ 
               .checkbox-item {
                 display: flex;
                 align-items: center;
                 gap: 6px;
                 margin-bottom: 4px;
               }
-
+ 
               .checkbox-item input[type="checkbox"] {
                 transform: scale(1.1);
               }
-
+ 
               .form-group.quarter-width {
                 width: 100%;
                 max-width: 300px; /* hoặc bạn tuỳ chỉnh theo bố cục */
@@ -375,26 +375,26 @@ const TeacherExamAdd = () => {
             </div>
           </div>
         </div>
-
+ 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
           <button className="btn addcode" onClick={handleSave}>
             <FaSave className="btn-icon" /> {examId ? "Cập nhật" : "Lưu"}
           </button>
         </div>
       </div>
-
+ 
       <div className="exam-section">
         <div className="exam-section-title">Danh sách đề thi</div>
-
+ 
         <div className="exam-header">
           <button
             className="btn addcode"
-            onClick={() => navigate("/teacher/exams/exam_management/exam_add/exam_code/")}
+            onClick={() => navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/`)}
           >
             <img src={iconAddCodeExam} alt="icon" className="btn-icon" /> Thêm bài thi
           </button>
         </div>
-
+ 
         <table className="exam-table">
           <thead>
             <tr>
@@ -421,7 +421,7 @@ const TeacherExamAdd = () => {
                     <button
                       className="btn btn-sm btn-edit"
                       onClick={() =>
-                        navigate(`/teacher/exams/exam_management/exam_add/exam_code/${test.test_id}`)
+                        navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/${test.test_id}`)
                       }
                       style={{ backgroundColor: "#fff", color: "#000", border: "1px solid #000", }}
                     >
@@ -432,8 +432,8 @@ const TeacherExamAdd = () => {
                       />
                       Sửa
                     </button>
-
-
+ 
+ 
                     <button
                       className="btn btn-sm btn-delete"
                       onClick={() => handleDelete(test.test_id)}
@@ -456,11 +456,11 @@ const TeacherExamAdd = () => {
               </tr>
             )}
           </tbody>
-
+ 
         </table>
       </div>
     </div>
   );
 };
-
+ 
 export default TeacherExamAdd;

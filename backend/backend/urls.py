@@ -18,6 +18,8 @@ from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
 from django.conf.urls.static import static
+from api.views.generate import generate_view
+
 urlpatterns = [
     # path('admin/', admin.site.urls),
     path('api/', include('api.urls')),  # Đảm bảo include đúng module chính của API
@@ -30,6 +32,7 @@ urlpatterns = [
     # path('api/', include('api.urls.verifyOTP')),
     # path('api/', include('api.urls.resetpw')),
     path('api/', include('api.urls.signup')),
+    path('api/generate/', generate_view, name='generate'),
 ]
 
 if settings.DEBUG:

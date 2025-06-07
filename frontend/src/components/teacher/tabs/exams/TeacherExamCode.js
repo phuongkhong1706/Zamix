@@ -12,13 +12,13 @@ import iconCorrect from "../../../../assets/icon/icon-correct.png";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import { FaSave } from "react-icons/fa";
-
-
+ 
+ 
 function TeacherExamCode() {
   const [newQuestions, setNewQuestions] = useState([]);
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
-  const { testId } = useParams(); // Lấy testId từ URL
+  const { examId, testId } = useParams();
   const [examData, setExamData] = useState({
     name: "",
     type: "",
@@ -31,10 +31,10 @@ function TeacherExamCode() {
       end_time: ""
     }
   });
-  const handleSave = async () => {
+const handleSave = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
-
+ 
     // Lấy token từ localStorage
     if (userJson) {
       try {
@@ -44,25 +44,26 @@ function TeacherExamCode() {
         console.error("❌ Lỗi khi parse user từ localStorage:", error);
       }
     }
-
+ 
     if (!token) {
       alert("⚠️ Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
-
-    // Dữ liệu gửi đi
+ 
+    // Dữ liệu gửi đi, thêm exam_id từ params
     const data = {
       name: examData.name,
       type: examData.type,
       duration_minutes: examData.duration_minutes,
-      shift_id: examData.shift?.shift_id, // thêm ? để tránh lỗi nếu shift null
+      shift_id: examData.shift?.shift_id, // an toàn với ? nếu shift null
+      exam_id: examId,  // thêm exam_id để gửi lên backend
     };
-
+ 
     const method = testId ? "PUT" : "POST";
     const url = testId
       ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}/`
       : "http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/";
-
+ 
     try {
       const res = await fetch(url, {
         method,
@@ -72,40 +73,38 @@ function TeacherExamCode() {
         },
         body: JSON.stringify(data),
       });
-
+ 
       const resText = await res.text();
-
+ 
       if (res.ok) {
         const responseData = JSON.parse(resText);
         const newTestId = responseData.test_id;
-
+ 
         alert(testId ? "✅ Cập nhật đề thi thành công!" : "✅ Tạo đề thi thành công!");
-
+ 
         // Nếu là POST thì redirect lại với test_id trong URL
         if (!testId && newTestId) {
           const basePath = window.location.pathname.endsWith("/")
             ? window.location.pathname
             : window.location.pathname + "/";
           const newUrl = `${basePath}${newTestId}/`;
-          window.location.replace(newUrl); // reload lại trang với testId mới
+          window.location.replace(newUrl);
         }
-
       } else {
         const errorJson = JSON.parse(resText);
         alert(`❌ Lỗi: ${errorJson.message || errorJson.error || "Không xác định"}`);
       }
-
     } catch (error) {
       console.error("❌ Lỗi khi lưu kỳ thi:", error);
       alert("🚫 Không thể kết nối tới server.");
     }
   };
-
+ 
   const handleSaveTest = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
     let userId = null;
-
+ 
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -115,17 +114,17 @@ function TeacherExamCode() {
         console.error("Lỗi khi parse user từ localStorage:", error);
       }
     }
-
+ 
     if (!token) {
       alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
-
+ 
     if (!testId) {
       alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
       return;
     }
-
+ 
     for (const question of newQuestions) {
       const questionData = {
         test: testId,
@@ -137,16 +136,16 @@ function TeacherExamCode() {
         created_by_question: question.created_by_question || false,
         user: userId, // Truyền user id vào đây
       };
-
+ 
       const method = question.id ? "PUT" : "POST";
       const questionUrl = question.id
         ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
         : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
-
+ 
       try {
         console.log("📤 Gửi câu hỏi:", method, questionUrl);
         console.log("📦 Dữ liệu câu hỏi:", questionData);
-
+ 
         const res = await fetch(questionUrl, {
           method,
           headers: {
@@ -155,18 +154,18 @@ function TeacherExamCode() {
           },
           body: JSON.stringify(questionData),
         });
-
+ 
         const resJson = await res.json();
         console.log("✅ Phản hồi câu hỏi:", resJson);
-
+ 
         if (!res.ok) {
           console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
           alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
           return;
         }
-
+ 
         const questionId = resJson.id || resJson.question_id; // Lấy id câu hỏi từ response
-
+ 
         for (const option of question.options || []) {
           const answerData = {
             question: questionId,
@@ -174,15 +173,15 @@ function TeacherExamCode() {
             is_correct: option.id === question.correct_option_id,
             user: userId, // Truyền user id vào đây
           };
-
+ 
           const answerMethod = option.answer_id ? "PUT" : "POST";
           const answerUrl = option.answer_id
             ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
             : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
-
+ 
           console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
           console.log("📦 Dữ liệu đáp án:", answerData);
-
+ 
           const answerRes = await fetch(answerUrl, {
             method: answerMethod,
             headers: {
@@ -191,36 +190,36 @@ function TeacherExamCode() {
             },
             body: JSON.stringify(answerData),
           });
-
+ 
           const answerResJson = await answerRes.json();
           console.log("✅ Phản hồi đáp án:", answerResJson);
-
+ 
           if (!answerRes.ok) {
             console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
             alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
             return;
           }
         }
-
+ 
       } catch (error) {
         console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
         alert("Không thể kết nối tới server.");
         return;
       }
     }
-
+ 
     alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
   };
-
-
-
-
+ 
+ 
+ 
+ 
   useEffect(() => {
     const fetchTestDetail = async () => {
       // 🔐 Lấy token từ localStorage
       const userJson = localStorage.getItem("user");
       let token = null;
-
+ 
       if (userJson) {
         try {
           const userObj = JSON.parse(userJson);
@@ -229,13 +228,13 @@ function TeacherExamCode() {
           console.error("❌ Lỗi khi parse user từ localStorage:", error);
         }
       }
-
+ 
       // ⚠️ Nếu không có token thì dừng lại
       if (!token) {
         alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
         return;
       }
-
+ 
       // 📦 Gọi API với header Authorization
       try {
         const response = await axios.get(
@@ -246,10 +245,10 @@ function TeacherExamCode() {
             },
           }
         );
-
+ 
         const data = response.data;
         console.log('✅ Dữ liệu lấy được từ API:', data);
-
+ 
         // 📝 Cập nhật thông tin chung của đề thi
         setExamData({
           name: data.name || '',
@@ -264,7 +263,7 @@ function TeacherExamCode() {
             end_time: ''
           }
         });
-
+ 
         // 📝 Cập nhật danh sách câu hỏi và đáp án
         if (Array.isArray(data.questions)) {
           const formattedQuestions = data.questions.map((question) => ({
@@ -283,22 +282,22 @@ function TeacherExamCode() {
               user: answer.user,
             })) || [],
           }));
-
+ 
           setNewQuestions(formattedQuestions);
         } else {
           setNewQuestions([]);
         }
-
+ 
       } catch (error) {
         console.error('❌ Lỗi khi lấy dữ liệu đề thi:', error);
       }
-
+ 
     };
-
+ 
     fetchTestDetail();
   }, [testId]);
-
-
+ 
+ 
   const createNewQuestion = () => ({
     content: "",
     options: [
@@ -309,16 +308,16 @@ function TeacherExamCode() {
     ],
     correct_option_id: "",
   });
-
+ 
   const [newQuestion, setNewQuestion] = useState(createNewQuestion());
-
+ 
   const handleAddOption = () => {
     setNewQuestion((prev) => ({
       ...prev,
       options: [...prev.options, { id: uuidv4(), text: "" }],
     }));
   };
-
+ 
   const handleDeleteOption = (id) => {
     if (newQuestion.options.length <= 2) {
       alert("Mỗi câu hỏi phải có ít nhất 2 đáp án.");
@@ -332,7 +331,7 @@ function TeacherExamCode() {
       setNewQuestion((prev) => ({ ...prev, correct_option_id: "" }));
     }
   };
-
+ 
   const handleAddOrEditQuestion = () => {
     if (!newQuestion.content.trim()) {
       alert("Vui lòng nhập nội dung câu hỏi.");
@@ -346,7 +345,7 @@ function TeacherExamCode() {
       alert("Vui lòng chọn đáp án đúng.");
       return;
     }
-
+ 
     if (editingIndex !== null) {
       const updated = [...newQuestions];
       updated[editingIndex] = newQuestion;
@@ -354,30 +353,30 @@ function TeacherExamCode() {
     } else {
       setNewQuestions((prev) => [...prev, newQuestion]);
     }
-
+ 
     setNewQuestion(createNewQuestion());
     setEditingIndex(null);
     setShowNewQuestionForm(false);
   };
-
+ 
   const handleEditQuestion = (index) => {
     setNewQuestion(newQuestions[index]);
     setEditingIndex(index);
     setShowNewQuestionForm(true);
   };
-
+ 
   const handleDeleteQuestion = (index) => {
     if (window.confirm("Bạn có chắc muốn xoá câu hỏi này không?")) {
       setNewQuestions((prev) => prev.filter((_, i) => i !== index));
     }
   };
-
+ 
   const handleToggleQuestionForm = () => {
     setShowNewQuestionForm(!showNewQuestionForm);
     setEditingIndex(null);
     setNewQuestion(createNewQuestion());
   };
-
+ 
   return (
     <div style={{ display: "flex", padding: "20px" }}>
       {/* MAIN CONTENT */}
@@ -393,7 +392,7 @@ function TeacherExamCode() {
           />
         </h2>
         <hr />
-
+ 
         {/* DANH SÁCH CÂU HỎI */}
         {newQuestions.map((q, index) => (
           <div key={`q-${index}`} className="question-item">
@@ -420,9 +419,9 @@ function TeacherExamCode() {
             </ul>
           </div>
         ))}
-
-
-
+ 
+ 
+ 
         {/* NÚT THÊM CÂU HỎI */}
         <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
           <button onClick={handleToggleQuestionForm} className="btn addquestion">
@@ -433,19 +432,19 @@ function TeacherExamCode() {
             />
             {showNewQuestionForm ? (editingIndex !== null ? "Huỷ sửa" : "Huỷ thêm") : "Thêm câu hỏi"}
           </button>
-
+ 
           <button onClick={handleSaveTest} className="btn addquestion">
             <span className="btn-icon">💾</span>
             Lưu đề thi
           </button>
         </div>
-
-
+ 
+ 
         {/* FORM THÊM/SỬA */}
         {showNewQuestionForm && (
           <div className="question-form">
             <h4>{editingIndex !== null ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}</h4>
-
+ 
             {/* Nội dung câu hỏi */}
             <div className="form-section">
               <label style={{ marginBottom: "10px", display: "block" }}>Nội dung câu hỏi:</label>
@@ -455,7 +454,7 @@ function TeacherExamCode() {
                 style={{ width: "90%", minHeight: "100px" }}
               />
             </div>
-
+ 
             {/* Mức độ câu hỏi - ComboBox */}
             <div className="form-section">
               <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
@@ -477,7 +476,7 @@ function TeacherExamCode() {
                 <option value="4">4 - Rất khó</option>
               </select>
             </div>
-
+ 
             {/* Danh sách đáp án */}
             <div className="form-section">
               <label style={{ marginBottom: "10px", display: "block" }}>Danh sách đáp án:</label>
@@ -519,7 +518,7 @@ function TeacherExamCode() {
                 ➕ Thêm đáp án
               </button>
             </div>
-
+ 
             {/* Nút hành động */}
             <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
               <button onClick={handleAddOrEditQuestion} className="save-btn">
@@ -528,13 +527,13 @@ function TeacherExamCode() {
             </div>
           </div>
         )}
-
+ 
       </div>
-
+ 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
         <div className="exam-form-title">Thông tin đề thi</div>
-
+ 
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Loại đề thi</label>
@@ -546,7 +545,7 @@ function TeacherExamCode() {
             />
           </div>
         </div>
-
+ 
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Thời lượng (phút)</label>
@@ -560,7 +559,7 @@ function TeacherExamCode() {
             />
           </div>
         </div>
-
+ 
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Ca thi</label>
@@ -582,7 +581,7 @@ function TeacherExamCode() {
             />
           </div>
         </div>
-
+ 
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", marginRight: "9px" }}>
           <button className="btn addcode" onClick={handleSave}>
             <FaSave className="btn-icon" /> {testId ? "Cập nhật" : "Lưu"}
@@ -592,5 +591,5 @@ function TeacherExamCode() {
     </div>
   );
 }
-
+ 
 export default TeacherExamCode;
