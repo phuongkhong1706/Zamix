@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import "../../../../styles/exam-teacher/TeacherExamAdd.css";
+import "../../../../styles/teacher/TeacherExamAdd.css";
 import { FaSave, FaTrash, FaUpload } from "react-icons/fa";
 
 const TeacherRule = () => {

@@ -5,7 +5,7 @@ import iconAddCodeExam from "../../../../assets/icon/icon-add.png";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import iconSearchWhite from "../../../../assets/icon/icon-search-white.png";
-import "../../../../styles/exam-teacher/TeacherExamAdd.css";
+import "../../../../styles/teacher/TeacherExamAdd.css";
 
 const TeacherListDocument = () => {
   const navigate = useNavigate();

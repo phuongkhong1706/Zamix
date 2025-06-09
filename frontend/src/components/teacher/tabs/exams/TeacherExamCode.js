@@ -3,12 +3,12 @@ import LatexInputKaTeX, { renderWithLatex } from "./LatexInputKaTeX.js";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from 'react-router-dom';
 import axios from 'axios';
-import "../../../../styles/exam-teacher/TeacherExamAdd.css";
+import "../../../../styles/teacher/TeacherExamAdd.css";
 import "../../../../styles/SidebarNavigation.css";
-import "../../../../styles/exam-teacher/TeacherExamCode.css";
+import "../../../../styles/teacher/TeacherExamCode.css";
 import iconAddQuestion from "../../../../assets/icon/icon-add.png";
 import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png";
-import iconCorrect from "../../../../assets/icon/icon-correct.png";
+import iconSave from "../../../../assets/icon/icon-save-white.png"
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import { FaSave } from "react-icons/fa";
@@ -264,7 +264,7 @@ const handleSave = async () => {
           }
         });
  
-        // 📝 Cập nhật danh sách câu hỏi và đáp án
+        // Cập nhật danh sách câu hỏi và đáp án
         if (Array.isArray(data.questions)) {
           const formattedQuestions = data.questions.map((question) => ({
             question_id: question.question_id,
@@ -411,7 +411,7 @@ const handleSave = async () => {
                   <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text)}
                   {q.correct_option_id === opt.id && (
                     <span className="correct-answer">
-                      <img src={iconCorrect} alt="correct" className="btn-icon" /> Đáp án đúng
+                      ✔ Đáp án đúng
                     </span>
                   )}
                 </li>
@@ -434,7 +434,7 @@ const handleSave = async () => {
           </button>
  
           <button onClick={handleSaveTest} className="btn addquestion">
-            <span className="btn-icon">💾</span>
+            <img src={iconSave} alt="save" className="btn-icon" />
             Lưu đề thi
           </button>
         </div>

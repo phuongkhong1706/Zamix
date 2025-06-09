@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import "../../../../styles/SidebarNavigation.css";
-import "../../../../styles/exam-teacher/TeacherExamCode.css";
+import "../../../../styles/teacher/TeacherExamCode.css";
 import iconAddQuestion from "../../../../assets/icon/icon-add.png";
 import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png"
 import iconCorrect from "../../../../assets/icon/icon-correct.png"

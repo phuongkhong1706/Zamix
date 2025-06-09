@@ -11,7 +11,7 @@ import profileUserIcon from "../../assets/icon/icon-profile-user.png"
 function AdminMenu() {
   const location = useLocation();
   const [activePath, setActivePath] = useState(location.pathname);
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const [isAccountDropdownOpen, setIsAccountDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
   const [isSearchExpanded, setIsSearchExpanded] = useState(false);
   const [searchText, setSearchText] = useState("");
@@ -29,8 +29,8 @@ function AdminMenu() {
   };
 
   // Xác định tab cha có active hay không
-  const isParentActive =
-    activePath.startsWith("/admin/ket-qua/diem-thi") || activePath.startsWith("/admin/ket-qua/danh-gia");  
+  const isAccountActive =
+    activePath.startsWith("/admin/account_management/student") || activePath.startsWith("/admin/account_management/teacher");  
   
     const handleUserMenuToggle = () => {
     setIsUserMenuOpen(!isUserMenuOpen); // Đảo ngược trạng thái của menu con
@@ -55,7 +55,7 @@ function AdminMenu() {
   useEffect(() => {
     function handleClickOutside(event) {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
+        setIsAccountDropdownOpen(false);
       }
     }
     document.addEventListener("mousedown", handleClickOutside);
@@ -75,33 +75,32 @@ function AdminMenu() {
         <li className={activePath === "/admin/home" ? "active" : ""}>
           <Link to="/admin/home" className="menu-link">Trang chủ</Link>
         </li>
-        <li className={activePath === "/admin/do_exam" ? "active" : ""}>
-          <Link to="/admin/do_exam" className="menu-link">Vào thi</Link>
-        </li>
-        <li className={activePath === "/admin/news" ? "active" : ""}>
-          <Link to="/admin/news" className="menu-link">Tin tức</Link> 
-        </li>
-        <li className={activePath === "/admin/the-le" ? "active" : ""}>
-          <Link to="/admin/the-le" className="menu-link">Thể lệ</Link>
-        </li>
+
 {/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
         {/* Tab "Kết quả" có submenu */}
         <li
-          className={`has-submenu ${isDropdownOpen ? "submenu-hover" : ""} ${isParentActive ? "submenu-active" : ""}`}
-          onMouseEnter={() => setIsDropdownOpen(true)}
-          onMouseLeave={() => setIsDropdownOpen(false)}
+          className={`has-submenu ${isAccountDropdownOpen ? "submenu-hover" : ""} ${isAccountActive ? "submenu-active" : ""}`}
+          onMouseEnter={() => setIsAccountDropdownOpen(true)}
+          onMouseLeave={() => setIsAccountDropdownOpen(false)}
           ref={dropdownRef}
         >
-          <span className="menu-link">Kết quả</span> <span className="dropdown-icon"></span>
-          <ul className={`submenu ${isDropdownOpen ? "open" : ""}`}>
-            <li className={activePath === "/admin/ket-qua/diem-thi" ? "submenu-active" : ""}>
-              <Link to="/admin/ket-qua/diem-thi">Điểm thi</Link>
+          <span className="menu-link">Quản lý tài khoản</span> <span className="dropdown-icon"></span>
+          <ul className={`submenu ${isAccountDropdownOpen ? "open" : ""}`}>
+            <li className={activePath === "/admin/account_management/student" ? "submenu-active" : ""}>
+              <Link to="/admin/account_management/student">Quản lý học sinh</Link>
             </li>
-            <li className={activePath === "/admin/ket-qua/danh-gia" ? "submenu-active" : ""}>
-              <Link to="/admin/ket-qua/danh-gia">Đánh giá</Link>
+            <li className={activePath === "/admin/account_management/teacher" ? "submenu-active" : ""}>
+              <Link to="/admin/account_management/teacher">Quản lý giáo viên</Link>
             </li>
           </ul>
+        </li>        <li className={activePath === "/admin/news" ? "active" : ""}>
+          <Link to="/admin/news" className="menu-link">Tin tức</Link> 
         </li>
+        <li className={activePath === "/admin/statistics" ? "active" : ""}>
+          <Link to="/admin/statistics" className="menu-link">Báo cáo thống kê</Link>
+        </li>
+
+
       </ul>
 
       {/* User section */}

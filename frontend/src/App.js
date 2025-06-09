@@ -9,6 +9,9 @@ import GuestMenu from "./components/guest/GuestMenu";
 import GuestHomeTab from "./components/guest/tabs/GuestHomeTab";
  
 /* Chức năng admin */
+import AdminMenu from "./components/admin/AdminMenu";
+import AdminHomeTab from "./components/admin/tabs/AdminHomeTab";
+import AdminStudentManagement from "./components/admin/tabs/account_management/StudentManagement";
 /* Chức năng student */
 import StudentMenu from "./components/student/StudentMenu";
 import StudentHomeTab from "./components/student/tabs/StudentHomeTab";
@@ -40,11 +43,22 @@ import TeacherScoreReviewExam from "./components/teacher/tabs/result/score/Teach
 import TeacherScoreRemarkExam from "./components/teacher/tabs/result/score/TeacherScoreRemarkExam";
 import TeacherStatistics from "./components/teacher/tabs/result/evaluate/TeacherStatistics";
 import TeacherQuestionGenerate from "./components/teacher/tabs/exams/TeacherQuestionGenerate";
+
 /* Định dạng trang web Guest (có menu) */
 function GuestLayout({ children }) {
   return (
     <div className="App">
       <GuestMenu />
+      <div className="content">{children}</div>
+    </div>
+  );
+}
+
+/* Định dạng trang web Admin (có menu) */
+function AdminLayout({ children }) {
+  return (
+    <div className="App">
+      <AdminMenu />
       <div className="content">{children}</div>
     </div>
   );
@@ -83,6 +97,10 @@ function App() {
         {/* Trang đăng nhập tách biệt, không có GuestMenu */}
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/signup" element={<Signup />} />
+
+        {/* Các trang giao diện Admin */}
+        <Route path="/admin/home" element={<AdminLayout> <AdminHomeTab /> </AdminLayout>}/>
+        <Route path="/admin/account_management/student" element={<AdminLayout> <AdminStudentManagement /> </AdminLayout>}/>
  
         {/* Các trang giao diện Student */}
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>

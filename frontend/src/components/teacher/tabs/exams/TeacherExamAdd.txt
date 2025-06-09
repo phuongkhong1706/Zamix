@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useParams } from "react-router-dom"; // ✅ import useParams
-import "../../../../styles/exam-teacher/TeacherExamAdd.css";
+import "../../../../styles/teacher/TeacherExamAdd.css";
 import iconAddCodeExam from "../../../../assets/icon/icon-add.png";
 import { FaSave } from "react-icons/fa";
 

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import "../../../../styles/exam-teacher/TeacherExamManagement.css";
+import "../../../../styles/teacher/TeacherExamManagement.css";
 import iconDetail from "../../../../assets/icon/icon-detail.png";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";

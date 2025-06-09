@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 
-function HomeTab() {
+function AdminHomeTab() {
   const [data, setData] = useState(null);
 
   useEffect(() => {
@@ -23,4 +23,4 @@ function HomeTab() {
   );
 }
 
-export default HomeTab; // mac dinh hien thi hometab
+export default AdminHomeTab; // mac dinh hien thi hometab

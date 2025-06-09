@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import '../../../../styles/exam-teacher/TeacherQuestionGenerate.css'; // Import CSS riêng
+import '../../../../styles/teacher/TeacherQuestionGenerate.css'; // Import CSS riêng
 
 const TeacherQuestionGenerate = () => {
   const [inputText, setInputText] = useState('');
