@@ -15,24 +15,22 @@ class TeacherDetailTestView(APIView):
  
     def get(self, request, id):
         try:
-            print(f"🔍 GET yêu cầu chi tiết đề thi ID = {id}")
- 
-            # Xác thực người dùng
+            print(f"🔍 GET yêu cầu chi tiết đề thi ID = {id}")            # Xác thực người dùng
             user, error_response = get_authenticated_user(request)
             if error_response:
                 print("❌ Lỗi xác thực token:", error_response.content.decode())
                 return error_response
- 
+
             # Lấy đề thi
             test = get_object_or_404(Test, test_id=id)
- 
+
             # Kiểm tra quyền truy cập
             if not test.shift:
                 return Response(
                     {"message": "Bạn không có quyền truy cập đề thi này."},
                     status=status.HTTP_403_FORBIDDEN,
                 )
- 
+
             # Serialize đề thi + câu hỏi + đáp án
             serialized = TestSerializer(test)
             print("✅ Trả về dữ liệu đề thi và câu hỏi:", serialized.data)
