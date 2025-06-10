@@ -150,136 +150,136 @@ function TeacherExamCode() {
     }
   };
 
-const handleSaveTest = async () => {
-  const userJson = localStorage.getItem("user");
-  let token = null;
-  let userId = null;
+  const handleSaveTest = async () => {
+    const userJson = localStorage.getItem("user");
+    let token = null;
+    let userId = null;
 
-  if (userJson) {
-    try {
-      const userObj = JSON.parse(userJson);
-      token = userObj.token;
-      userId = userObj.user_id;
-    } catch (error) {
-      console.error("Lỗi khi parse user từ localStorage:", error);
+    if (userJson) {
+      try {
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+        userId = userObj.user_id;
+      } catch (error) {
+        console.error("Lỗi khi parse user từ localStorage:", error);
+      }
     }
-  }
 
-  if (!token) {
-    alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
-    return;
-  }
-
-  if (!testId) {
-    alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
-    return;
-  }
-
-  for (const question of newQuestions) {
-    const method = question.id ? "PUT" : "POST";
-    const questionUrl = question.id
-      ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
-      : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
-
-    try {
-      console.log("📤 Gửi câu hỏi:", method, questionUrl);
-
-      // ✅ Sử dụng FormData để gửi cả text và file
-      const formData = new FormData();
-      formData.append('test', testId);
-      formData.append('content', question.content);
-      formData.append('type', question.type || "single");
-      formData.append('score', question.score || 1.0);
-      formData.append('level', question.level || 1);
-      
-      // ✅ FIX: Convert boolean thành string đúng định dạng
-// ✅ Gửi 1/0 thay vì true/false
-formData.append('is_gened_by_model', (question.is_gened_by_model || false) ? 1 : 0);
-formData.append('created_by_question', (question.created_by_question || false) ? 1 : 0);
-      
-      formData.append('user', userId);
-
-      // ✅ Thêm file ảnh nếu có
-      if (question.image) {
-        formData.append('image', question.image);
-        console.log("📷 Đã thêm ảnh:", question.image.name);
-      }
-
-      console.log("📦 Dữ liệu câu hỏi (FormData):", {
-        test: testId,
-        content: question.content,
-        type: question.type || "single",
-        score: question.score || 1.0,
-        level: question.level || 1,
-        hasImage: !!question.image,
-        imageName: question.image?.name
-      });
-
-      const res = await fetch(questionUrl, {
-        method,
-        headers: {
-          // ✅ KHÔNG set Content-Type cho FormData, để browser tự set
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData, // ✅ Gửi FormData thay vì JSON
-      });
-
-      const resJson = await res.json();
-      console.log("✅ Phản hồi câu hỏi:", resJson);
-
-      if (!res.ok) {
-        console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
-        alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
-        return;
-      }
-
-      const questionId = resJson.id || resJson.question_id;
-
-      // ✅ Lưu đáp án (giữ nguyên logic cũ)
-      for (const option of question.options || []) {
-        const answerData = {
-          question: questionId,
-          content: option.text,
-          is_correct: option.id === question.correct_option_id,
-          user: userId,
-        };
-
-        const answerMethod = option.answer_id ? "PUT" : "POST";
-        const answerUrl = option.answer_id
-          ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
-          : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
-
-        console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
-        console.log("📦 Dữ liệu đáp án:", answerData);
-
-        const answerRes = await fetch(answerUrl, {
-          method: answerMethod,
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(answerData),
-        });
-
-        const answerResJson = await answerRes.json();
-        console.log("✅ Phản hồi đáp án:", answerResJson);
-
-        if (!answerRes.ok) {
-          console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
-          alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
-          return;
-        }
-      }
-
-    } catch (error) {
-      console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
-      alert("Không thể kết nối tới server.");
+    if (!token) {
+      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
-  }
 
-  alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
-};
+    if (!testId) {
+      alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
+      return;
+    }
+
+    for (const question of newQuestions) {
+      const method = question.id ? "PUT" : "POST";
+      const questionUrl = question.id
+        ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
+        : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
+
+      try {
+        console.log("📤 Gửi câu hỏi:", method, questionUrl);
+
+        // ✅ Sử dụng FormData để gửi cả text và file
+        const formData = new FormData();
+        formData.append('test', testId);
+        formData.append('content', question.content);
+        formData.append('type', question.type || "single");
+        formData.append('score', question.score || 1.0);
+        formData.append('level', question.level || 1);
+
+        // ✅ FIX: Convert boolean thành string đúng định dạng
+        // ✅ Gửi 1/0 thay vì true/false
+        formData.append('is_gened_by_model', (question.is_gened_by_model || false) ? 1 : 0);
+        formData.append('created_by_question', (question.created_by_question || false) ? 1 : 0);
+
+        formData.append('user', userId);
+
+        // ✅ Thêm file ảnh nếu có
+        if (question.image) {
+          formData.append('image', question.image);
+          console.log("📷 Đã thêm ảnh:", question.image.name);
+        }
+
+        console.log("📦 Dữ liệu câu hỏi (FormData):", {
+          test: testId,
+          content: question.content,
+          type: question.type || "single",
+          score: question.score || 1.0,
+          level: question.level || 1,
+          hasImage: !!question.image,
+          imageName: question.image?.name
+        });
+
+        const res = await fetch(questionUrl, {
+          method,
+          headers: {
+            // ✅ KHÔNG set Content-Type cho FormData, để browser tự set
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData, // ✅ Gửi FormData thay vì JSON
+        });
+
+        const resJson = await res.json();
+        console.log("✅ Phản hồi câu hỏi:", resJson);
+
+        if (!res.ok) {
+          console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
+          alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
+          return;
+        }
+
+        const questionId = resJson.id || resJson.question_id;
+
+        // ✅ Lưu đáp án (giữ nguyên logic cũ)
+        for (const option of question.options || []) {
+          const answerData = {
+            question: questionId,
+            content: option.text,
+            is_correct: option.id === question.correct_option_id,
+            user: userId,
+          };
+
+          const answerMethod = option.answer_id ? "PUT" : "POST";
+          const answerUrl = option.answer_id
+            ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
+            : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
+
+          console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
+          console.log("📦 Dữ liệu đáp án:", answerData);
+
+          const answerRes = await fetch(answerUrl, {
+            method: answerMethod,
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(answerData),
+          });
+
+          const answerResJson = await answerRes.json();
+          console.log("✅ Phản hồi đáp án:", answerResJson);
+
+          if (!answerRes.ok) {
+            console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
+            alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
+            return;
+          }
+        }
+
+      } catch (error) {
+        console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
+        alert("Không thể kết nối tới server.");
+        return;
+      }
+    }
+
+    alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
+  };
 
 
 
@@ -536,51 +536,51 @@ formData.append('created_by_question', (question.created_by_question || false) ?
             {/* ✅ FIX: Kiểm tra q.content trước khi render */}
             <p><strong>Câu {index + 1}:</strong> {renderWithLatex(q.content || '')}</p>
 
-{/* ✅ Hiển thị ảnh nếu có - dưới content */}
-{q.image && (
-  <div style={{
-    textAlign: 'center',
-    margin: '15px 0',
-    padding: '10px'
-  }}>
-    <img 
-      src={`http://localhost:8000${q.image}`} 
-      alt="Hình ảnh câu hỏi" 
-      style={{
-        maxWidth: '100%',        // ✅ Giảm kích thước xuống 50%
-        width: '100%',           // ✅ Đảm bảo ảnh luôn 50% kích thước gốc
-        height: 'auto',         // Giữ tỷ lệ khung hình
-        marginTop: '10px',
-        marginBottom: '15px',
-        border: '1px solid #ddd',
-        borderRadius: '8px',
-        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-        display: 'block',       // Đảm bảo ảnh hiển thị như block element
-        margin: '10px auto'     // Center ảnh
-      }}
-      onError={(e) => {
-        console.error('Lỗi tải ảnh:', e.target.src);
-        e.target.style.display = 'none';
-      }}
-    />
-  </div>
-)}
+            {/* ✅ Hiển thị ảnh nếu có - dưới content */}
+            {q.image && (
+              <div style={{
+                textAlign: 'center',
+                margin: '15px 0',
+                padding: '10px'
+              }}>
+                <img
+                  src={`http://localhost:8000${q.image}`}
+                  alt="Hình ảnh câu hỏi"
+                  style={{
+                    maxWidth: '100%',        // ✅ Giảm kích thước xuống 50%
+                    width: '100%',           // ✅ Đảm bảo ảnh luôn 50% kích thước gốc
+                    height: 'auto',         // Giữ tỷ lệ khung hình
+                    marginTop: '10px',
+                    marginBottom: '15px',
+                    border: '1px solid #ddd',
+                    borderRadius: '8px',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                    display: 'block',       // Đảm bảo ảnh hiển thị như block element
+                    margin: '10px auto'     // Center ảnh
+                  }}
+                  onError={(e) => {
+                    console.error('Lỗi tải ảnh:', e.target.src);
+                    e.target.style.display = 'none';
+                  }}
+                />
+              </div>
+            )}
 
-{/* Hiển thị cho câu hỏi trắc nghiệm */}
-{q.type === 'multiple_choice' && q.options && (
-  <ul>
-    {q.options.map((opt, idx) => (
-      <li key={opt.id}>
-        <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text || '')}
-        {q.correct_option_id === opt.id && (
-          <span className="correct-answer">
-            ✔ Đáp án đúng
-          </span>
-        )}
-      </li>
-    ))}
-  </ul>
-)}
+            {/* Hiển thị cho câu hỏi trắc nghiệm */}
+            {q.type === 'multiple_choice' && q.options && (
+              <ul>
+                {q.options.map((opt, idx) => (
+                  <li key={opt.id}>
+                    <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text || '')}
+                    {q.correct_option_id === opt.id && (
+                      <span className="correct-answer">
+                        ✔ Đáp án đúng
+                      </span>
+                    )}
+                  </li>
+                ))}
+              </ul>
+            )}
 
             {/* Hiển thị cho câu hỏi tự luận */}
             {q.type === 'essay' && (
@@ -862,62 +862,103 @@ formData.append('created_by_question', (question.created_by_question || false) ?
 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
-        <div className="exam-form-title">Thông tin đề thi</div>
+        <div className="exam-form-title">Kỳ thi giữa kỳ toán 12</div>
 
+        {/* Loại đề thi */}
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Loại đề thi</label>
-            <input
-              type="text"
+            <select
               className="exam-form-input"
-              value={examData.type}
+              value={examData.type || ""}
               onChange={(e) => setExamData({ ...examData, type: e.target.value })}
-            />
+            >
+              <option value="">Chọn loại đề</option>
+              <option value="thi thử">Thi thử</option>
+              <option value="thi chính thức">Thi chính thức</option>
+            </select>
           </div>
         </div>
 
+        {/* Thời lượng (phút) */}
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Thời lượng (phút)</label>
             <input
               type="number"
               className="exam-form-input"
-              value={examData.duration_minutes}
-              onChange={(e) => setExamData({ ...examData, duration_minutes: e.target.value })}
+              value={examData.duration_minutes || ""}
+              onChange={(e) =>
+                setExamData({ ...examData, duration_minutes: e.target.value })
+              }
               min="1"
               placeholder="Nhập số phút"
             />
           </div>
         </div>
 
+        {/* Ca thi */}
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Ca thi</label>
-            <input
-              type="number"
+            <select
               className="exam-form-input"
               value={examData.shift?.shift_id || ""}
               onChange={(e) =>
                 setExamData({
                   ...examData,
-                  shift: {
-                    ...examData.shift,
-                    shift_id: e.target.value
-                  }
+                  shift: { ...examData.shift, shift_id: e.target.value },
                 })
               }
-              min="1"
-              placeholder="Nhập ca thi"
-            />
+            >
+              <option value="">Chọn ca thi</option>
+              <option value="1">Ca 1</option>
+              <option value="2">Ca 2</option>
+              <option value="3">Ca 3</option>
+              <option value="4">Ca 4</option>
+            </select>
           </div>
         </div>
 
-        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", marginRight: "9px" }}>
+        {/* Mật khẩu đề */}
+        <div className="exam-form-row">
+          <div className="exam-form-group">
+            <label className="exam-form-label">Mật khẩu đề</label>
+            {testId ? (
+              <div className="exam-form-input exam-form-static">
+                {examData.password ? "********" : "1234565"}
+              </div>
+            ) : (
+              <input
+                type="text"
+                className="exam-form-input"
+                value={examData.password || ""}
+                onChange={(e) =>
+                  setExamData({ ...examData, password: e.target.value })
+                }
+                placeholder="Nhập mật khẩu"
+              />
+            )}
+          </div>
+        </div>
+
+        {/* Nút lưu */}
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "flex-end",
+            marginTop: "16px",
+            marginRight: "25px",
+          }}
+        >
           <button className="btn addcode" onClick={handleSave}>
             <FaSave className="btn-icon" /> {testId ? "Cập nhật" : "Lưu"}
           </button>
         </div>
       </div>
+
+
+
     </div>
   );
 }
