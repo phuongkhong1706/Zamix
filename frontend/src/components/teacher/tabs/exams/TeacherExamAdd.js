@@ -6,6 +6,7 @@ import { FaSave } from "react-icons/fa";
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import axios from 'axios';
+import { AiOutlineUpload } from 'react-icons/ai';
  
 const TeacherExamAdd = () => {
   const navigate = useNavigate();
@@ -388,11 +389,18 @@ const TeacherExamAdd = () => {
  
         <div className="exam-header">
           <button
-            className="btn addcode"
-            onClick={() => navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/`)}
-          >
-            <img src={iconAddCodeExam} alt="icon" className="btn-icon" /> Thêm bài thi
-          </button>
+              className="btn addcode"
+              onClick={() => navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/`)}
+            >
+              <img src={iconAddCodeExam} alt="icon" className="btn-icon" /> Thêm bài thi thủ công
+            </button>
+ 
+            <button
+              className="btn addcode"
+              onClick={() => navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_upload/`)}
+            >
+              <AiOutlineUpload size={20} style={{ marginRight: 6 }} className="btn-icon" /> Thêm bài thi sẵn có
+            </button>
         </div>
  
         <table className="exam-table">

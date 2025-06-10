@@ -43,6 +43,7 @@ import TeacherScoreReviewExam from "./components/teacher/tabs/result/score/Teach
 import TeacherScoreRemarkExam from "./components/teacher/tabs/result/score/TeacherScoreRemarkExam";
 import TeacherStatistics from "./components/teacher/tabs/result/evaluate/TeacherStatistics";
 import TeacherQuestionGenerate from "./components/teacher/tabs/exams/TeacherQuestionGenerate";
+import TeacherExamCodeFromFile from "./components/teacher/tabs/exams/TeacherExamCodeFromFile";
 
 /* Định dạng trang web Guest (có menu) */
 function GuestLayout({ children }) {
@@ -135,6 +136,8 @@ function App() {
         <Route path="/teacher/result/score/remark_exam" element={<TeacherLayout> <TeacherScoreRemarkExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/statistics" element={<TeacherLayout> <TeacherStatistics /> </TeacherLayout>}/>
         <Route path="/teacher/exams/question_bank" element={<TeacherLayout> <TeacherQuestionGenerate /> </TeacherLayout>}/>
+        <Route path="/teacher/exams/exam_management/exam_add/:examId/exam_upload/" element={<TeacherExamCodeFromFile />} />
+        <Route path="/teacher/exams/exam_management/exam_add/:examId/exam_upload/:testId" element={<TeacherExamCodeFromFile />} />
       </Routes>
     </Router>
   );

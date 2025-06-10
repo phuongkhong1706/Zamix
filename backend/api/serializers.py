@@ -28,7 +28,8 @@ class QuestionSerializer(serializers.ModelSerializer):
             'created_by_question',
             'user',
             'test',
-            'answers',  # 👈 thêm vào cuối cùng
+            'answers', 
+            'image',# 👈 thêm vào cuối cùng
         ]
 
 class ItemSerializer(serializers.ModelSerializer):

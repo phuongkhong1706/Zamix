@@ -12,12 +12,16 @@ import iconSave from "../../../../assets/icon/icon-save-white.png"
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import { FaSave } from "react-icons/fa";
- 
- 
+
+
 function TeacherExamCode() {
   const [newQuestions, setNewQuestions] = useState([]);
+
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
+  const [questionType, setQuestionType] = useState('multiple_choice'); // 'multiple_choice' hoặc 'essay'
+  const [showSubmenu, setShowSubmenu] = useState(false);
+
   const { examId, testId } = useParams();
   const [examData, setExamData] = useState({
     name: "",
@@ -31,10 +35,56 @@ function TeacherExamCode() {
       end_time: ""
     }
   });
-const handleSave = async () => {
+
+  // Hàm xử lý upload ảnh
+  const handleImageUpload = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      // Kiểm tra định dạng file
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      if (!allowedTypes.includes(file.type)) {
+        alert('Chỉ được upload file ảnh (JPEG, PNG, GIF)');
+        return;
+      }
+
+      // Kiểm tra kích thước file (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File ảnh không được vượt quá 5MB');
+        return;
+      }
+
+      // Tạo preview URL
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        setNewQuestion({
+          ...newQuestion,
+          image: file,
+          imagePreview: event.target.result
+        });
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  // Hàm xóa ảnh
+  const handleRemoveImage = () => {
+    setNewQuestion({
+      ...newQuestion,
+      image: null,
+      imagePreview: null
+    });
+
+    // Reset input file
+    const fileInput = document.getElementById('question-image-upload');
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  };
+
+  const handleSave = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
- 
+
     // Lấy token từ localStorage
     if (userJson) {
       try {
@@ -44,12 +94,12 @@ const handleSave = async () => {
         console.error("❌ Lỗi khi parse user từ localStorage:", error);
       }
     }
- 
+
     if (!token) {
       alert("⚠️ Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
- 
+
     // Dữ liệu gửi đi, thêm exam_id từ params
     const data = {
       name: examData.name,
@@ -58,12 +108,12 @@ const handleSave = async () => {
       shift_id: examData.shift?.shift_id, // an toàn với ? nếu shift null
       exam_id: examId,  // thêm exam_id để gửi lên backend
     };
- 
+
     const method = testId ? "PUT" : "POST";
     const url = testId
       ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}/`
       : "http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/";
- 
+
     try {
       const res = await fetch(url, {
         method,
@@ -73,15 +123,15 @@ const handleSave = async () => {
         },
         body: JSON.stringify(data),
       });
- 
+
       const resText = await res.text();
- 
+
       if (res.ok) {
         const responseData = JSON.parse(resText);
         const newTestId = responseData.test_id;
- 
+
         alert(testId ? "✅ Cập nhật đề thi thành công!" : "✅ Tạo đề thi thành công!");
- 
+
         // Nếu là POST thì redirect lại với test_id trong URL
         if (!testId && newTestId) {
           const basePath = window.location.pathname.endsWith("/")
@@ -99,127 +149,146 @@ const handleSave = async () => {
       alert("🚫 Không thể kết nối tới server.");
     }
   };
- 
-  const handleSaveTest = async () => {
-    const userJson = localStorage.getItem("user");
-    let token = null;
-    let userId = null;
- 
-    if (userJson) {
-      try {
-        const userObj = JSON.parse(userJson);
-        token = userObj.token;          // token nằm ở root
-        userId = userObj.user_id;       // user_id cũng nằm ở root
-      } catch (error) {
-        console.error("Lỗi khi parse user từ localStorage:", error);
+
+const handleSaveTest = async () => {
+  const userJson = localStorage.getItem("user");
+  let token = null;
+  let userId = null;
+
+  if (userJson) {
+    try {
+      const userObj = JSON.parse(userJson);
+      token = userObj.token;
+      userId = userObj.user_id;
+    } catch (error) {
+      console.error("Lỗi khi parse user từ localStorage:", error);
+    }
+  }
+
+  if (!token) {
+    alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+    return;
+  }
+
+  if (!testId) {
+    alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
+    return;
+  }
+
+  for (const question of newQuestions) {
+    const method = question.id ? "PUT" : "POST";
+    const questionUrl = question.id
+      ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
+      : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
+
+    try {
+      console.log("📤 Gửi câu hỏi:", method, questionUrl);
+
+      // ✅ Sử dụng FormData để gửi cả text và file
+      const formData = new FormData();
+      formData.append('test', testId);
+      formData.append('content', question.content);
+      formData.append('type', question.type || "single");
+      formData.append('score', question.score || 1.0);
+      formData.append('level', question.level || 1);
+      
+      // ✅ FIX: Convert boolean thành string đúng định dạng
+// ✅ Gửi 1/0 thay vì true/false
+formData.append('is_gened_by_model', (question.is_gened_by_model || false) ? 1 : 0);
+formData.append('created_by_question', (question.created_by_question || false) ? 1 : 0);
+      
+      formData.append('user', userId);
+
+      // ✅ Thêm file ảnh nếu có
+      if (question.image) {
+        formData.append('image', question.image);
+        console.log("📷 Đã thêm ảnh:", question.image.name);
       }
-    }
- 
-    if (!token) {
-      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
-      return;
-    }
- 
-    if (!testId) {
-      alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
-      return;
-    }
- 
-    for (const question of newQuestions) {
-      const questionData = {
+
+      console.log("📦 Dữ liệu câu hỏi (FormData):", {
         test: testId,
         content: question.content,
         type: question.type || "single",
         score: question.score || 1.0,
         level: question.level || 1,
-        is_gened_by_model: question.is_gened_by_model || false,
-        created_by_question: question.created_by_question || false,
-        user: userId, // Truyền user id vào đây
-      };
- 
-      const method = question.id ? "PUT" : "POST";
-      const questionUrl = question.id
-        ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
-        : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
- 
-      try {
-        console.log("📤 Gửi câu hỏi:", method, questionUrl);
-        console.log("📦 Dữ liệu câu hỏi:", questionData);
- 
-        const res = await fetch(questionUrl, {
-          method,
+        hasImage: !!question.image,
+        imageName: question.image?.name
+      });
+
+      const res = await fetch(questionUrl, {
+        method,
+        headers: {
+          // ✅ KHÔNG set Content-Type cho FormData, để browser tự set
+          Authorization: `Bearer ${token}`,
+        },
+        body: formData, // ✅ Gửi FormData thay vì JSON
+      });
+
+      const resJson = await res.json();
+      console.log("✅ Phản hồi câu hỏi:", resJson);
+
+      if (!res.ok) {
+        console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
+        alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
+        return;
+      }
+
+      const questionId = resJson.id || resJson.question_id;
+
+      // ✅ Lưu đáp án (giữ nguyên logic cũ)
+      for (const option of question.options || []) {
+        const answerData = {
+          question: questionId,
+          content: option.text,
+          is_correct: option.id === question.correct_option_id,
+          user: userId,
+        };
+
+        const answerMethod = option.answer_id ? "PUT" : "POST";
+        const answerUrl = option.answer_id
+          ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
+          : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
+
+        console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
+        console.log("📦 Dữ liệu đáp án:", answerData);
+
+        const answerRes = await fetch(answerUrl, {
+          method: answerMethod,
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token}`,
           },
-          body: JSON.stringify(questionData),
+          body: JSON.stringify(answerData),
         });
- 
-        const resJson = await res.json();
-        console.log("✅ Phản hồi câu hỏi:", resJson);
- 
-        if (!res.ok) {
-          console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
-          alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
+
+        const answerResJson = await answerRes.json();
+        console.log("✅ Phản hồi đáp án:", answerResJson);
+
+        if (!answerRes.ok) {
+          console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
+          alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
           return;
         }
- 
-        const questionId = resJson.id || resJson.question_id; // Lấy id câu hỏi từ response
- 
-        for (const option of question.options || []) {
-          const answerData = {
-            question: questionId,
-            content: option.text,
-            is_correct: option.id === question.correct_option_id,
-            user: userId, // Truyền user id vào đây
-          };
- 
-          const answerMethod = option.answer_id ? "PUT" : "POST";
-          const answerUrl = option.answer_id
-            ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
-            : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
- 
-          console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
-          console.log("📦 Dữ liệu đáp án:", answerData);
- 
-          const answerRes = await fetch(answerUrl, {
-            method: answerMethod,
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(answerData),
-          });
- 
-          const answerResJson = await answerRes.json();
-          console.log("✅ Phản hồi đáp án:", answerResJson);
- 
-          if (!answerRes.ok) {
-            console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
-            alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
-            return;
-          }
-        }
- 
-      } catch (error) {
-        console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
-        alert("Không thể kết nối tới server.");
-        return;
       }
+
+    } catch (error) {
+      console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
+      alert("Không thể kết nối tới server.");
+      return;
     }
- 
-    alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
-  };
- 
- 
- 
- 
+  }
+
+  alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
+};
+
+
+
   useEffect(() => {
     const fetchTestDetail = async () => {
       // 🔐 Lấy token từ localStorage
       const userJson = localStorage.getItem("user");
       let token = null;
- 
+
       if (userJson) {
         try {
           const userObj = JSON.parse(userJson);
@@ -228,13 +297,13 @@ const handleSave = async () => {
           console.error("❌ Lỗi khi parse user từ localStorage:", error);
         }
       }
- 
+
       // ⚠️ Nếu không có token thì dừng lại
       if (!token) {
         alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
         return;
       }
- 
+
       // 📦 Gọi API với header Authorization
       try {
         const response = await axios.get(
@@ -245,10 +314,10 @@ const handleSave = async () => {
             },
           }
         );
- 
+
         const data = response.data;
         console.log('✅ Dữ liệu lấy được từ API:', data);
- 
+
         // 📝 Cập nhật thông tin chung của đề thi
         setExamData({
           name: data.name || '',
@@ -263,7 +332,7 @@ const handleSave = async () => {
             end_time: ''
           }
         });
- 
+
         // Cập nhật danh sách câu hỏi và đáp án
         if (Array.isArray(data.questions)) {
           const formattedQuestions = data.questions.map((question) => ({
@@ -272,6 +341,9 @@ const handleSave = async () => {
             type: question.type,
             level: question.level,
             score: question.score,
+            image: question.image,
+            // sửa tạm để chụp giao diện
+            correct_answer: "abc",
             is_gened_by_model: question.is_gened_by_model,
             created_by_question: question.created_by_question,
             correct_option_id: question.answers.find(a => a.is_correct)?.answer_id || null,
@@ -282,42 +354,55 @@ const handleSave = async () => {
               user: answer.user,
             })) || [],
           }));
- 
+
           setNewQuestions(formattedQuestions);
         } else {
           setNewQuestions([]);
         }
- 
+
       } catch (error) {
         console.error('❌ Lỗi khi lấy dữ liệu đề thi:', error);
       }
- 
+
     };
- 
+
     fetchTestDetail();
   }, [testId]);
- 
- 
-  const createNewQuestion = () => ({
-    content: "",
-    options: [
-      { id: uuidv4(), text: "" },
-      { id: uuidv4(), text: "" },
-      { id: uuidv4(), text: "" },
-      { id: uuidv4(), text: "" },
-    ],
-    correct_option_id: "",
-  });
- 
+
+
+  const createNewQuestion = (type = 'multiple_choice') => {
+    if (type === 'essay') {
+      return {
+        type: 'essay',
+        content: "",
+        correct_answer: "",
+        level: ""
+      };
+    }
+
+    return {
+      type: 'multiple_choice',
+      content: "",
+      options: [
+        { id: uuidv4(), text: "" },
+        { id: uuidv4(), text: "" },
+        { id: uuidv4(), text: "" },
+        { id: uuidv4(), text: "" },
+      ],
+      correct_option_id: "",
+      level: ""
+    };
+  };
+
   const [newQuestion, setNewQuestion] = useState(createNewQuestion());
- 
+
   const handleAddOption = () => {
     setNewQuestion((prev) => ({
       ...prev,
       options: [...prev.options, { id: uuidv4(), text: "" }],
     }));
   };
- 
+
   const handleDeleteOption = (id) => {
     if (newQuestion.options.length <= 2) {
       alert("Mỗi câu hỏi phải có ít nhất 2 đáp án.");
@@ -331,21 +416,33 @@ const handleSave = async () => {
       setNewQuestion((prev) => ({ ...prev, correct_option_id: "" }));
     }
   };
- 
+
   const handleAddOrEditQuestion = () => {
     if (!newQuestion.content.trim()) {
       alert("Vui lòng nhập nội dung câu hỏi.");
       return;
     }
-    if (newQuestion.options.some((opt) => !opt.text.trim())) {
-      alert("Vui lòng nhập đầy đủ nội dung các đáp án.");
-      return;
+
+    // Validation cho câu hỏi trắc nghiệm
+    if (newQuestion.type === 'multiple_choice') {
+      if (newQuestion.options.some((opt) => !opt.text.trim())) {
+        alert("Vui lòng nhập đầy đủ nội dung các đáp án.");
+        return;
+      }
+      if (!newQuestion.correct_option_id) {
+        alert("Vui lòng chọn đáp án đúng.");
+        return;
+      }
     }
-    if (!newQuestion.correct_option_id) {
-      alert("Vui lòng chọn đáp án đúng.");
-      return;
+
+    // Validation cho câu hỏi tự luận
+    if (newQuestion.type === 'essay') {
+      if (!newQuestion.correct_answer.trim()) {
+        alert("Vui lòng nhập đáp án đúng cho câu hỏi tự luận.");
+        return;
+      }
     }
- 
+
     if (editingIndex !== null) {
       const updated = [...newQuestions];
       updated[editingIndex] = newQuestion;
@@ -353,30 +450,61 @@ const handleSave = async () => {
     } else {
       setNewQuestions((prev) => [...prev, newQuestion]);
     }
- 
+
     setNewQuestion(createNewQuestion());
     setEditingIndex(null);
     setShowNewQuestionForm(false);
+    setQuestionType('multiple_choice');
   };
- 
+
   const handleEditQuestion = (index) => {
-    setNewQuestion(newQuestions[index]);
+    // Kiểm tra nếu đang chỉnh sửa câu hỏi khác
+    if (showNewQuestionForm) {
+      alert("Bạn đang chỉnh sửa 1 câu hỏi. Hãy lưu câu hỏi trước!");
+      return;
+    }
+
+    const questionToEdit = newQuestions[index];
+    setNewQuestion(questionToEdit);
+    setQuestionType(questionToEdit.type);
     setEditingIndex(index);
     setShowNewQuestionForm(true);
   };
- 
+
   const handleDeleteQuestion = (index) => {
     if (window.confirm("Bạn có chắc muốn xoá câu hỏi này không?")) {
       setNewQuestions((prev) => prev.filter((_, i) => i !== index));
     }
   };
- 
-  const handleToggleQuestionForm = () => {
-    setShowNewQuestionForm(!showNewQuestionForm);
-    setEditingIndex(null);
-    setNewQuestion(createNewQuestion());
+
+  const handleToggleQuestionForm = (type = null) => {
+    if (showNewQuestionForm) {
+      // Nếu đang hiển thị form thì hỏi xác nhận huỷ
+      const confirmMessage = editingIndex !== null
+        ? "Bạn có muốn huỷ chỉnh sửa câu hỏi?"
+        : "Bạn có muốn huỷ thêm câu hỏi?";
+
+      if (window.confirm(confirmMessage)) {
+        setShowNewQuestionForm(false);
+        setEditingIndex(null);
+        setNewQuestion(createNewQuestion());
+        setQuestionType('multiple_choice');
+      }
+    } else {
+      // Nếu chưa hiển thị form và không có type (click trực tiếp vào nút) thì hiện submenu
+      if (type === null) {
+        setShowSubmenu(!showSubmenu);
+      } else {
+        // Nếu có type (chọn từ submenu) thì hiển thị form
+        setQuestionType(type);
+        setNewQuestion(createNewQuestion(type));
+        setShowNewQuestionForm(true);
+        setShowSubmenu(false);
+      }
+    }
   };
- 
+
+
   return (
     <div style={{ display: "flex", padding: "20px" }}>
       {/* MAIN CONTENT */}
@@ -392,7 +520,7 @@ const handleSave = async () => {
           />
         </h2>
         <hr />
- 
+
         {/* DANH SÁCH CÂU HỎI */}
         {newQuestions.map((q, index) => (
           <div key={`q-${index}`} className="question-item">
@@ -404,57 +532,245 @@ const handleSave = async () => {
                 <img src={iconDelete} alt="delete" className="btn-icon" /> Xoá
               </button>
             </div>
-            <p><strong>Câu {index + 1}:</strong> {renderWithLatex(q.content)}</p>
-            <ul>
-              {q.options?.map((opt, idx) => (
-                <li key={opt.id}>
-                  <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text)}
-                  {q.correct_option_id === opt.id && (
-                    <span className="correct-answer">
-                      ✔ Đáp án đúng
-                    </span>
-                  )}
-                </li>
-              ))}
-            </ul>
+
+            {/* ✅ FIX: Kiểm tra q.content trước khi render */}
+            <p><strong>Câu {index + 1}:</strong> {renderWithLatex(q.content || '')}</p>
+
+{/* ✅ Hiển thị ảnh nếu có - dưới content */}
+{q.image && (
+  <div style={{
+    textAlign: 'center',
+    margin: '15px 0',
+    padding: '10px'
+  }}>
+    <img 
+      src={`http://localhost:8000${q.image}`} 
+      alt="Hình ảnh câu hỏi" 
+      style={{
+        maxWidth: '100%',        // ✅ Giảm kích thước xuống 50%
+        width: '100%',           // ✅ Đảm bảo ảnh luôn 50% kích thước gốc
+        height: 'auto',         // Giữ tỷ lệ khung hình
+        marginTop: '10px',
+        marginBottom: '15px',
+        border: '1px solid #ddd',
+        borderRadius: '8px',
+        boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+        display: 'block',       // Đảm bảo ảnh hiển thị như block element
+        margin: '10px auto'     // Center ảnh
+      }}
+      onError={(e) => {
+        console.error('Lỗi tải ảnh:', e.target.src);
+        e.target.style.display = 'none';
+      }}
+    />
+  </div>
+)}
+
+{/* Hiển thị cho câu hỏi trắc nghiệm */}
+{q.type === 'multiple_choice' && q.options && (
+  <ul>
+    {q.options.map((opt, idx) => (
+      <li key={opt.id}>
+        <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text || '')}
+        {q.correct_option_id === opt.id && (
+          <span className="correct-answer">
+            ✔ Đáp án đúng
+          </span>
+        )}
+      </li>
+    ))}
+  </ul>
+)}
+
+            {/* Hiển thị cho câu hỏi tự luận */}
+            {q.type === 'essay' && (
+              <div style={{ marginTop: "10px", padding: "10px", backgroundColor: "#f9f9f9", borderRadius: "4px" }}>
+                <strong>Đáp án đúng:</strong>
+                <div style={{ marginTop: "5px", padding: "8px", backgroundColor: "#e8f5e8", borderRadius: "4px" }}>
+                  {/* ✅ FIX: Kiểm tra q.correct_answer trước khi render */}
+                  {renderWithLatex(q.correct_answer || '')}
+                </div>
+              </div>
+            )}
+
+            {/* Hiển thị mức độ câu hỏi */}
+            {q.level && (
+              <div style={{ marginTop: "8px", fontSize: "0.9em", color: "#666" }}>
+                <strong>Mức độ:</strong> {q.level === 1 ? "Dễ" : q.level === 2 ? "Trung bình" : q.level === 3 ? "Khó" : "Rất khó"}
+              </div>
+            )}
           </div>
         ))}
- 
- 
- 
-        {/* NÚT THÊM CÂU HỎI */}
+
+
+
+        {/* NÚT THÊM CÂU HỎI VỚI SUBMENU */}
         <div style={{ marginTop: "20px", display: "flex", gap: "10px" }}>
-          <button onClick={handleToggleQuestionForm} className="btn addquestion">
-            <img
-              src={showNewQuestionForm ? iconCancelQuestion : iconAddQuestion}
-              alt="toggle"
-              className="btn-icon"
-            />
-            {showNewQuestionForm ? (editingIndex !== null ? "Huỷ sửa" : "Huỷ thêm") : "Thêm câu hỏi"}
-          </button>
- 
+          <div
+            style={{ position: "relative", display: "inline-block" }}
+            onMouseEnter={() => !showNewQuestionForm && setShowSubmenu(true)}
+            onMouseLeave={() => setShowSubmenu(false)}
+          >
+            <button
+              onClick={() => handleToggleQuestionForm()}
+              className="btn addquestion"
+              style={{ position: "relative" }}
+            >
+              <img
+                src={showNewQuestionForm ? iconCancelQuestion : iconAddQuestion}
+                alt="toggle"
+                className="btn-icon"
+              />
+              {showNewQuestionForm ? (editingIndex !== null ? "Huỷ sửa" : "Huỷ thêm") : "Thêm câu hỏi"}
+            </button>
+
+            {/* SUBMENU */}
+            {showSubmenu && !showNewQuestionForm && (
+              <div
+                style={{
+                  position: "absolute",
+                  top: "100%",
+                  left: "0",
+                  backgroundColor: "white",
+                  border: "1px solid #ccc",
+                  borderRadius: "4px",
+                  boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                  zIndex: 1000,
+                  minWidth: "200px"
+                }}
+              >
+                <button
+                  onClick={() => handleToggleQuestionForm('multiple_choice')}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 15px",
+                    border: "none",
+                    backgroundColor: "transparent",
+                    textAlign: "left",
+                    cursor: "pointer",
+                    borderBottom: "1px solid #eee"
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#f5f5f5"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                >
+                  📝 Câu hỏi trắc nghiệm
+                </button>
+                <button
+                  onClick={() => handleToggleQuestionForm('essay')}
+                  style={{
+                    display: "block",
+                    width: "100%",
+                    padding: "10px 15px",
+                    border: "none",
+                    backgroundColor: "transparent",
+                    textAlign: "left",
+                    cursor: "pointer"
+                  }}
+                  onMouseEnter={(e) => e.target.style.backgroundColor = "#f5f5f5"}
+                  onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
+                >
+                  ✍️ Câu hỏi tự luận
+                </button>
+              </div>
+            )}
+          </div>
+
           <button onClick={handleSaveTest} className="btn addquestion">
             <img src={iconSave} alt="save" className="btn-icon" />
             Lưu đề thi
           </button>
         </div>
- 
- 
+
         {/* FORM THÊM/SỬA */}
         {showNewQuestionForm && (
           <div className="question-form">
-            <h4>{editingIndex !== null ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}</h4>
- 
+            <h4>
+              {editingIndex !== null ? "Sửa câu hỏi" : "Thêm câu hỏi mới"}
+              {questionType === 'essay' ? ' (Tự luận)' : ' (Trắc nghiệm)'}
+            </h4>
+
             {/* Nội dung câu hỏi */}
             <div className="form-section">
-              <label style={{ marginBottom: "10px", display: "block" }}>Nội dung câu hỏi:</label>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+                <label style={{ margin: 0 }}>Nội dung câu hỏi:</label>
+
+                {/* Nút upload ảnh */}
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <input
+                    type="file"
+                    accept="image/*"
+                    onChange={handleImageUpload}
+                    style={{ display: "none" }}
+                    id="question-image-upload"
+                  />
+                  <label
+                    htmlFor="question-image-upload"
+                    style={{
+                      padding: "8px 16px",
+                      backgroundColor: "#007bff",
+                      color: "white",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "14px",
+                      border: "none",
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "5px"
+                    }}
+                  >
+                    📷 Tải ảnh
+                  </label>
+
+                  {/* Hiển thị tên file đã chọn */}
+                  {newQuestion.image && (
+                    <span style={{ fontSize: "12px", color: "#666" }}>
+                      {newQuestion.image.name}
+                    </span>
+                  )}
+                </div>
+              </div>
+
               <LatexInputKaTeX
                 value={newQuestion.content}
                 onChange={(value) => setNewQuestion({ ...newQuestion, content: value })}
                 style={{ width: "90%", minHeight: "100px" }}
               />
+
+              {/* Preview ảnh đã upload */}
+              {newQuestion.imagePreview && (
+                <div style={{ marginTop: "10px" }}>
+                  <img
+                    src={newQuestion.imagePreview}
+                    alt="Preview"
+                    style={{
+                      maxWidth: "300px",
+                      maxHeight: "200px",
+                      border: "1px solid #ddd",
+                      borderRadius: "4px",
+                      objectFit: "contain"
+                    }}
+                  />
+                  <button
+                    type="button"
+                    onClick={handleRemoveImage}
+                    style={{
+                      marginLeft: "10px",
+                      padding: "4px 8px",
+                      backgroundColor: "#dc3545",
+                      color: "white",
+                      border: "none",
+                      borderRadius: "4px",
+                      cursor: "pointer",
+                      fontSize: "12px"
+                    }}
+                  >
+                    ✕ Xóa
+                  </button>
+                </div>
+              )}
             </div>
- 
+
             {/* Mức độ câu hỏi - ComboBox */}
             <div className="form-section">
               <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
@@ -476,49 +792,64 @@ const handleSave = async () => {
                 <option value="4">4 - Rất khó</option>
               </select>
             </div>
- 
-            {/* Danh sách đáp án */}
-            <div className="form-section">
-              <label style={{ marginBottom: "10px", display: "block" }}>Danh sách đáp án:</label>
-              {newQuestion.options.map((opt, idx) => (
-                <div key={opt.id} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                  <LatexInputKaTeX
-                    value={opt.text}
-                    onChange={(value) => {
-                      const updatedOptions = newQuestion.options.map((o) =>
-                        o.id === opt.id ? { ...o, text: value } : o
-                      );
-                      setNewQuestion({ ...newQuestion, options: updatedOptions });
-                    }}
-                  />
-                  <input
-                    type="radio"
-                    name="correct_option"
-                    checked={newQuestion.correct_option_id === opt.id}
-                    onChange={() => setNewQuestion({ ...newQuestion, correct_option_id: opt.id })}
-                    style={{ marginLeft: "8px" }}
-                  />
-                  <button onClick={() => handleDeleteOption(opt.id)} style={{ marginLeft: "8px" }}>
-                    ❌
-                  </button>
-                </div>
-              ))}
-              <button
-                onClick={handleAddOption}
-                style={{
-                  marginTop: "10px",
-                  padding: "10px 20px",
-                  borderRadius: "8px",
-                  backgroundColor: "#ffffff",
-                  border: "1px solid #ccc",
-                  cursor: "pointer",
-                  fontWeight: "bold",
-                }}
-              >
-                ➕ Thêm đáp án
-              </button>
-            </div>
- 
+
+            {/* Nội dung dành cho câu hỏi trắc nghiệm */}
+            {questionType === 'multiple_choice' && (
+              <div className="form-section">
+                <label style={{ marginBottom: "10px", display: "block" }}>Danh sách đáp án:</label>
+                {newQuestion.options.map((opt, idx) => (
+                  <div key={opt.id} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
+                    <LatexInputKaTeX
+                      value={opt.text}
+                      onChange={(value) => {
+                        const updatedOptions = newQuestion.options.map((o) =>
+                          o.id === opt.id ? { ...o, text: value } : o
+                        );
+                        setNewQuestion({ ...newQuestion, options: updatedOptions });
+                      }}
+                    />
+                    <input
+                      type="radio"
+                      name="correct_option"
+                      checked={newQuestion.correct_option_id === opt.id}
+                      onChange={() => setNewQuestion({ ...newQuestion, correct_option_id: opt.id })}
+                      style={{ marginLeft: "8px" }}
+                    />
+                    <button onClick={() => handleDeleteOption(opt.id)} style={{ marginLeft: "8px" }}>
+                      ❌
+                    </button>
+                  </div>
+                ))}
+                <button
+                  onClick={handleAddOption}
+                  style={{
+                    marginTop: "10px",
+                    padding: "10px 20px",
+                    borderRadius: "8px",
+                    backgroundColor: "#ffffff",
+                    border: "1px solid #ccc",
+                    cursor: "pointer",
+                    fontWeight: "bold",
+                  }}
+                >
+                  ➕ Thêm đáp án
+                </button>
+              </div>
+            )}
+
+            {/* Nội dung dành cho câu hỏi tự luận */}
+            {questionType === 'essay' && (
+              <div className="form-section">
+                <label style={{ marginBottom: "10px", display: "block" }}>Đáp án đúng:</label>
+                <LatexInputKaTeX
+                  value={newQuestion.correct_answer}
+                  onChange={(value) => setNewQuestion({ ...newQuestion, correct_answer: value })}
+                  style={{ width: "90%", minHeight: "100px" }}
+                  placeholder="Nhập đáp án đúng cho câu hỏi tự luận..."
+                />
+              </div>
+            )}
+
             {/* Nút hành động */}
             <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
               <button onClick={handleAddOrEditQuestion} className="save-btn">
@@ -527,13 +858,12 @@ const handleSave = async () => {
             </div>
           </div>
         )}
- 
       </div>
- 
+
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
         <div className="exam-form-title">Thông tin đề thi</div>
- 
+
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Loại đề thi</label>
@@ -545,7 +875,7 @@ const handleSave = async () => {
             />
           </div>
         </div>
- 
+
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Thời lượng (phút)</label>
@@ -559,7 +889,7 @@ const handleSave = async () => {
             />
           </div>
         </div>
- 
+
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Ca thi</label>
@@ -581,7 +911,7 @@ const handleSave = async () => {
             />
           </div>
         </div>
- 
+
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px", marginRight: "9px" }}>
           <button className="btn addcode" onClick={handleSave}>
             <FaSave className="btn-icon" /> {testId ? "Cập nhật" : "Lưu"}
@@ -591,5 +921,5 @@ const handleSave = async () => {
     </div>
   );
 }
- 
+
 export default TeacherExamCode;

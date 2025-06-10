@@ -252,6 +252,7 @@ class Question(models.Model):
     is_gened_by_model = models.BooleanField(default=False)
     created_by_question = models.BooleanField(default=False)
     user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # ✅ Dùng auth_user
+    image = models.FileField(upload_to='image_question/', null=True, blank=True)  # ✅ Trường ảnh mới
 
     def __str__(self):
         return f"Câu hỏi {self.question_id} - {self.content[:50]}..."
@@ -278,17 +279,18 @@ class Answer(models.Model):
 
 class StudentAnswer(models.Model):
     student_answer_id = models.BigAutoField(primary_key=True)
-
+    
     student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_answers')  # ✅ Dùng auth_user
     test = models.ForeignKey('Test', on_delete=models.CASCADE, related_name='student_answers')
     question = models.ForeignKey('Question', on_delete=models.CASCADE, related_name='student_answers')
     answer = models.ForeignKey(Answer, on_delete=models.SET_NULL, null=True, blank=True)
-
+    answer_content = models.TextField(null=True, blank=True)  # ✅ Trường lưu nội dung câu trả lời
+    
     is_correct = models.BooleanField(null=True, blank=True)
-
+    
     def __str__(self):
         return f"SV: {self.student.username} - Câu {self.question_id} - Đáp án {self.answer_id} - {'✔' if self.is_correct else '✘'}"
-
+    
     class Meta:
         db_table = 'student_answer'
         verbose_name = 'Câu trả lời của sinh viên'

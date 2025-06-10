@@ -7,7 +7,6 @@
   position: relative;
   overflow: hidden;
   margin-left: -20px;
-  padding: 0;
 }
 
 .hero-background {
@@ -47,6 +46,7 @@
 
 .left-content,
 .right-content {
+  padding: 50px;
   transition: all 1s ease-out;
 }
 

@@ -20,6 +20,11 @@ class TeacherManageQuestionView(APIView):
 
             data = request.data
             print("📥 Dữ liệu đầu vào:", data)
+            
+            # ✅ Kiểm tra có file image không
+            image_file = request.FILES.get('image', None)
+            if image_file:
+                print(f"📷 File ảnh nhận được: {image_file.name}, Size: {image_file.size} bytes")
 
             required_fields = ['test', 'content', 'user']
             for field in required_fields:
@@ -40,22 +45,44 @@ class TeacherManageQuestionView(APIView):
             # Lấy đối tượng user từ ID gửi lên
             user_obj = get_object_or_404(User, id=data['user'])
 
-            # Tạo câu hỏi
+            # ✅ Xử lý boolean fields từ FormData
+            is_gened_by_model = data.get('is_gened_by_model', False)
+            created_by_question = data.get('created_by_question', False)
+            
+            # Convert string boolean values từ FormData thành Python boolean
+            if isinstance(is_gened_by_model, str):
+                is_gened_by_model = is_gened_by_model.lower() in ['true', '1', 'yes']
+            if isinstance(created_by_question, str):
+                created_by_question = created_by_question.lower() in ['true', '1', 'yes']
+
+            # ✅ Tạo câu hỏi với image
             question = Question.objects.create(
                 test=test,
                 content=data['content'],
                 type=data.get('type', 'single'),
-                score=data.get('score', 1.0),
-                level=data.get('level', 1),
-                is_gened_by_model=data.get('is_gened_by_model', False),
-                created_by_question=data.get('created_by_question', False),
-                user=user_obj
+                score=float(data.get('score', 1.0)),  # Đảm bảo score là float
+                level=int(data.get('level', 1)),      # Đảm bảo level là int
+                is_gened_by_model=is_gened_by_model,
+                created_by_question=created_by_question,
+                user=user_obj,
+                image=image_file  # ✅ Thêm image vào câu hỏi
             )
 
             serialized = QuestionSerializer(question)
             print("✅ Tạo câu hỏi thành công:", serialized.data)
+            
+            # ✅ Log thông tin image nếu có
+            if question.image:
+                print(f"📷 Ảnh đã được lưu: {question.image.url}")
+            
             return Response(serialized.data, status=status.HTTP_201_CREATED)
 
+        except ValueError as ve:
+            print(f"❌ Lỗi chuyển đổi dữ liệu: {ve}")
+            return Response(
+                {"message": "Dữ liệu không hợp lệ", "detail": str(ve)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
         except Exception as e:
             print("❌ Lỗi bất ngờ khi tạo câu hỏi:")
             traceback.print_exc()
