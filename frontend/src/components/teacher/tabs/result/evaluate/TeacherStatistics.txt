@@ -1,0 +1,228 @@
+import React, { useState, useEffect } from 'react';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell, LineChart, Line } from 'recharts';
+import '../../../../../styles/teacher/TeacherStatistics.css';
+
+const TeacherStatistics = () => {
+  const [teacherId] = useState(1); // Giả sử ID giáo viên hiện tại
+  const [statsData, setStatsData] = useState({
+    examCount: 0,
+    testsPerExam: [],
+    questionLevelDistribution: [],
+    documentsByGrade: [],
+    studentResults: [],
+    reviewRequests: 0,
+    answerAccuracy: []
+  });
+
+  // Mock data - trong thực tế sẽ lấy từ API
+  useEffect(() => {
+    // Giả lập dữ liệu thống kê
+    const mockData = {
+      examCount: 12,
+      testsPerExam: [
+        { examName: 'Toán 10 - HK1', testCount: 5 },
+        { examName: 'Toán 11 - HK1', testCount: 3 },
+        { examName: 'Toán 12 - HK1', testCount: 7 },
+        { examName: 'Toán 10 - HK2', testCount: 4 },
+        { examName: 'Toán 11 - HK2', testCount: 6 }
+      ],
+      questionLevelDistribution: [
+        { level: 'Dễ', count: 45, percentage: 30 },
+        { level: 'Trung bình', count: 75, percentage: 50 },
+        { level: 'Khó', count: 30, percentage: 20 }
+      ],
+      documentsByGrade: [
+        { grade: 'Lớp 10', count: 25 },
+        { grade: 'Lớp 11', count: 18 },
+        { grade: 'Lớp 12', count: 32 }
+      ],
+      studentResults: [
+        { studentName: 'Nguyễn Văn A', totalScore: 85, status: 'Đạt' },
+        { studentName: 'Trần Thị B', totalScore: 72, status: 'Đạt' },
+        { studentName: 'Lê Văn C', totalScore: 45, status: 'Không đạt' },
+        { studentName: 'Phạm Thị D', totalScore: 88, status: 'Đạt' },
+        { studentName: 'Hoàng Văn E', totalScore: 55, status: 'Không đạt' }
+      ],
+      reviewRequests: 8,
+      answerAccuracy: [
+        { testName: 'Bài 1 - Hàm số', accuracy: 78 },
+        { testName: 'Bài 2 - Đạo hàm', accuracy: 65 },
+        { testName: 'Bài 3 - Tích phân', accuracy: 52 },
+        { testName: 'Bài 4 - Hình học', accuracy: 71 },
+        { testName: 'Bài 5 - Xác suất', accuracy: 58 }
+      ]
+    };
+    
+    setStatsData(mockData);
+  }, [teacherId]);
+
+  const COLORS = ['#0088FE', '#00C49F', '#FFBB28', '#FF8042', '#8884D8'];
+
+  const getStatusColor = (status) => {
+    return status === 'Đạt' ? '#00C49F' : '#FF8042';
+  };
+
+  return (
+    <div className="teastats-dashboard">
+
+      <div className="teastats-grid">
+        {/* 1. Số kỳ thi đã tạo */}
+        <div className="teastats-card teastats-highlight">
+          <div className="teastats-card-header">
+            <h3>Tổng Số Kỳ Thi Đã Tạo</h3>
+          </div>
+          <div className="teastats-big-number">
+            {statsData.examCount}
+          </div>
+          <p className="teastats-card-desc">Kỳ thi đã được tạo và quản lý</p>
+        </div>
+
+        {/* 2. Số bài thi trong mỗi kỳ thi */}
+        <div className="teastats-card teastats-chart-card">
+          <div className="teastats-card-header">
+            <h3>Số Bài Thi Theo Kỳ Thi</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={statsData.testsPerExam}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="examName" angle={-45} textAnchor="end" height={80} />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="testCount" fill="#0088FE" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 3. Phân bố mức độ câu hỏi */}
+        <div className="teastats-card teastats-chart-card">
+          <div className="teastats-card-header">
+            <h3>Phân Bố Mức Độ Câu Hỏi</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <PieChart>
+              <Pie
+                data={statsData.questionLevelDistribution}
+                cx="50%"
+                cy="50%"
+                labelLine={false}
+                label={({ level, percentage }) => `${level}: ${percentage}%`}
+                outerRadius={80}
+                fill="#8884d8"
+                dataKey="count"
+              >
+                {statsData.questionLevelDistribution.map((entry, index) => (
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                ))}
+              </Pie>
+              <Tooltip />
+            </PieChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 4. Tài liệu theo khối lớp */}
+        <div className="teastats-card teastats-chart-card">
+          <div className="teastats-card-header">
+            <h3>Tài Liệu Học Tập Theo Khối</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <BarChart data={statsData.documentsByGrade}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="grade" />
+              <YAxis />
+              <Tooltip />
+              <Bar dataKey="count" fill="#00C49F" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
+
+        {/* 5. Kết quả học sinh */}
+        <div className="teastats-card teastats-table-card">
+          <div className="teastats-card-header">
+            <h3>Kết Quả Bài Thi Học Sinh</h3>
+          </div>
+          <div className="teastats-table-container">
+            <table className="teastats-table">
+              <thead>
+                <tr>
+                  <th>Học Sinh</th>
+                  <th>Tổng Điểm</th>
+                  <th>Trạng Thái</th>
+                </tr>
+              </thead>
+              <tbody>
+                {statsData.studentResults.map((student, index) => (
+                  <tr key={index}>
+                    <td>{student.studentName}</td>
+                    <td>{student.totalScore}</td>
+                    <td>
+                      <span 
+                        className="teastats-status"
+                        style={{ color: getStatusColor(student.status) }}
+                      >
+                        {student.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* 6. Yêu cầu phúc tra */}
+        <div className="teastats-card teastats-highlight">
+          <div className="teastats-card-header">
+            <h3>Yêu Cầu Phúc Tra</h3>
+          </div>
+          <div className="teastats-big-number teastats-warning">
+            {statsData.reviewRequests}
+          </div>
+          <p className="teastats-card-desc">Yêu cầu cần xử lý</p>
+        </div>
+
+        {/* 7. Độ chính xác câu trả lời */}
+        <div className="teastats-card teastats-chart-card teastats-wide">
+          <div className="teastats-card-header">
+            <h3>Độ Chính Xác Câu Trả Lời Theo Bài Thi</h3>
+          </div>
+          <ResponsiveContainer width="100%" height={250}>
+            <LineChart data={statsData.answerAccuracy}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="testName" angle={-45} textAnchor="end" height={80} />
+              <YAxis domain={[0, 100]} />
+              <Tooltip formatter={(value) => [`${value}%`, 'Độ chính xác']} />
+              <Line 
+                type="monotone" 
+                dataKey="accuracy" 
+                stroke="#8884d8" 
+                strokeWidth={3}
+                dot={{ fill: '#8884d8', strokeWidth: 2, r: 6 }}
+              />
+            </LineChart>
+          </ResponsiveContainer>
+        </div>
+      </div>
+
+      {/* Tóm tắt thông tin quan trọng */}
+      <div className="teastats-summary">
+        <h3>Tóm Tắt & Khuyến Nghị</h3>
+        <div className="teastats-summary-grid">
+          <div className="teastats-summary-item">
+            <h4>Khối Lượng Công Việc</h4>
+            <p>Đã tạo {statsData.examCount} kỳ thi với tổng cộng {statsData.testsPerExam.reduce((sum, exam) => sum + exam.testCount, 0)} bài thi</p>
+          </div>
+          <div className="teastats-summary-item">
+            <h4>Cân Bằng Độ Khó</h4>
+            <p>Phân bố câu hỏi hợp lý: 30% dễ, 50% trung bình, 20% khó</p>
+          </div>
+          <div className="teastats-summary-item">
+            <h4>Cần Chú Ý</h4>
+            <p>{statsData.reviewRequests} yêu cầu phúc tra đang chờ xử lý</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TeacherStatistics;

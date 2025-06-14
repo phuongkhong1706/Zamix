@@ -1,0 +1,526 @@
+/* Container và layout chính */
+.adper-container {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+  padding: 24px;
+  width: 100vw;
+  margin-left: -20px;
+  position: fixed;
+}
+
+.adper-main-content {
+  width: 96%;
+  margin: 0 10px;
+}
+
+
+/* Stats Cards */
+.adper-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+.adper-stats-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  padding: 24px;
+  border: 1px solid #e5e7eb;
+}
+
+.adper-stats-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.adper-stats-label {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}
+
+.adper-stats-number {
+  font-size: 36px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0;
+}
+
+.adper-stats-number-yellow {
+  color: #d97706;
+}
+
+.adper-stats-number-green {
+  color: #059669;
+}
+
+.adper-stats-icon {
+  padding: 12px;
+  border-radius: 8px;
+}
+
+.adper-stats-icon-blue {
+  background-color: #dbeafe;
+}
+
+.adper-stats-icon-yellow {
+  background-color: #fef3c7;
+}
+
+.adper-stats-icon-green {
+  background-color: #d1fae5;
+}
+
+.adper-icon {
+  height: 24px;
+  width: 24px;
+}
+
+.adper-stats-icon-blue .adper-icon {
+  color: #2563eb;
+}
+
+.adper-stats-icon-yellow .adper-icon {
+  color: #d97706;
+}
+
+.adper-stats-icon-green .adper-icon {
+  color: #059669;
+}
+
+/* Table Container */
+.adper-exam-table-container {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1);
+  border: 1px solid #e5e7eb;
+}
+
+.adper-exam-table-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.adper-table-title {
+  font-size: 20px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+/* Table */
+.adper-table-wrapper {
+  overflow-x: auto;
+}
+
+.adper-exam-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.adper-table-head {
+  background-color: #f9fafb;
+}
+
+.adper-table-th {
+  padding: 12px 24px;
+  text-align: left;
+  font-size: 12px;
+  font-weight: 500;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.adper-table-body {
+  background: white;
+}
+
+.adper-table-row {
+  border-bottom: 1px solid #e5e7eb;
+  transition: background-color 0.2s;
+}
+
+.adper-table-row:hover {
+  background-color: #f9fafb;
+}
+
+.adper-table-td {
+  padding: 16px 24px;
+  vertical-align: top;
+}
+
+/* Exam Info */
+.adper-exam-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 4px;
+}
+
+.adper-exam-description {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+.adper-subject-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.adper-exam-date {
+  font-size: 14px;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.adper-exam-time {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Status Badge */
+.adper-status-badge {
+  padding: 4px 12px;
+  border-radius: 9999px;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.adper-status-pending {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.adper-status-approved {
+  background-color: #d1fae5;
+  color: #065f46;
+}
+
+.adper-status-rejected {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+/* Student Count */
+.adper-student-count {
+  display: flex;
+  align-items: center;
+  font-size: 14px;
+  color: #111827;
+}
+
+.adper-student-icon {
+  height: 16px;
+  width: 16px;
+  margin-right: 4px;
+}
+
+/* Action Buttons */
+.adper-action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.adper-btn {
+  display: inline-flex;
+  align-items: center;
+  padding: 6px 12px;
+  border: 1px solid transparent;
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 6px;
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.adper-btn:focus {
+  outline: none;
+  box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.5);
+}
+
+.adper-btn:disabled {
+  background-color: #d1d5db;
+  cursor: not-allowed;
+}
+
+.adper-btn-icon {
+  height: 16px;
+  width: 16px;
+  margin-right: 4px;
+}
+
+.adper-btn-approve {
+  background-color: #059669;
+  border-color: #059669;
+}
+
+.adper-btn-approve:hover {
+  background-color: #047857;
+}
+
+.adper-btn-add-student {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.adper-btn-add-student:hover {
+  background-color: #1d4ed8;
+}
+
+.adper-btn-delete {
+  background-color: #dc2626;
+  border-color: #dc2626;
+}
+
+.adper-btn-delete:hover {
+  background-color: #b91c1c;
+}
+
+.adper-btn-cancel {
+  background-color: white;
+  color: #374151;
+  border-color: #d1d5db;
+}
+
+.adper-btn-cancel:hover {
+  background-color: #f9fafb;
+}
+
+.adper-btn-confirm {
+  background-color: #2563eb;
+  border-color: #2563eb;
+}
+
+.adper-btn-confirm:hover {
+  background-color: #1d4ed8;
+}
+
+/* Modal */
+.adper-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 50;
+}
+
+.adper-modal {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  width: 100%;
+  max-width: 640px;
+  max-height: 80vh;
+  overflow: hidden;
+}
+
+.adper-modal-header {
+  padding: 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.adper-modal-header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.adper-modal-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  margin: 0;
+}
+
+.adper-modal-close {
+  color: #9ca3af;
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.adper-modal-close:hover {
+  color: #6b7280;
+}
+
+.adper-modal-close-icon {
+  height: 24px;
+  width: 24px;
+}
+
+.adper-modal-body {
+  padding: 24px;
+}
+
+/* Search */
+.adper-search-container {
+  margin-bottom: 16px;
+}
+
+.adper-search-wrapper {
+  position: relative;
+}
+
+.adper-search-icon {
+  position: absolute;
+  left: 12px;
+  top: 12px;
+  height: 16px;
+  width: 16px;
+  color: #9ca3af;
+}
+
+.adper-search-input {
+  width: 100%;
+  padding: 8px 16px 8px 40px;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: all 0.2s;
+}
+
+.adper-search-input:focus {
+  outline: none;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Student List */
+.adper-student-list {
+  max-height: 256px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+}
+
+.adper-student-item {
+  padding: 12px;
+  border-bottom: 1px solid #f3f4f6;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.adper-student-item:hover {
+  background-color: #f9fafb;
+}
+
+.adper-student-item:last-child {
+  border-bottom: none;
+}
+
+.adper-student-selected {
+  background-color: #eff6ff;
+}
+
+.adper-student-checkbox-wrapper {
+  display: flex;
+  align-items: center;
+}
+
+.adper-student-checkbox {
+  height: 16px;
+  width: 16px;
+  color: #2563eb;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  margin-right: 12px;
+}
+
+.adper-student-info {
+  flex: 1;
+}
+
+.adper-student-name {
+  font-size: 14px;
+  font-weight: 500;
+  color: #111827;
+  margin-bottom: 2px;
+}
+
+.adper-student-details {
+  font-size: 14px;
+  color: #6b7280;
+}
+
+/* Selected Info */
+.adper-selected-info {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #eff6ff;
+  border-radius: 6px;
+}
+
+.adper-selected-text {
+  font-size: 14px;
+  color: #1e40af;
+  margin: 0;
+}
+
+/* Modal Footer */
+.adper-modal-footer {
+  padding: 16px 24px;
+  background-color: #f9fafb;
+  border-top: 1px solid #e5e7eb;
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .adper-container {
+    padding: 16px;
+  }
+  
+  .adper-stats-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+  
+  .adper-table-wrapper {
+    overflow-x: scroll;
+  }
+  
+  .adper-exam-table {
+    min-width: 800px;
+  }
+  
+  .adper-action-buttons {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  
+  .adper-modal {
+    margin: 16px;
+    max-height: calc(100vh - 32px);
+  }
+  
+  .adper-modal-header-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+}

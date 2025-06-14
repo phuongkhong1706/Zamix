@@ -1,405 +1,336 @@
-import React, { useState } from 'react';
-import {
-  Chart as ChartJS,
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  PointElement,
-  LineElement,
-  RadialLinearScale,
-} from 'chart.js';
+import React, { useState, useEffect } from 'react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, AreaChart, Area } from 'recharts';
+import { Users, BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import '../../../../../styles/teacher/TeacherStatistics.css';
 
-import { Pie, Doughnut, Bar, Line, PolarArea } from 'react-chartjs-2';
+const TeacherStatistics = () => {
+  const [selectedTimeRange, setSelectedTimeRange] = useState('month');
+  const [selectedGrade, setSelectedGrade] = useState('all');
 
-ChartJS.register(
-  ArcElement,
-  Tooltip,
-  Legend,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  Title,
-  PointElement,
-  LineElement,
-  RadialLinearScale
-);
-
-const TeachersData = [
-  { id: 1, name: 'Khổng Thị Hoài Phương', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 1, grade: 'Lớp 10', score: 8.5 },
-  { id: 2, name: 'Trần Thị B', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 2, grade: 'Lớp 11', score: 7.2 },
-  { id: 3, name: 'Lê Văn C', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '5/3/2025', shift: 1, grade: 'Lớp 12', score: 6.8 },
-  { id: 4, name: 'Phạm Thị D', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '18/6/2025', shift: 3, grade: 'Lớp 10', score: 9.1 },
-  { id: 5, name: 'Hoàng Văn E', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '6/3/2025', shift: 2, grade: 'Lớp 11', score: 5.9 },
-  { id: 6, name: 'Ngô Thị F', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '19/6/2025', shift: 1, grade: 'Lớp 12', score: 7.5 },
-  { id: 7, name: 'Đặng Văn G', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '7/3/2025', shift: 3, grade: 'Lớp 10', score: 8.0 },
-  { id: 8, name: 'Vũ Thị H', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '20/6/2025', shift: 2, grade: 'Lớp 11', score: 6.3 },
-  { id: 9, name: 'Trịnh Văn I', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '8/3/2025', shift: 1, grade: 'Lớp 12', score: 7.8 },
-  { id: 10, name: 'Bùi Thị K', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '21/6/2025', shift: 3, grade: 'Lớp 10', score: 8.7 },
-  { id: 11, name: 'Phan Văn L', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 1, grade: 'Lớp 11', score: 7.9 },
-  { id: 12, name: 'Trương Thị M', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '5/3/2025', shift: 2, grade: 'Lớp 12', score: 6.4 },
-  { id: 13, name: 'Lý Văn N', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '18/6/2025', shift: 3, grade: 'Lớp 10', score: 8.9 },
-  { id: 14, name: 'Dương Thị O', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '6/3/2025', shift: 1, grade: 'Lớp 11', score: 5.5 },
-  { id: 15, name: 'Lâm Văn P', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '19/6/2025', shift: 2, grade: 'Lớp 12', score: 7.2 },
-  { id: 16, name: 'Mai Thị Q', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '7/3/2025', shift: 3, grade: 'Lớp 10', score: 7.7 },
-  { id: 17, name: 'Phùng Văn R', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '20/6/2025', shift: 1, grade: 'Lớp 11', score: 6.0 },
-  { id: 18, name: 'Nguyễn Thị S', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '8/3/2025', shift: 2, grade: 'Lớp 12', score: 8.1 },
-  { id: 19, name: 'Hoàng Văn T', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '21/6/2025', shift: 3, grade: 'Lớp 10', score: 9.3 },
-  { id: 20, name: 'Văn Thị U', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 1, grade: 'Lớp 11', score: 7.1 },
-  { id: 21, name: 'Trần Văn V', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '5/3/2025', shift: 2, grade: 'Lớp 12', score: 6.7 },
-  { id: 22, name: 'Lê Thị W', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '18/6/2025', shift: 3, grade: 'Lớp 10', score: 8.3 },
-  { id: 23, name: 'Phạm Văn X', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '6/3/2025', shift: 1, grade: 'Lớp 11', score: 5.7 },
-  { id: 24, name: 'Ngô Thị Y', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '19/6/2025', shift: 2, grade: 'Lớp 12', score: 7.9 },
-  { id: 25, name: 'Đặng Văn Z', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '7/3/2025', shift: 3, grade: 'Lớp 10', score: 8.4 },
-  { id: 26, name: 'Vũ Thị AA', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '20/6/2025', shift: 1, grade: 'Lớp 11', score: 6.5 },
-  { id: 27, name: 'Trịnh Văn BB', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '8/3/2025', shift: 2, grade: 'Lớp 12', score: 7.4 },
-  { id: 28, name: 'Bùi Thị CC', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '21/6/2025', shift: 3, grade: 'Lớp 10', score: 9.0 },
-  { id: 29, name: 'Phan Văn DD', exam: 'Kiểm tra Toán', examRound: 'Cuối kỳ', examDate: '17/6/2025', shift: 1, grade: 'Lớp 11', score: 7.6 },
-  { id: 30, name: 'Trương Thị EE', exam: 'Kiểm tra Toán', examRound: 'Giữa kỳ', examDate: '5/3/2025', shift: 2, grade: 'Lớp 12', score: 6.9 },
-];
-
-
-
-const ChartCard = ({ title, chart }) => (
-  <div
-    style={{
-      flex: '1 1 30%',
-      margin: '12px',
-      padding: '12px',
-      backgroundColor: 'white',
-      borderRadius: '12px',
-      boxShadow: '0 4px 8px rgba(0,0,0,0.1)',
-      minWidth: '100px',
-      maxWidth: '320px',
-      height: '270px', // giảm chiều cao xuống còn 220px
-      display: 'flex',
-      flexDirection: 'column',
-      justifyContent: 'flex-start',
-    }}
-  >
-    <h3 style={{ fontSize: '16px', textAlign: 'center', marginBottom: '12px', lineHeight: '1.2' }}>{title}</h3>
-    <div style={{ flex: 1, overflow: 'hidden' }}>
-      {chart}
-    </div>
-  </div>
-);
-
-
-function Sidebar({ activeTab, setActiveTab }) {
-  return (
-    <div
-      style={{
-        width: '200px',
-        background: '#f9fafb',
-        padding: '20px',
-        boxShadow: '2px 0 5px rgba(0,0,0,0.1)',
-      }}
-    >
-      <h2 style={{ marginBottom: '24px' }}>Đánh giá</h2>
-      <div
-        onClick={() => setActiveTab('info')}
-        style={{
-          padding: '10px 15px',
-          cursor: 'pointer',
-          backgroundColor: activeTab === 'info' ? '#3b82f6' : 'transparent',
-          color: activeTab === 'info' ? 'white' : '#111827',
-          borderRadius: '8px',
-          marginBottom: '12px',
-        }}
-      >
-        Thông tin kỳ thi
-      </div>
-      <div
-        onClick={() => setActiveTab('results')}
-        style={{
-          padding: '10px 15px',
-          cursor: 'pointer',
-          backgroundColor: activeTab === 'results' ? '#3b82f6' : 'transparent',
-          color: activeTab === 'results' ? 'white' : '#111827',
-          borderRadius: '8px',
-          marginBottom: '12px',
-        }}
-      >
-        Kết quả thi
-      </div>
-    </div>
-  );
-}
-
-function TeacherStatistic() {
-  const [activeTab, setActiveTab] = useState('info');
-
-  // Dữ liệu tính toán dựa trên TeachersData
-  // Tab 1: Thông tin kỳ thi (tập trung vào phân phối ca thi, khối, ngày thi, đợt thi)
-  const examShiftDistribution = {
-    labels: ['Ca 1', 'Ca 2'],
-    datasets: [
-      {
-        label: 'Số lượng học sinh',
-        data: [
-          TeachersData.filter((s) => s.shift === 1).length,
-          TeachersData.filter((s) => s.shift === 2).length,
-        ],
-        backgroundColor: ['#3b82f6', '#60a5fa'],
-      },
-    ],
-  };
-
-  const gradeDistribution = {
-    labels: ['Lớp 10', 'Lớp 11', 'Lớp 12'],
-    datasets: [
-      {
-        label: 'Số lượng học sinh',
-        data: [
-          TeachersData.filter((s) => s.grade === 'Lớp 10').length,
-          TeachersData.filter((s) => s.grade === 'Lớp 11').length,
-          TeachersData.filter((s) => s.grade === 'Lớp 12').length,
-        ],
-        backgroundColor: ['#a78bfa', '#8b5cf6', '#7c3aed'],
-      },
-    ],
-  };
-
-  // Tính đếm học sinh theo ngày thi (ví dụ giả sử có nhiều ngày)
-  const examDates = [...new Set(TeachersData.map((s) => s.examDate))];
-  const examDateDistribution = {
-    labels: examDates,
-    datasets: [
-      {
-        label: 'Số học sinh thi',
-        data: examDates.map((date) => TeachersData.filter((s) => s.examDate === date).length),
-        backgroundColor: '#f87171',
-      },
-    ],
-  };
-
-  // Đợt thi phân phối
-  const examRounds = [...new Set(TeachersData.map((s) => s.examRound))];
-  const examRoundDistribution = {
-    labels: examRounds,
-    datasets: [
-      {
-        label: 'Số học sinh theo đợt',
-        data: examRounds.map((r) => TeachersData.filter((s) => s.examRound === r).length),
-        backgroundColor: ['#fbbf24', '#f59e0b'],
-      },
-    ],
-  };
-
-  // Pie chart phân phối theo kỳ thi (dữ liệu hiện tại chỉ có 1 kỳ)
-  const examTypes = [...new Set(TeachersData.map((s) => s.exam))];
-  const examTypeDistribution = {
-    labels: examTypes,
-    datasets: [
-      {
-        label: 'Số học sinh',
-        data: examTypes.map((type) => TeachersData.filter((s) => s.exam === type).length),
-        backgroundColor: ['#34d399'],
-      },
-    ],
-  };
-
-  // Bar chart phân phối theo tên học sinh (ví dụ: số lượng học sinh tương ứng - ít ý nghĩa nhưng demo)
-  const TeacherNames = TeachersData.map((s) => s.name);
-  const TeacherCount = TeachersData.map(() => 1);
-
-  const TeacherNameDistribution = {
-    labels: TeacherNames,
-    datasets: [
-      {
-        label: 'Số lượng',
-        data: TeacherCount,
-        backgroundColor: '#60a5fa',
-      },
-    ],
-  };
-
-  // ---------------------------------------------------------
-  // Tab 2: Kết quả thi (liên quan điểm số)
-
-  // Điểm phân phối (ví dụ chia điểm thành nhóm: <5, 5-7, 7-9, >9)
-  const scoreBinsLabels = ['<5', '5-7', '7-9', '9+'];
-  const scoreBinsCount = [
-    TeachersData.filter((s) => s.score < 5).length,
-    TeachersData.filter((s) => s.score >= 5 && s.score < 7).length,
-    TeachersData.filter((s) => s.score >= 7 && s.score < 9).length,
-    TeachersData.filter((s) => s.score >= 9).length,
+  // Dữ liệu mẫu dựa trên ERD
+  const examData = [
+    { month: 'T1', exams: 12, students: 450, avgScore: 7.2, passRate: 78 },
+    { month: 'T2', exams: 15, students: 520, avgScore: 7.5, passRate: 82 },
+    { month: 'T3', exams: 18, students: 600, avgScore: 7.1, passRate: 75 },
+    { month: 'T4', exams: 22, students: 680, avgScore: 7.8, passRate: 85 },
+    { month: 'T5', exams: 25, students: 750, avgScore: 7.6, passRate: 83 },
+    { month: 'T6', exams: 20, students: 580, avgScore: 8.0, passRate: 88 }
   ];
-  const scoreDistribution = {
-    labels: scoreBinsLabels,
-    datasets: [
-      {
-        label: 'Số học sinh',
-        data: scoreBinsCount,
-        backgroundColor: ['#ef4444', '#fbbf24', '#34d399', '#10b981'],
-      },
-    ],
-  };
 
-  // Điểm trung bình theo khối
-  const grades = [...new Set(TeachersData.map((s) => s.grade))];
-  const avgScoreByGrade = grades.map((grade) => {
-    const TeachersInGrade = TeachersData.filter((s) => s.grade === grade);
-    if (TeachersInGrade.length === 0) return 0;
-    return (
-      TeachersInGrade.reduce((sum, s) => sum + s.score, 0) / TeachersInGrade.length
-    ).toFixed(2);
-  });
-  const avgScoreGradeData = {
-    labels: grades,
-    datasets: [
-      {
-        label: 'Điểm trung bình',
-        data: avgScoreByGrade,
-        backgroundColor: '#3b82f6',
-      },
-    ],
-  };
+  const gradeDistribution = [
+    { grade: 'Lớp 10', students: 420, exams: 35, avgScore: 7.2 },
+    { grade: 'Lớp 11', students: 380, exams: 42, avgScore: 7.6 },
+    { grade: 'Lớp 12', students: 350, exams: 48, avgScore: 8.1 }
+  ];
 
-  // Điểm theo từng học sinh (Bar chart)
-  const scoreByTeacher = {
-    labels: TeacherNames,
-    datasets: [
-      {
-        label: 'Điểm',
-        data: TeachersData.map((s) => s.score),
-        backgroundColor: '#f97316',
-      },
-    ],
-  };
+  const questionTypeStats = [
+    { type: 'Trắc nghiệm', count: 1250, avgScore: 7.8, color: '#8884d8' },
+    { type: 'Tự luận', count: 680, avgScore: 6.9, color: '#82ca9d' },
+    { type: 'Ứng dụng', count: 420, avgScore: 6.2, color: '#ffc658' },
+    { type: 'Tổng hợp', count: 320, avgScore: 5.8, color: '#ff7300' }
+  ];
 
-  // Điểm theo ca thi (Bar chart)
-  const shifts = [...new Set(TeachersData.map((s) => s.shift))];
-  const avgScoreByShift = shifts.map((shift) => {
-    const TeachersInShift = TeachersData.filter((s) => s.shift === shift);
-    if (TeachersInShift.length === 0) return 0;
-    return (
-      TeachersInShift.reduce((sum, s) => sum + s.score, 0) / TeachersInShift.length
-    ).toFixed(2);
-  });
-  const avgScoreShiftData = {
-    labels: shifts.map((s) => `Ca ${s}`),
-    datasets: [
-      {
-        label: 'Điểm trung bình',
-        data: avgScoreByShift,
-        backgroundColor: '#2563eb',
-      },
-    ],
-  };
+  const reviewStats = [
+    { status: 'Chờ xử lý', count: 12, color: '#ff4d4f' },
+    { status: 'Đã xử lý', count: 85, color: '#52c41a' },
+    { status: 'Đang xem xét', count: 8, color: '#faad14' }
+  ];
 
-  // Điểm theo ngày thi (Line chart)
-  const avgScoreByDate = examDates.map((date) => {
-    const TeachersOnDate = TeachersData.filter((s) => s.examDate === date);
-    if (TeachersOnDate.length === 0) return 0;
-    return (
-      TeachersOnDate.reduce((sum, s) => sum + s.score, 0) / TeachersOnDate.length
-    ).toFixed(2);
-  });
-  const avgScoreDateData = {
-    labels: examDates,
-    datasets: [
-      {
-        label: 'Điểm trung bình',
-        data: avgScoreByDate,
-        borderColor: '#059669',
-        backgroundColor: '#bbf7d0',
-        tension: 0.3,
-      },
-    ],
-  };
+  const difficultyAnalysis = [
+    { level: 'Dễ', questions: 450, avgScore: 8.5, successRate: 92 },
+    { level: 'Trung bình', questions: 380, avgScore: 7.2, successRate: 78 },
+    { level: 'Khó', questions: 220, avgScore: 5.8, successRate: 58 },
+    { level: 'Rất khó', questions: 120, avgScore: 4.2, successRate: 35 }
+  ];
 
-  return (
-    <div style={{ display: 'flex', height: '100vh', fontFamily: 'sans-serif' }}>
-      <Sidebar activeTab={activeTab} setActiveTab={setActiveTab} />
-      <div
-        style={{
-          flex: 1,
-          padding: '30px',
-          background: '#f3f4f6',
-          overflowY: 'auto',
-          display: 'flex',
-          flexWrap: 'wrap',
-          justifyContent: 'center',
-          gap: '24px',
-        }}
-      >
-        {activeTab === 'info' && (
-          <>
-            <ChartCard
-              title="Phân phối ca thi"
-              chart={<Doughnut data={examShiftDistribution} />}
-            />
-            <ChartCard
-              title="Phân phối khối"
-              chart={<Bar data={gradeDistribution} />}
-            />
-            <ChartCard
-              title="Số học sinh theo ngày thi"
-              chart={<Bar data={examDateDistribution} />}
-            />
-            <ChartCard
-              title="Số học sinh theo đợt thi"
-              chart={<Pie data={examRoundDistribution} />}
-            />
-            <ChartCard
-              title="Phân phối kỳ thi"
-              chart={<PolarArea data={examTypeDistribution} />}
-            />
-            <ChartCard
-              title="Số học sinh theo tên"
-              chart={<Bar data={TeacherNameDistribution} options={{ indexAxis: 'y' }} />}
-            />
-          </>
-        )}
+  const topicPerformance = [
+    { topic: 'Đại số', totalQuestions: 420, avgScore: 7.6, weakestArea: 'Phương trình bậc cao' },
+    { topic: 'Hình học', totalQuestions: 380, avgScore: 6.8, weakestArea: 'Hình học không gian' },
+    { topic: 'Giải tích', totalQuestions: 290, avgScore: 6.2, weakestArea: 'Tích phân' },
+    { topic: 'Xác suất', totalQuestions: 180, avgScore: 7.1, weakestArea: 'Xác suất có điều kiện' }
+  ];
 
-        {activeTab === 'results' && (
-          <>
-            <ChartCard
-              title="Phân phối điểm"
-              chart={<Bar data={scoreDistribution} />}
-            />
-            <ChartCard
-              title="Điểm trung bình theo khối"
-              chart={<Bar data={avgScoreGradeData} />}
-            />
-            <ChartCard
-              title="Điểm theo học sinh"
-              chart={<Bar data={scoreByTeacher} options={{ indexAxis: 'y' }} />}
-            />
-            <ChartCard
-              title="Điểm trung bình theo ca thi"
-              chart={<Bar data={avgScoreShiftData} />}
-            />
-            <ChartCard
-              title="Điểm trung bình theo ngày thi"
-              chart={<Line data={avgScoreDateData} />}
-            />
-            <ChartCard
-              title="Tỉ lệ điểm theo khối"
-              chart={
-                <Pie
-                  data={{
-                    labels: grades,
-                    datasets: [
-                      {
-                        label: 'Tỉ lệ điểm trung bình',
-                        data: avgScoreByGrade,
-                        backgroundColor: ['#a78bfa', '#8b5cf6', '#7c3aed'],
-                      },
-                    ],
-                  }}
-                />
-              }
-            />
-          </>
-        )}
+  const timeAnalysis = [
+    { timeRange: '0-30 phút', students: 145, avgScore: 8.2, completion: 95 },
+    { timeRange: '30-60 phút', students: 380, avgScore: 7.5, completion: 88 },
+    { timeRange: '60-90 phút', students: 290, avgScore: 6.8, completion: 75 },
+    { timeRange: '90+ phút', students: 85, avgScore: 5.9, completion: 60 }
+  ];
+
+  const StatCard = ({ title, value, change, icon: Icon, color }) => (
+    <div className="teastats-stat-card" style={{ borderLeftColor: color }}>
+      <div className="teastats-stat-card-content">
+        <div className="teastats-stat-card-info">
+          <p className="teastats-stat-title">{title}</p>
+          <p className="teastats-stat-value">{value}</p>
+          <p className={`teastats-stat-change ${change >= 0 ? 'teastats-positive' : 'teastats-negative'}`}>
+            {change >= 0 ? '+' : ''}{change}% so với tháng trước
+          </p>
+        </div>
+        <Icon className="teastats-stat-icon" style={{ color }} />
       </div>
     </div>
   );
-}
 
-export default TeacherStatistic;
+  return (
+    <div className="teastats-dashboard">
+      <div className="teastats-container">
+        {/* Filters */}
+        <div className="teastats-filters">
+          <select 
+            value={selectedTimeRange} 
+            onChange={(e) => setSelectedTimeRange(e.target.value)}
+            className="teastats-select"
+          >
+            <option value="week">Tuần này</option>
+            <option value="month">Tháng này</option>
+            <option value="quarter">Quý này</option>
+            <option value="year">Năm này</option>
+          </select>
+          
+          <select 
+            value={selectedGrade} 
+            onChange={(e) => setSelectedGrade(e.target.value)}
+            className="teastats-select"
+          >
+            <option value="all">Tất cả lớp</option>
+            <option value="10">Lớp 10</option>
+            <option value="11">Lớp 11</option>
+            <option value="12">Lớp 12</option>
+          </select>
+        </div>
+
+        {/* Key Statistics Cards */}
+        <div className="teastats-stats-grid">
+          <StatCard 
+            title="Tổng số kỳ thi" 
+            value="125" 
+            change={12} 
+            icon={FileText} 
+            color="#3b82f6" 
+          />
+          <StatCard 
+            title="Học sinh tham gia" 
+            value="1,150" 
+            change={8} 
+            icon={Users} 
+            color="#10b981" 
+          />
+          <StatCard 
+            title="Điểm trung bình" 
+            value="7.6" 
+            change={3} 
+            icon={Award} 
+            color="#f59e0b" 
+          />
+          <StatCard 
+            title="Tỷ lệ đạt" 
+            value="83%" 
+            change={5} 
+            icon={TrendingUp} 
+            color="#8b5cf6" 
+          />
+        </div>
+
+        {/* Charts Grid */}
+        <div className="teastats-charts-grid">
+          {/* Xu hướng kết quả thi theo thời gian */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Xu hướng kết quả thi theo thời gian</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <LineChart data={examData}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="month" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Line type="monotone" dataKey="avgScore" stroke="#3b82f6" name="Điểm TB" />
+                <Line type="monotone" dataKey="passRate" stroke="#10b981" name="Tỷ lệ đạt (%)" />
+              </LineChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Phân bố theo khối lớp */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Phân bố theo khối lớp</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <BarChart data={gradeDistribution}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="grade" />
+                <YAxis />
+                <Tooltip />
+                <Legend />
+                <Bar dataKey="students" fill="#3b82f6" name="Số học sinh" />
+                <Bar dataKey="exams" fill="#f59e0b" name="Số bài thi" />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        <div className="teastats-charts-grid">
+          {/* Phân tích theo loại câu hỏi */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Phân tích theo loại câu hỏi</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <PieChart>
+                <Pie
+                  data={questionTypeStats}
+                  cx="50%"
+                  cy="50%"
+                  labelLine={false}
+                  label={({ name, percent }) => `${name} ${(percent * 100).toFixed(0)}%`}
+                  outerRadius={80}
+                  fill="#8884d8"
+                  dataKey="count"
+                >
+                  {questionTypeStats.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={entry.color} />
+                  ))}
+                </Pie>
+                <Tooltip />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Tình trạng phúc tra */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Tình trạng phúc tra</h3>
+            <div className="teastats-review-stats">
+              {reviewStats.map((item, index) => (
+                <div key={index} className="teastats-review-item">
+                  <div className="teastats-review-info">
+                    <div 
+                      className="teastats-review-color" 
+                      style={{ backgroundColor: item.color }}
+                    ></div>
+                    <span className="teastats-review-status">{item.status}</span>
+                  </div>
+                  <span className="teastats-review-count">{item.count}</span>
+                </div>
+              ))}
+            </div>
+            <div className="teastats-alert">
+              <div className="teastats-alert-content">
+                <AlertCircle className="teastats-alert-icon" />
+                <span className="teastats-alert-text">
+                  Có {reviewStats[0].count} đơn phúc tra cần xử lý khẩn cấp
+                </span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="teastats-charts-grid">
+          {/* Phân tích độ khó câu hỏi */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Phân tích độ khó câu hỏi</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <ScatterChart data={difficultyAnalysis}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="questions" name="Số câu hỏi" />
+                <YAxis dataKey="avgScore" name="Điểm TB" />
+                <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+                <Scatter name="Mức độ khó" data={difficultyAnalysis} fill="#8884d8" />
+              </ScatterChart>
+            </ResponsiveContainer>
+          </div>
+
+          {/* Phân tích thời gian làm bài */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Phân tích thời gian làm bài</h3>
+            <ResponsiveContainer width="100%" height={300}>
+              <AreaChart data={timeAnalysis}>
+                <CartesianGrid strokeDasharray="3 3" />
+                <XAxis dataKey="timeRange" />
+                <YAxis />
+                <Tooltip />
+                <Area type="monotone" dataKey="students" stackId="1" stroke="#3b82f6" fill="#3b82f6" />
+              </AreaChart>
+            </ResponsiveContainer>
+          </div>
+        </div>
+
+        {/* Detailed Analysis Tables */}
+        <div className="teastats-tables-grid">
+          {/* Phân tích theo chủ đề */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Phân tích theo chủ đề</h3>
+            <div className="teastats-table-container">
+              <table className="teastats-table">
+                <thead>
+                  <tr className="teastats-table-header">
+                    <th className="teastats-th-left">Chủ đề</th>
+                    <th className="teastats-th-center">Số câu</th>
+                    <th className="teastats-th-center">Điểm TB</th>
+                    <th className="teastats-th-left">Điểm yếu</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {topicPerformance.map((topic, index) => (
+                    <tr key={index} className="teastats-table-row">
+                      <td className="teastats-td-bold">{topic.topic}</td>
+                      <td className="teastats-td-center">{topic.totalQuestions}</td>
+                      <td className="teastats-td-center">
+                        <span className={`teastats-score-badge ${
+                          topic.avgScore >= 7 ? 'teastats-score-good' : 
+                          topic.avgScore >= 5 ? 'teastats-score-medium' : 
+                          'teastats-score-poor'
+                        }`}>
+                          {topic.avgScore}
+                        </span>
+                      </td>
+                      <td className="teastats-td-weak">{topic.weakestArea}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          {/* Insights và Khuyến nghị */}
+          <div className="teastats-chart-card">
+            <h3 className="teastats-chart-title">Insights và Khuyến nghị</h3>
+            <div className="teastats-insights">
+              <div className="teastats-insight teastats-insight-success">
+                <div className="teastats-insight-header">
+                  <CheckCircle className="teastats-insight-icon" />
+                  <span className="teastats-insight-title">Điểm mạnh</span>
+                </div>
+                <p className="teastats-insight-text">
+                  Học sinh làm bài trắc nghiệm rất tốt với điểm trung bình 7.8/10. 
+                  Tỷ lệ đạt tăng 5% so với tháng trước.
+                </p>
+              </div>
+              
+              <div className="teastats-insight teastats-insight-warning">
+                <div className="teastats-insight-header">
+                  <AlertCircle className="teastats-insight-icon" />
+                  <span className="teastats-insight-title">Cần cải thiện</span>
+                </div>
+                <p className="teastats-insight-text">
+                  Câu hỏi tự luận và ứng dụng cần được tăng cường. 
+                  Học sinh còn yếu ở phần hình học không gian và tích phân.
+                </p>
+              </div>
+              
+              <div className="teastats-insight teastats-insight-info">
+                <div className="teastats-insight-header">
+                  <TrendingUp className="teastats-insight-icon" />
+                  <span className="teastats-insight-title">Khuyến nghị</span>
+                </div>
+                <ul className="teastats-recommendation-list">
+                  <li>• Tăng số lượng câu hỏi tự luận trong các đề thi</li>
+                  <li>• Tổ chức buổi ôn tập chuyên sâu về hình học không gian</li>
+                  <li>• Xem xét giảm thời gian làm bài để cải thiện hiệu quả</li>
+                  <li>• Ưu tiên xử lý 12 đơn phúc tra đang chờ</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+export default TeacherStatistics;

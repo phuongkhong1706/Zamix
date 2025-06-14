@@ -1,0 +1,406 @@
+/* Teacher Statistics Dashboard CSS */
+
+.teastats-dashboard {
+  min-height: 100vh;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0f2fe 100%);
+  padding: 24px;
+  width: 97vw;
+  margin-left: -20px;
+}
+
+.teastats-container {
+  width: 99%;
+  margin: 0 10px;
+}
+
+/* Filters */
+.teastats-filters {
+  margin-bottom: 24px;
+  display: flex;
+  gap: 16px;
+}
+
+.teastats-select {
+  padding: 8px 16px;
+  border: 1px solid #d1d5db;
+  border-radius: 8px;
+  background-color: white;
+  font-size: 14px;
+  color: #374151;
+  outline: none;
+  transition: all 0.2s;
+}
+
+.teastats-select:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+/* Statistics Cards Grid */
+.teastats-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 768px) {
+  .teastats-stats-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+@media (min-width: 1024px) {
+  .teastats-stats-grid {
+    grid-template-columns: repeat(4, 1fr);
+  }
+}
+
+/* Stat Card */
+.teastats-stat-card {
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+  padding: 24px;
+  border-left: 4px solid;
+}
+
+.teastats-stat-card-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.teastats-stat-card-info {
+  flex: 1;
+}
+
+.teastats-stat-title {
+  font-size: 14px;
+  font-weight: 500;
+  color: #6b7280;
+  margin: 0 0 4px 0;
+}
+
+.teastats-stat-value {
+  font-size: 24px;
+  font-weight: bold;
+  color: #111827;
+  margin: 0 0 4px 0;
+}
+
+.teastats-stat-change {
+  font-size: 14px;
+  margin: 0;
+}
+
+.teastats-positive {
+  color: #059669;
+}
+
+.teastats-negative {
+  color: #dc2626;
+}
+
+.teastats-stat-icon {
+  height: 32px;
+  width: 32px;
+}
+
+/* Charts Grid */
+.teastats-charts-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 32px;
+}
+
+@media (min-width: 1024px) {
+  .teastats-charts-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Tables Grid */
+.teastats-tables-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+}
+
+@media (min-width: 1024px) {
+  .teastats-tables-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+/* Chart Card */
+.teastats-chart-card {
+  background: white;
+  padding: 24px;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
+}
+
+.teastats-chart-title {
+  font-size: 18px;
+  font-weight: 600;
+  margin-bottom: 16px;
+  margin: 0 0 16px 0;
+}
+
+/* Review Stats */
+.teastats-review-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.teastats-review-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px;
+  background-color: #f9fafb;
+  border-radius: 8px;
+}
+
+.teastats-review-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.teastats-review-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.teastats-review-status {
+  font-weight: 500;
+}
+
+.teastats-review-count {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Alert */
+.teastats-alert {
+  margin-top: 16px;
+  padding: 12px;
+  background-color: #dbeafe;
+  border-radius: 8px;
+}
+
+.teastats-alert-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.teastats-alert-icon {
+  height: 20px;
+  width: 20px;
+  color: #2563eb;
+}
+
+.teastats-alert-text {
+  font-size: 14px;
+  color: #1e40af;
+}
+
+/* Table */
+.teastats-table-container {
+  overflow-x: auto;
+}
+
+.teastats-table {
+  width: 100%;
+  font-size: 14px;
+  border-collapse: collapse;
+}
+
+.teastats-table-header {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.teastats-th-left {
+  text-align: left;
+  padding: 8px 0;
+  font-weight: 600;
+  color: #374151;
+}
+
+.teastats-th-center {
+  text-align: center;
+  padding: 8px 0;
+  font-weight: 600;
+  color: #374151;
+}
+
+.teastats-table-row {
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.teastats-td-bold {
+  padding: 8px 0;
+  font-weight: 500;
+}
+
+.teastats-td-center {
+  text-align: center;
+  padding: 8px 0;
+}
+
+.teastats-td-weak {
+  padding: 8px 0;
+  font-size: 12px;
+  color: #6b7280;
+}
+
+/* Score Badge */
+.teastats-score-badge {
+  padding: 4px 8px;
+  border-radius: 9999px;
+  font-size: 12px;
+  font-weight: 500;
+}
+
+.teastats-score-good {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.teastats-score-medium {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.teastats-score-poor {
+  background-color: #fecaca;
+  color: #991b1b;
+}
+
+/* Insights */
+.teastats-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.teastats-insight {
+  padding: 16px;
+  border-radius: 8px;
+  border-left: 4px solid;
+}
+
+.teastats-insight-success {
+  background-color: #f0fdf4;
+  border-left-color: #10b981;
+}
+
+.teastats-insight-warning {
+  background-color: #fffbeb;
+  border-left-color: #f59e0b;
+}
+
+.teastats-insight-info {
+  background-color: #eff6ff;
+  border-left-color: #3b82f6;
+}
+
+.teastats-insight-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.teastats-insight-icon {
+  height: 20px;
+  width: 20px;
+}
+
+.teastats-insight-success .teastats-insight-icon {
+  color: #059669;
+}
+
+.teastats-insight-warning .teastats-insight-icon {
+  color: #d97706;
+}
+
+.teastats-insight-info .teastats-insight-icon {
+  color: #2563eb;
+}
+
+.teastats-insight-title {
+  font-weight: 500;
+}
+
+.teastats-insight-success .teastats-insight-title {
+  color: #065f46;
+}
+
+.teastats-insight-warning .teastats-insight-title {
+  color: #92400e;
+}
+
+.teastats-insight-info .teastats-insight-title {
+  color: #1e40af;
+}
+
+.teastats-insight-text {
+  font-size: 14px;
+  margin: 0;
+  line-height: 1.5;
+}
+
+.teastats-insight-success .teastats-insight-text {
+  color: #047857;
+}
+
+.teastats-insight-warning .teastats-insight-text {
+  color: #b45309;
+}
+
+.teastats-insight-info .teastats-insight-text {
+  color: #1d4ed8;
+}
+
+.teastats-recommendation-list {
+  font-size: 14px;
+  color: #1d4ed8;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  line-height: 1.5;
+}
+
+.teastats-recommendation-list li {
+  margin: 4px 0;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .teastats-dashboard {
+    padding: 16px;
+  }
+  
+  .teastats-filters {
+    flex-direction: column;
+  }
+  
+  .teastats-stat-card-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  
+  .teastats-review-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 8px;
+  }
+}

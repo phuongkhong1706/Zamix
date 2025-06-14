@@ -6,7 +6,7 @@ import '../../../../styles/student/StudentHomeTab/StudentHeroSection.css';
 const StudentHeroSection = () => {
   const [isVisible, setIsVisible] = useState(false);
   const [studentName] = useState("Khổng Thị Hoài Phương");
-  const [upcomingExams] = useState(2);
+  const [upcomingExams] = useState(3);
 
   useEffect(() => {
     const timer = setTimeout(() => {

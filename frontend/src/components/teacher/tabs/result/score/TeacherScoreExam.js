@@ -1,275 +1,625 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from "react-router-dom";
-import { FaSearch } from "react-icons/fa";
+import { Search, Eye, FileText, TrendingUp, Users, Calendar, Download, CheckCircle, XCircle, Clock, Award, AlertTriangle, ArrowLeft } from 'lucide-react';
+import '../../../../../styles/teacher/TeacherScoreExam.css';
 
-function TeacherScoreExam() {
+const TeacherScoreExam = () => {
+  // Mock data - trong thực tế sẽ fetch từ API
+  const [exams, setExams] = useState([
+    {
+      exam_id: 1,
+      name: "Kiểm tra giữa kỳ I - Toán 12",
+      grade: "12",
+      type: "Kiểm tra",
+      start_time: "2024-10-15T08:00:00",
+      end_time: "2024-10-15T09:30:00",
+      teacher_id: 1,
+      total_students: 35,
+      completed_students: 33,
+      avg_score: 7.2
+    },
+    {
+      exam_id: 2,
+      name: "Thi học kỳ I - Toán 11",
+      grade: "11",
+      type: "Thi chính thức",
+      start_time: "2024-11-20T07:30:00",
+      end_time: "2024-11-20T09:00:00",
+      teacher_id: 1,
+      total_students: 42,
+      completed_students: 40,
+      avg_score: 6.8
+    },
+    {
+      exam_id: 3,
+      name: "Kiểm tra cuối kỳ I - Toán 10",
+      grade: "10",
+      type: "Kiểm tra",
+      start_time: "2024-12-10T08:00:00",
+      end_time: "2024-12-10T09:30:00",
+      teacher_id: 1,
+      total_students: 38,
+      completed_students: 38,
+      avg_score: 7.5
+    }
+  ]);
+
+  const [results, setResults] = useState([
+    {
+      result_id: 1,
+      student_id: 1,
+      test_id: 1,
+      exam_id: 1,
+      start_time: "2024-10-15T08:00:00",
+      end_time: "2024-10-15T09:25:00",
+      total_score: 8.5,
+      status: "completed",
+      student_name: "Nguyễn Văn An",
+      student_code: "HS001"
+    },
+    {
+      result_id: 2,
+      student_id: 2,
+      test_id: 1,
+      exam_id: 1,
+      start_time: "2024-10-15T08:00:00",
+      end_time: "2024-10-15T09:20:00",
+      total_score: 6.0,
+      status: "completed",
+      student_name: "Trần Thị Bình",
+      student_code: "HS002"
+    },
+    {
+      result_id: 3,
+      student_id: 3,
+      test_id: 1,
+      exam_id: 1,
+      start_time: "2024-10-15T08:00:00",
+      end_time: "2024-10-15T09:30:00",
+      total_score: 7.5,
+      status: "completed",
+      student_name: "Lê Minh Cường",
+      student_code: "HS003"
+    },
+    {
+      result_id: 4,
+      student_id: 4,
+      test_id: 2,
+      exam_id: 2,
+      start_time: "2024-11-20T07:30:00",
+      end_time: "2024-11-20T08:55:00",
+      total_score: 9.2,
+      status: "completed",
+      student_name: "Phạm Minh Đức",
+      student_code: "HS004"
+    },
+    {
+      result_id: 5,
+      student_id: 5,
+      test_id: 2,
+      exam_id: 2,
+      start_time: "2024-11-20T07:30:00",
+      end_time: "2024-11-20T08:45:00",
+      total_score: 4.5,
+      status: "completed",
+      student_name: "Hoàng Thị Em",
+      student_code: "HS005"
+    }
+  ]);
+
+  const [reviews, setReviews] = useState([
+    {
+      test_id: 1,
+      student_id: 1,
+      exam_id: 1,
+      student_name: "Nguyễn Văn An",
+      student_code: "HS001",
+      created_at: "2024-10-16T10:30:00",
+      score: 8.5,
+      reason: "Em thấy câu 5 về hàm số bậc hai, em đã làm đúng phương pháp nhưng kết quả bị trừ điểm. Em xin được xem lại.",
+      status: "pending"
+    },
+    {
+      test_id: 1,
+      student_id: 2,
+      exam_id: 1,
+      student_name: "Trần Thị Bình",
+      student_code: "HS002",
+      created_at: "2024-10-16T14:20:00",
+      score: 6.0,
+      reason: "Em nghĩ câu 3 về phương trình lượng giác em làm đúng rồi ạ. Xin cô xem lại giúp em.",
+      status: "pending"
+    },
+    {
+      test_id: 2,
+      student_id: 4,
+      exam_id: 2,
+      student_name: "Phạm Minh Đức",
+      student_code: "HS004",
+      created_at: "2024-11-21T09:15:00",
+      score: 9.2,
+      reason: "Em thấy bài làm của em hoàn toàn chính xác, có thể được điểm tối đa. Xin thầy xem lại.",
+      status: "pending"
+    }
+  ]);
+
+  const [selectedExam, setSelectedExam] = useState(null);
+  const [selectedExamForReviews, setSelectedExamForReviews] = useState(null);
+  const [activeTab, setActiveTab] = useState('exams');
+  const [searchTerm, setSearchTerm] = useState('');
+  const [filterGrade, setFilterGrade] = useState('all');
+
+  // Filter functions
+  const filteredExams = exams.filter(exam => {
+    const matchesSearch = exam.name.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesGrade = filterGrade === 'all' || exam.grade === filterGrade;
+    return matchesSearch && matchesGrade;
+  });
+
+  const filteredResults = results.filter(result => 
+    selectedExam ? result.exam_id === selectedExam.exam_id : false
+  );
+
+  const getReviewsForExam = (examId) => {
+    return reviews.filter(review => review.exam_id === examId && review.status === 'pending');
+  };
+
+  const totalPendingReviews = reviews.filter(review => review.status === 'pending').length;
+
+  // Statistics calculation
+  const getExamStatistics = (examId) => {
+    const examResults = results.filter(r => r.exam_id === examId);
+    const scores = examResults.map(r => r.total_score);
+    
+    if (scores.length === 0) return null;
+
+    const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
+    const max = Math.max(...scores);
+    const min = Math.min(...scores);
+    const excellent = scores.filter(s => s >= 8).length;
+    const good = scores.filter(s => s >= 6.5 && s < 8).length;
+    const average = scores.filter(s => s >= 5 && s < 6.5).length;
+    const poor = scores.filter(s => s < 5).length;
+
+    // Tìm học sinh có điểm cao nhất và thấp nhất
+    const topStudent = examResults.find(r => r.total_score === max);
+    const bottomStudent = examResults.find(r => r.total_score === min);
+
+    return { 
+      avg, max, min, excellent, good, average, poor, total: scores.length,
+      topStudent, bottomStudent
+    };
+  };
+
+  const handleReviewAction = (reviewIndex, action) => {
+    const updatedReviews = [...reviews];
+    const reviewToUpdate = selectedExamForReviews ? 
+      getReviewsForExam(selectedExamForReviews.exam_id)[reviewIndex] : 
+      reviews[reviewIndex];
+    
+    const globalIndex = reviews.findIndex(r => 
+      r.test_id === reviewToUpdate.test_id && 
+      r.student_id === reviewToUpdate.student_id && 
+      r.exam_id === reviewToUpdate.exam_id
+    );
+    
+    if (globalIndex !== -1) {
+      updatedReviews[globalIndex].status = action;
+      setReviews(updatedReviews);
+    }
+  };
+
   const navigate = useNavigate();
-  const [studentName, setStudentName] = useState("");
-  const [selectedSemester, setSelectedSemester] = useState("");
-  const [selectedSlot, setSelectedSlot] = useState("");
-  const [selectedDate, setSelectedDate] = useState("");
-  const [selectedGrade, setSelectedGrade] = useState(""); // Bộ lọc khối (Lớp 10,11,12)
-  const [appealClicked, setAppealClicked] = useState(false);
-
   const handleReviewExam = () => {
     navigate("/teacher/result/score/review_exam");
   };
 
-  const handleRemarkExam = () => {
-    navigate("/teacher/result/score/remark_exam");
+  const formatDate = (dateString) => {
+    return new Date(dateString).toLocaleDateString('vi-VN', {
+      year: 'numeric',
+      month: '2-digit',
+      day: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
-  const inputWrapperStyle = {
-    position: "relative",
-    display: "inline-block",
+  const getScoreColor = (score) => {
+    if (score >= 8) return 'teagrade-score-excellent';
+    if (score >= 6.5) return 'teagrade-score-good';
+    if (score >= 5) return 'teagrade-score-average';
+    return 'teagrade-score-poor';
   };
-
-  const inputStyle = {
-    paddingRight: "30px", // chừa chỗ cho icon
-    ...filterInputStyle,
-  };
-
-  const iconStyle = {
-    position: "absolute",
-    right: "10px",
-    top: "50%",
-    transform: "translateY(-50%)",
-    color: "#999",
-    pointerEvents: "none", // icon không ảnh hưởng khi click
-  };
-
-  // Dữ liệu giả gồm 10 dòng với các cột bạn yêu cầu và bổ sung thêm khối (grade)
-  const examScores = [
-    { id: 1, studentName: "Khổng Thị Hoài Phương", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "1", score: 8.5, grade: "10" },
-    { id: 2, studentName: "Trần Thị B", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-17", slot: "2", score: 7.2, grade: "11" },
-    { id: 3, studentName: "Lê Văn C", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-10", slot: "1", score: 9.1, grade: "12" },
-    { id: 4, studentName: "Phạm Thị D", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-11", slot: "2", score: 8.3, grade: "10" },
-    { id: 5, studentName: "Hoàng Văn E", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-18", slot: "3", score: 7.8, grade: "11" },
-    { id: 6, studentName: "Đỗ Thị F", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-09", slot: "1", score: 8.7, grade: "12" },
-    { id: 7, studentName: "Vũ Văn G", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-19", slot: "4", score: 9.0, grade: "10" },
-    { id: 8, studentName: "Trịnh Thị H", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-12", slot: "3", score: 7.6, grade: "11" },
-    { id: 9, studentName: "Bùi Văn I", examTitle: "Kiểm tra Toán cuối kỳ", semester: "Cuối kỳ", examDate: "2025-06-20", slot: "2", score: 8.2, grade: "12" },
-    { id: 10, studentName: "Ngô Thị K", examTitle: "Kiểm tra Toán giữa kỳ", semester: "Giữa kỳ", examDate: "2025-03-13", slot: "4", score: 7.9, grade: "10" },
-  ];
-
-  // Filter theo tên học sinh, kỳ thi, đợt thi, ca thi, ngày thi và khối (grade)
-  const filteredScores = examScores.filter((item) => {
-    return (
-      item.studentName.toLowerCase().includes(studentName.toLowerCase()) &&
-      (selectedSemester ? item.semester === selectedSemester : true) &&
-      (selectedSlot ? item.slot === selectedSlot : true) &&
-      (selectedDate ? item.examDate === selectedDate : true) &&
-      (selectedGrade ? item.grade === selectedGrade : true)
-    );
-  });
 
   return (
-    <div style={outerContainerStyle}>
-      <div style={mainCardStyle}>
-        <div style={filterWrapperStyle}>
-          <div style={inputWrapperStyle}>
-            <input
-              type="text"
-              placeholder="Kỳ thi..."
-              value={studentName}
-              onChange={(e) => setStudentName(e.target.value)}
-              style={inputStyle}
-            />
-            <FaSearch style={iconStyle} />
+    <div className="teagrade-container">
+      {/* Header */}
+      <div className="teagrade-header">
+        <div className="teagrade-header-content">
+          <div className="teagrade-header-info">
+            <div>
+              <h1 className="teagrade-title">Quản lý Điểm Thi</h1>
+              <p className="teagrade-subtitle">Xem kết quả và xử lý phúc tra</p>
+            </div>
+            <div className="teagrade-header-actions">
+              <div className="teagrade-pending-count">
+                <span className="teagrade-pending-text">
+                  {totalPendingReviews} đơn phúc tra chờ xử lý
+                </span>
+              </div>
+            </div>
           </div>
+        </div>
+      </div>
 
-          <select
-            value={selectedSemester}
-            onChange={(e) => setSelectedSemester(e.target.value)}
-            style={filterSelectStyle}
-          >
-            <option value="">Tất cả đợt thi</option>
-            <option value="Giữa kỳ">Giữa kỳ</option>
-            <option value="Cuối kỳ">Cuối kỳ</option>
-          </select>
-
-          <select
-            value={selectedSlot}
-            onChange={(e) => setSelectedSlot(e.target.value)}
-            style={filterSelectStyle}
-          >
-            <option value="">Tất cả ca thi</option>
-            <option value="1">Ca 1 (7h00 - 9h00)</option>
-            <option value="2">Ca 2 (9h15 - 11h15)</option>
-            <option value="3">Ca 3 (12h30 - 14h00)</option>
-            <option value="4">Ca 4 (15h - 17h30)</option>
-          </select>
-
-          <input
-            type="date"
-            value={selectedDate}
-            onChange={(e) => setSelectedDate(e.target.value)}
-            style={filterSelectStyle}
-          />
-
-          {/* Bộ lọc khối (grade) */}
-          <select
-            value={selectedGrade}
-            onChange={(e) => setSelectedGrade(e.target.value)}
-            style={filterSelectStyle}
-          >
-            <option value="">Tất cả các khối</option>
-            <option value="10">Lớp 10</option>
-            <option value="11">Lớp 11</option>
-            <option value="12">Lớp 12</option>
-          </select>
-
-          <button
-            onClick={() => setAppealClicked(!appealClicked)}
-            style={{
-              backgroundColor: appealClicked ? "#800080" : "#fff", // tím hoặc trắng
-              color: appealClicked ? "#fff" : "#000", // chữ trắng hoặc tím
-              border: "1px solid #bbb",
-              borderRadius: "6px",
-              padding: "8px 16px",
-              cursor: "pointer",
-              marginLeft: "10px",
-              fontWeight: "bold",
-              height: "38px"
-            }}
-          >
-            Phúc tra
-          </button>
+      <div className="teagrade-main-content">
+        {/* Navigation Tabs */}
+        <div className="teagrade-tabs">
+          <div className="teagrade-tab-nav">
+            <nav className="teagrade-tab-list">
+              <button
+                onClick={() => {
+                  setActiveTab('exams');
+                  setSelectedExamForReviews(null);
+                }}
+                className={`teagrade-tab ${activeTab === 'exams' ? 'teagrade-tab-active' : ''}`}
+              >
+                <div className="teagrade-tab-content">
+                  <Calendar className="teagrade-tab-icon" />
+                  Danh sách kỳ thi
+                </div>
+              </button>
+              <button
+                onClick={() => {
+                  setActiveTab('reviews');
+                  setSelectedExamForReviews(null);
+                }}
+                className={`teagrade-tab ${activeTab === 'reviews' ? 'teagrade-tab-active' : ''}`}
+              >
+                <div className="teagrade-tab-content">
+                  <FileText className="teagrade-tab-icon" />
+                  Đơn phúc tra ({totalPendingReviews})
+                </div>
+              </button>
+            </nav>
+          </div>
         </div>
 
-        <h3 style={sectionTitleStyle}>Bảng điểm kỳ thi</h3>
-        <table style={tableStyle}>
-          <thead>
-            <tr>
-              <th style={tableCellStyle}>STT</th>
-              <th style={tableCellStyle}>Họ và tên học sinh</th>
-              <th style={tableCellStyle}>Kỳ thi</th>
-              <th style={tableCellStyle}>Đợt thi</th>
-              <th style={tableCellStyle}>Ngày thi</th>
-              <th style={tableCellStyle}>Ca thi</th>
-              <th style={tableCellStyle}>Khối</th> {/* Cột mới */}
-              <th style={tableCellStyle}>Điểm</th>
-              <th style={tableCellStyle}>Thao tác</th>
-            </tr>
-          </thead>
-          <tbody>
-            {filteredScores.length > 0 ? (
-              filteredScores.map((item, index) => (
-                <tr key={item.id}>
-                  <td style={tableCellStyle}>{index + 1}</td>
-                  <td style={tableCellStyle}>{item.studentName}</td>
-                  <td style={tableCellStyle}>{item.examTitle}</td>
-                  <td style={tableCellStyle}>{item.semester}</td>
-                  <td style={tableCellStyle}>
-                    {new Date(item.examDate).toLocaleDateString("vi-VN")}
-                  </td>
-                  <td style={tableCellStyle}>{item.slot}</td>
-                  <td style={tableCellStyle}>Lớp {item.grade}</td> {/* Hiển thị khối */}
-                  <td style={tableCellStyle}>{item.score}</td>
-                  <td style={tableCellStyle}>
-                    <button style={actionButtonStyle} onClick={handleReviewExam}>
-                      Xem
-                    </button>{" "}
-                    <button style={appealButtonStyle} onClick={handleRemarkExam}>
-                      Yêu cầu phúc tra
-                    </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td style={tableCellStyle} colSpan="9">
-                  Không có dữ liệu phù hợp.
-                </td>
-              </tr>
+        {/* Exams Tab */}
+        {activeTab === 'exams' && (
+          <div>
+            {/* Filters */}
+            <div className="teagrade-filters">
+              <div className="teagrade-filter-group">
+                <div className="teagrade-search-container">
+                  <div className="teagrade-search-wrapper">
+                    <Search className="teagrade-search-icon" />
+                    <input
+                      type="text"
+                      placeholder="Tìm kiếm kỳ thi..."
+                      value={searchTerm}
+                      onChange={(e) => setSearchTerm(e.target.value)}
+                      className="teagrade-search-input"
+                    />
+                  </div>
+                </div>
+                <select
+                  value={filterGrade}
+                  onChange={(e) => setFilterGrade(e.target.value)}
+                  className="teagrade-select"
+                >
+                  <option value="all">Tất cả lớp</option>
+                  <option value="10">Lớp 10</option>
+                  <option value="11">Lớp 11</option>
+                  <option value="12">Lớp 12</option>
+                </select>
+              </div>
+            </div>
+
+            {/* Exams List */}
+            <div className="teagrade-exam-grid">
+              {filteredExams.map((exam) => {
+                const stats = getExamStatistics(exam.exam_id);
+                return (
+                  <div key={exam.exam_id} className="teagrade-exam-card">
+                    <div className="teagrade-exam-card-content">
+                      <div className="teagrade-exam-header">
+                        <div>
+                          <h3 className="teagrade-exam-title">{exam.name}</h3>
+                          <p className="teagrade-exam-info">Lớp {exam.grade} • {exam.type}</p>
+                        </div>
+                      </div>
+                      
+                      <div className="teagrade-exam-details">
+                        <div className="teagrade-exam-detail">
+                          <Calendar className="teagrade-detail-icon" />
+                          {formatDate(exam.start_time)}
+                        </div>
+                        <div className="teagrade-exam-detail">
+                          <Users className="teagrade-detail-icon" />
+                          {exam.completed_students}/{exam.total_students} học sinh
+                        </div>
+                        <div className="teagrade-exam-detail">
+                          <TrendingUp className="teagrade-detail-icon" />
+                          Điểm TB: {exam.avg_score}/10
+                        </div>
+                      </div>
+
+                      {stats && (
+                        <div className="teagrade-stats">
+                          <div className="teagrade-stats-grid">
+                            <div className="teagrade-stat-item teagrade-stat-excellent">
+                              <div className="teagrade-stat-value">{stats.excellent}</div>
+                              <div className="teagrade-stat-label">Giỏi (≥8)</div>
+                            </div>
+                            <div className="teagrade-stat-item teagrade-stat-good">
+                              <div className="teagrade-stat-value">{stats.good}</div>
+                              <div className="teagrade-stat-label">Khá (6.5-8)</div>
+                            </div>
+                            <div className="teagrade-stat-item teagrade-stat-average">
+                              <div className="teagrade-stat-value">{stats.average}</div>
+                              <div className="teagrade-stat-label">TB (5-6.5)</div>
+                            </div>
+                            <div className="teagrade-stat-item teagrade-stat-poor">
+                              <div className="teagrade-stat-value">{stats.poor}</div>
+                              <div className="teagrade-stat-label">Yếu (0-5)</div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
+
+                      <button
+                        onClick={() => setSelectedExam(exam)}
+                        className="teagrade-view-details-btn"
+                      >
+                        <Eye className="teagrade-btn-icon" />
+                        Xem chi tiết
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Detailed Results Modal */}
+            {selectedExam && (
+              <div className="teagrade-modal-overlay">
+                <div className="teagrade-modal">
+                  <div className="teagrade-modal-header">
+                    <div>
+                      <h2 className="teagrade-modal-title">{selectedExam.name}</h2>
+                      <p className="teagrade-modal-subtitle">Chi tiết kết quả thi</p>
+                    </div>
+                    <div className="teagrade-modal-actions">
+                      <button className="teagrade-export-btn">
+                        <Download className="teagrade-btn-icon" />
+                        Xuất Excel
+                      </button>
+                      <button
+                        onClick={() => setSelectedExam(null)}
+                        className="teagrade-close-btn"
+                      >
+                        <XCircle className="teagrade-close-icon" />
+                      </button>
+                    </div>
+                  </div>
+                  
+                  <div className="teagrade-modal-body">
+                    {/* Top/Bottom Students Info */}
+                    {(() => {
+                      const stats = getExamStatistics(selectedExam.exam_id);
+                      if (stats && stats.topStudent && stats.bottomStudent) {
+                        return (
+                          <div className="teagrade-top-bottom-students">
+                            <div className="teagrade-top-student">
+                              <div className="teagrade-student-highlight">
+                                <Award className="teagrade-award-icon teagrade-top-icon" />
+                                <div className="teagrade-student-info">
+                                  <h4 className="teagrade-student-title">Điểm cao nhất</h4>
+                                  <p className="teagrade-student-name">{stats.topStudent.student_name}</p>
+                                  <p className="teagrade-student-details">
+                                    {stats.topStudent.student_code} • 
+                                    <span className={`teagrade-score ${getScoreColor(stats.topStudent.total_score)}`}>
+                                      {stats.topStudent.total_score}/10
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                            <div className="teagrade-bottom-student">
+                              <div className="teagrade-student-highlight">
+                                <AlertTriangle className="teagrade-alert-icon teagrade-bottom-icon" />
+                                <div className="teagrade-student-info">
+                                  <h4 className="teagrade-student-title">Điểm thấp nhất</h4>
+                                  <p className="teagrade-student-name">{stats.bottomStudent.student_name}</p>
+                                  <p className="teagrade-student-details">
+                                    {stats.bottomStudent.student_code} • 
+                                    <span className={`teagrade-score ${getScoreColor(stats.bottomStudent.total_score)}`}>
+                                      {stats.bottomStudent.total_score}/10
+                                    </span>
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+                        );
+                      }
+                      return null;
+                    })()}
+
+                    <div className="teagrade-table-container">
+                      <table className="teagrade-table">
+                        <thead className="teagrade-table-header">
+                          <tr>
+                            <th className="teagrade-table-th">Học sinh</th>
+                            <th className="teagrade-table-th">Mã HS</th>
+                            <th className="teagrade-table-th">Điểm</th>
+                            <th className="teagrade-table-th">Thời gian làm bài</th>
+                          </tr>
+                        </thead>
+                        <tbody className="teagrade-table-body">
+                          {filteredResults.map((result) => (
+                            <tr key={result.result_id} className="teagrade-table-row">
+                              <td className="teagrade-table-cell">
+                                <div className="teagrade-student-name">{result.student_name}</div>
+                              </td>
+                              <td className="teagrade-table-cell">
+                                <div className="teagrade-student-code">{result.student_code}</div>
+                              </td>
+                              <td className="teagrade-table-cell">
+                                <span className={`teagrade-score ${getScoreColor(result.total_score)}`}>
+                                  {result.total_score}/10
+                                </span>
+                              </td>
+                              <td className="teagrade-table-cell teagrade-duration">
+                                {Math.round((new Date(result.end_time) - new Date(result.start_time)) / 60000)} phút
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                </div>
+              </div>
             )}
-          </tbody>
-        </table>
+          </div>
+        )}
+
+        {/* Reviews Tab */}
+        {activeTab === 'reviews' && (
+          <div>
+            {!selectedExamForReviews ? (
+              // Danh sách kỳ thi với thống kê phúc tra
+              <div className="teagrade-reviews-container">
+                <div className="teagrade-reviews-header">
+                  <h2 className="teagrade-reviews-title">Danh sách kỳ thi có đơn phúc tra</h2>
+                  <p className="teagrade-reviews-subtitle">Chọn kỳ thi để xem các đơn phúc tra</p>
+                </div>
+                
+                <div className="teagrade-exam-reviews-grid">
+                  {exams.map((exam) => {
+                    const examReviews = getReviewsForExam(exam.exam_id);
+                    if (examReviews.length === 0) return null;
+                    
+                    return (
+                      <div key={exam.exam_id} className="teagrade-exam-review-card">
+                        <div className="teagrade-exam-card-content">
+                          <div className="teagrade-exam-header">
+                            <div>
+                              <h3 className="teagrade-exam-title">{exam.name}</h3>
+                              <p className="teagrade-exam-info">Lớp {exam.grade} • {exam.type}</p>
+                            </div>
+                            <div className="teagrade-review-count-badge">
+                              {examReviews.length} đơn
+                            </div>
+                          </div>
+                          
+                          <div className="teagrade-exam-details">
+                            <div className="teagrade-exam-detail">
+                              <Calendar className="teagrade-detail-icon" />
+                              {formatDate(exam.start_time)}
+                            </div>
+                            <div className="teagrade-exam-detail">
+                              <FileText className="teagrade-detail-icon" />
+                              {examReviews.length} đơn phúc tra chờ xử lý
+                            </div>
+                          </div>
+
+                          <button
+                            onClick={() => setSelectedExamForReviews(exam)}
+                            className="teagrade-view-details-btn"
+                          >
+                            <Eye className="teagrade-btn-icon" />
+                            Xem đơn phúc tra
+                          </button>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                
+                {exams.every(exam => getReviewsForExam(exam.exam_id).length === 0) && (
+                  <div className="teagrade-empty-state">
+                    <FileText className="teagrade-empty-icon" />
+                    <h3 className="teagrade-empty-title">Không có đơn phúc tra nào</h3>
+                    <p className="teagrade-empty-text">Hiện tại không có đơn phúc tra nào cần xử lý.</p>
+                  </div>
+                )}
+              </div>
+            ) : (
+              // Danh sách phúc tra của kỳ thi được chọn
+              <div className="teagrade-reviews-container">
+                <div className="teagrade-reviews-header">
+                  <button
+                    onClick={() => setSelectedExamForReviews(null)}
+                    className="teagrade-back-btn"
+                  >
+                    <ArrowLeft className="teagrade-back-icon" />
+                    Quay lại
+                  </button>
+                  <div>
+                    <h2 className="teagrade-reviews-title">{selectedExamForReviews.name}</h2>
+                    <p className="teagrade-reviews-subtitle">
+                      Đơn phúc tra chờ xử lý ({getReviewsForExam(selectedExamForReviews.exam_id).length})
+                    </p>
+                  </div>
+                </div>
+                
+                <div className="teagrade-reviews-list">
+                  {getReviewsForExam(selectedExamForReviews.exam_id).map((review, index) => (
+                    <div key={`${review.test_id}-${review.student_id}`} className="teagrade-review-item">
+                      <div className="teagrade-review-content">
+                        <div className="teagrade-review-student-info">
+                          <h3 className="teagrade-review-student-name">{review.student_name}</h3>
+                          <span className="teagrade-review-student-code">({review.student_code})</span>
+                          <span className={`teagrade-score ${getScoreColor(review.score)}`}>
+                            Điểm hiện tại: {review.score}/10
+                          </span>
+                        </div>
+                        
+                        <div className="teagrade-review-time">
+                          <Clock className="teagrade-time-icon" />
+                          Gửi lúc: {formatDate(review.created_at)}
+                        </div>
+                        
+                        <div className="teagrade-review-reason">
+                          <h4 className="teagrade-reason-title">Lý do phúc tra:</h4>
+                          <p className="teagrade-reason-text">{review.reason}</p>
+                        </div>
+                        
+                        <div className="teagrade-review-actions">
+                          <button
+                            onClick={() => handleReviewAction(index, 'approved')}
+                            className="teagrade-action-btn teagrade-approve-btn"
+                          >
+                            <CheckCircle className="teagrade-btn-icon" />
+                            Chấp nhận
+                          </button>
+                          <button
+                            onClick={() => handleReviewAction(index, 'rejected')}
+                            className="teagrade-action-btn teagrade-reject-btn"
+                          >
+                            <XCircle className="teagrade-btn-icon" />
+                            Từ chối
+                          </button>
+                          <button
+                            onClick={handleReviewExam} 
+                            className="teagrade-action-btn teagrade-view-btn">
+                            Xem bài làm
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
-}
-
-// Styles
-const outerContainerStyle = {
-  display: "flex",
-  justifyContent: "center",
-  marginTop: "30px",
-  marginBottom: "30px",
-  padding: "0 20px",
-};
-
-const mainCardStyle = {
-  width: "1200px",
-  borderRadius: "15px",
-  padding: "20px",
-  backgroundColor: "#fff",
-  boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-};
-
-const filterWrapperStyle = {
-  marginBottom: "25px",
-  display: "flex",
-  flexWrap: "wrap",
-  gap: "15px",
-  alignItems: "center",
-};
-
-const filterInputStyle = {
-  height: "38px",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-  padding: "0 10px",
-  fontSize: "14px",
-  width: "434px",
-};
-
-const filterSelectStyle = {
-  height: "38px",
-  borderRadius: "5px",
-  border: "1px solid #ccc",
-  padding: "0 10px",
-  fontSize: "14px",
-  cursor: "pointer",
-};
-
-const sectionTitleStyle = {
-  marginBottom: "15px",
-  fontWeight: "bold",
-  fontSize: "18px",
-};
-
-const tableStyle = {
-  width: "100%",
-  borderCollapse: "collapse",
-};
-
-const tableCellStyle = {
-  border: "1px solid #ddd",
-  padding: "8px",
-  textAlign: "center",
-  fontSize: "14px",
-};
-
-const actionButtonStyle = {
-  backgroundColor: "#2a9d8f",
-  color: "white",
-  border: "none",
-  padding: "6px 12px",
-  borderRadius: "4px",
-  cursor: "pointer",
-  marginRight: "8px",
-  fontWeight: "bold",
-};
-
-const appealButtonStyle = {
-  backgroundColor: "#e76f51",
-  color: "white",
-  border: "none",
-  padding: "6px 12px",
-  borderRadius: "4px",
-  cursor: "pointer",
-  fontWeight: "bold",
 };
 
 export default TeacherScoreExam;

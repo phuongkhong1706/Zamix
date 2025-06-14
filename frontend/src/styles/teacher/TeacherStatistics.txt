@@ -1,0 +1,276 @@
+/* Teacher Statistics Dashboard CSS */
+.teastats-dashboard {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f5f7fa;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+.teastats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+  gap: 20px;
+  margin-bottom: 30px;
+}
+
+.teastats-card {
+  background: white;
+  border-radius: 12px;
+  padding: 20px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e1e8ed;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.teastats-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+}
+
+.teastats-card-header {
+  margin-bottom: 15px;
+  border-bottom: 2px solid #ecf0f1;
+  padding-bottom: 10px;
+}
+
+.teastats-card-header h3 {
+  color: #2c3e50;
+  font-size: 1.2rem;
+  margin: 0;
+  font-weight: 600;
+}
+
+.teastats-highlight {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  text-align: center;
+}
+
+.teastats-highlight .teastats-card-header h3 {
+  color: white;
+  border-bottom-color: rgba(255, 255, 255, 0.3);
+}
+
+.teastats-big-number {
+  font-size: 3rem;
+  font-weight: 700;
+  margin: 20px 0;
+  color: white;
+}
+
+.teastats-warning {
+  color: #e74c3c !important;
+}
+
+.teastats-card-desc {
+  margin: 0;
+  opacity: 0.9;
+  font-size: 0.95rem;
+}
+
+.teastats-chart-card {
+  min-height: 320px;
+}
+
+.teastats-wide {
+  grid-column: span 2;
+}
+
+@media (max-width: 768px) {
+  .teastats-wide {
+    grid-column: span 1;
+  }
+}
+
+.teastats-table-card {
+  min-height: 300px;
+}
+
+.teastats-table-container {
+  overflow-x: auto;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.teastats-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+}
+
+.teastats-table th {
+  background-color: #34495e;
+  color: white;
+  padding: 12px 8px;
+  text-align: left;
+  font-weight: 600;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.teastats-table td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #ecf0f1;
+}
+
+.teastats-table tr:hover {
+  background-color: #f8f9fa;
+}
+
+.teastats-status {
+  font-weight: 600;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.teastats-summary {
+  background: white;
+  border-radius: 12px;
+  padding: 25px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.07);
+  border: 1px solid #e1e8ed;
+}
+
+.teastats-summary h3 {
+  color: #2c3e50;
+  font-size: 1.4rem;
+  margin-bottom: 20px;
+  font-weight: 600;
+  border-bottom: 3px solid #3498db;
+  padding-bottom: 10px;
+}
+
+.teastats-summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 20px;
+}
+
+.teastats-summary-item {
+  padding: 15px;
+  background: #f8f9fa;
+  border-radius: 8px;
+  border-left: 4px solid #3498db;
+}
+
+.teastats-summary-item h4 {
+  color: #2c3e50;
+  font-size: 1.1rem;
+  margin: 0 0 8px 0;
+  font-weight: 600;
+}
+
+.teastats-summary-item p {
+  color: #5a6c7d;
+  margin: 0;
+  line-height: 1.5;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .teastats-grid {
+    grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  }
+}
+
+@media (max-width: 768px) {
+  .teastats-dashboard {
+    padding: 15px;
+  }
+  
+  .teastats-header h1 {
+    font-size: 2rem;
+  }
+  
+  .teastats-grid {
+    grid-template-columns: 1fr;
+    gap: 15px;
+  }
+  
+  .teastats-card {
+    padding: 15px;
+  }
+  
+  .teastats-big-number {
+    font-size: 2.5rem;
+  }
+  
+  .teastats-summary-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .teastats-header h1 {
+    font-size: 1.5rem;
+  }
+  
+  .teastats-big-number {
+    font-size: 2rem;
+  }
+  
+  .teastats-table {
+    font-size: 0.8rem;
+  }
+  
+  .teastats-table th,
+  .teastats-table td {
+    padding: 8px 4px;
+  }
+}
+
+/* Chart customization */
+.recharts-wrapper {
+  font-family: inherit !important;
+}
+
+.recharts-cartesian-axis-tick-value {
+  font-size: 12px !important;
+  fill: #5a6c7d !important;
+}
+
+.recharts-legend-wrapper {
+  padding-top: 10px !important;
+}
+
+/* Loading animation */
+@keyframes teastats-pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.teastats-loading {
+  animation: teastats-pulse 1.5s ease-in-out infinite;
+}
+
+/* Print styles */
+@media print {
+  .teastats-dashboard {
+    background: white;
+    padding: 0;
+  }
+  
+  .teastats-card {
+    box-shadow: none;
+    border: 1px solid #ddd;
+    page-break-inside: avoid;
+    margin-bottom: 20px;
+  }
+  
+  .teastats-grid {
+    display: block;
+  }
+  
+  .teastats-chart-card {
+    min-height: auto;
+  }
+}

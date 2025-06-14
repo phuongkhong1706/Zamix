@@ -3,6 +3,8 @@ import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-d
 /* Chức năng hệ thống */
 import Login from "./components/LogIn"; // Import trang đăng nhập
 import Signup from "./components/SignUp";
+import ForgotPassword from "./components/ForgotPassword";
+import ResetPassword from "./components/ResetPassword";
  
 /* Chức năng khách */
 import GuestMenu from "./components/guest/GuestMenu";
@@ -11,7 +13,9 @@ import GuestHomeTab from "./components/guest/tabs/GuestHomeTab";
 /* Chức năng admin */
 import AdminMenu from "./components/admin/AdminMenu";
 import AdminHomeTab from "./components/admin/tabs/AdminHomeTab";
-import AdminStudentManagement from "./components/admin/tabs/account_management/StudentManagement";
+import AdminAccountManagement from "./components/admin/tabs/account_management/AccountManagement";
+import AdminPermissionInterface from "./components/admin/tabs/AdminPermissionInterface";
+import AdminStatistics from "./components/admin/tabs/AdminStatistics";
 /* Chức năng student */
 import StudentMenu from "./components/student/StudentMenu";
 import StudentHomeTab from "./components/student/tabs/StudentHomeTab";
@@ -98,10 +102,15 @@ function App() {
         {/* Trang đăng nhập tách biệt, không có GuestMenu */}
         <Route path="/login" element={<Login onLoginSuccess={() => {}} />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgotpassword" element={<ForgotPassword />} />
+        <Route path="/resetpassword" element={<ResetPassword />} />
+
 
         {/* Các trang giao diện Admin */}
         <Route path="/admin/home" element={<AdminLayout> <AdminHomeTab /> </AdminLayout>}/>
-        <Route path="/admin/account_management/student" element={<AdminLayout> <AdminStudentManagement /> </AdminLayout>}/>
+        <Route path="/admin/account_management" element={<AdminLayout> <AdminAccountManagement /> </AdminLayout>}/>
+        <Route path="/admin/exam_permission" element={<AdminLayout> <AdminPermissionInterface /> </AdminLayout>}/>
+        <Route path="/admin/statistics" element={<AdminLayout> <AdminStatistics /> </AdminLayout>}/>
  
         {/* Các trang giao diện Student */}
         <Route path="/student/home" element={<StudentLayout> <StudentHomeTab /> </StudentLayout>}/>

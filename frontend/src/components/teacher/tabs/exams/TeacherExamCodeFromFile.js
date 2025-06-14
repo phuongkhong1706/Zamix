@@ -682,17 +682,21 @@ function TeacherExamCodeFromFile() {
  
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
-        <div className="exam-form-title">Thông tin đề thi</div>
+        <div className="exam-form-title">Kỳ thi giữa kỳ toán 12</div>
  
+        {/* Loại đề thi */}
         <div className="exam-form-row">
           <div className="exam-form-group">
             <label className="exam-form-label">Loại đề thi</label>
-            <input
-              type="text"
+            <select
               className="exam-form-input"
-              value={examData.type}
+              value={examData.type || ""}
               onChange={(e) => setExamData({ ...examData, type: e.target.value })}
-            />
+            >
+              <option value="">Chọn loại đề</option>
+              <option value="thi thử">Thi thử</option>
+              <option value="thi chính thức">Thi chính thức</option>
+            </select>
           </div>
         </div>
  
@@ -729,6 +733,28 @@ function TeacherExamCodeFromFile() {
               min="1"
               placeholder="Nhập ca thi"
             />
+          </div>
+        </div>
+
+        {/* Mật khẩu đề */}
+        <div className="exam-form-row">
+          <div className="exam-form-group">
+            <label className="exam-form-label">Mật khẩu đề</label>
+            {testId ? (
+              <div className="exam-form-input exam-form-static">
+                {examData.password ? "********" : "1234565"}
+              </div>
+            ) : (
+              <input
+                type="text"
+                className="exam-form-input"
+                value={examData.password || ""}
+                onChange={(e) =>
+                  setExamData({ ...examData, password: e.target.value })
+                }
+                placeholder="Nhập mật khẩu"
+              />
+            )}
           </div>
         </div>
  

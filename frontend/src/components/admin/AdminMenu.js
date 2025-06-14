@@ -75,9 +75,11 @@ function AdminMenu() {
         <li className={activePath === "/admin/home" ? "active" : ""}>
           <Link to="/admin/home" className="menu-link">Trang chủ</Link>
         </li>
+        <li className={activePath === "/admin/account_management" ? "active" : ""}>
+          <Link to="/admin/account_management" className="menu-link">Quản lý tài khoản</Link>
+        </li>
 
-{/*cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha*/}
-        {/* Tab "Kết quả" có submenu */}
+{/* cái activePath === và Link to= và cái Route path = trong app.js phải giống nhau mới chạy đúng nha
         <li
           className={`has-submenu ${isAccountDropdownOpen ? "submenu-hover" : ""} ${isAccountActive ? "submenu-active" : ""}`}
           onMouseEnter={() => setIsAccountDropdownOpen(true)}
@@ -93,8 +95,9 @@ function AdminMenu() {
               <Link to="/admin/account_management/teacher">Quản lý giáo viên</Link>
             </li>
           </ul>
-        </li>        <li className={activePath === "/admin/news" ? "active" : ""}>
-          <Link to="/admin/news" className="menu-link">Tin tức</Link> 
+        </li> */}
+        <li className={activePath === "/admin/exam_permission" ? "active" : ""}>
+          <Link to="/admin/exam_permission" className="menu-link">Quản lý kỳ thi</Link> 
         </li>
         <li className={activePath === "/admin/statistics" ? "active" : ""}>
           <Link to="/admin/statistics" className="menu-link">Báo cáo thống kê</Link>
