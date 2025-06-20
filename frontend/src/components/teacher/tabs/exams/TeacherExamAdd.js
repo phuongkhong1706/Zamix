@@ -7,11 +7,11 @@ import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
 import axios from 'axios';
 import { AiOutlineUpload } from 'react-icons/ai';
- 
+
 const TeacherExamAdd = () => {
   const navigate = useNavigate();
   const { examId } = useParams(); // ✅ lấy param từ URL
- 
+
   const [examName, setExamName] = useState("");
   const [examType, setExamType] = useState("Giữa kỳ");
   const [grade, setGrade] = useState("12");
@@ -38,7 +38,7 @@ const TeacherExamAdd = () => {
   const fetchExamDetail = async (id) => {
     const userJson = localStorage.getItem("user");
     let token = null;
- 
+
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -48,22 +48,22 @@ const TeacherExamAdd = () => {
         return;
       }
     }
- 
+
     if (!token) {
       alert("Token không tồn tại. Vui lòng đăng nhập lại.");
       return;
     }
- 
+
     try {
       const res = await fetch(`http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${id}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
- 
+
       if (res.ok) {
         const exam = await res.json();
- 
+
         setExamName(exam.name);
         setExamType(exam.type);
         setGrade(String(exam.grade));
@@ -89,13 +89,13 @@ const TeacherExamAdd = () => {
     } catch (error) {
       console.error("Lỗi kết nối:", error);
     }
- 
+
   };
- 
+
   const handleDelete = async (testId) => {
     const userJson = localStorage.getItem("user");
     let token = null;
- 
+
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -104,16 +104,16 @@ const TeacherExamAdd = () => {
         console.error("Lỗi khi parse user từ localStorage:", error);
       }
     }
- 
+
     if (!token) {
       alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
       return;
     }
- 
+
     const url = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_test/${testId}/`;
- 
+
     if (!window.confirm("Bạn có chắc chắn muốn xóa đề thi này?")) return;
- 
+
     try {
       const res = await fetch(url, {
         method: "DELETE",
@@ -121,10 +121,10 @@ const TeacherExamAdd = () => {
           "Authorization": `Bearer ${token}`,
         },
       });
- 
+
       if (res.status === 204) {
         alert("Xóa đề thi thành công!");
- 
+
         // Sau khi xóa, cập nhật lại danh sách testList
         setTestList((prevList) => prevList.filter((test) => test.test_id !== testId));
       } else {
@@ -137,19 +137,19 @@ const TeacherExamAdd = () => {
       alert("Không thể kết nối tới server.");
     }
   };
- 
+
   // ✅ useEffect để gọi API nếu có examId
   useEffect(() => {
     if (examId) {
       fetchExamDetail(examId);
     }
   }, [examId]);
- 
+
   // Hàm lấy danh sách đề thi
   const fetchTestList = async () => {
     const userJson = localStorage.getItem("user");
     let token = null;
- 
+
     if (userJson) {
       try {
         const userObj = JSON.parse(userJson);
@@ -159,19 +159,19 @@ const TeacherExamAdd = () => {
         return;
       }
     }
- 
+
     if (!token) {
       alert("Token không tồn tại. Vui lòng đăng nhập lại.");
       return;
     }
- 
+
     try {
       const res = await fetch(`http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${examId}/`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
- 
+
       if (res.ok) {
         const tests = await res.json();
         console.log("Dữ liệu trả về từ API:", tests);  // 👈 In dữ liệu ra console
@@ -182,77 +182,82 @@ const TeacherExamAdd = () => {
     } catch (error) {
       console.error("Lỗi kết nối khi lấy danh sách đề thi:", error);
     }
- 
+
   };
- 
+
   useEffect(() => {
     if (examId) {
       fetchExamDetail(examId);
     }
     fetchTestList(); // Lấy danh sách đề thi khi component load
   }, [examId]);
- 
-const handleSave = async () => {
-  const userJson = localStorage.getItem("user");
-  let token = null;
 
-  if (userJson) {
-    try {
-      const userObj = JSON.parse(userJson);
-      token = userObj.token;
-    } catch (error) {
-      console.error("Lỗi khi parse user từ localStorage:", error);
+  const handleSave = async () => {
+    const userJson = localStorage.getItem("user");
+    let token = null;
+
+    if (userJson) {
+      try {
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+      } catch (error) {
+        console.error("Lỗi khi parse user từ localStorage:", error);
+      }
     }
-  }
 
-  if (!token) {
-    alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
-    return;
-  }
+    if (!token) {
+      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      return;
+    }
 
-  const data = {
-    name: examName,
-    grade: parseInt(grade),
-    type: examType,
-    time_start: timeStart,
-    time_end: timeEnd,
-    topic_ids: selectedTopics,  // ✅ thêm danh sách topic được chọn
-    regrade_start_time: timeStartRv,
-    regrade_end_time: timeEndRv
+    const data = {
+      name: examName,
+      grade: parseInt(grade),
+      type: examType,
+      time_start: timeStart,
+      time_end: timeEnd,
+      topic_ids: selectedTopics,  // ✅ thêm danh sách topic được chọn
+      regrade_start_time: timeStartRv,
+      regrade_end_time: timeEndRv
+    };
+
+    console.log("📤 Dữ liệu gửi lên backend:", data); // ✅ In dữ liệu gửi đi
+
+    const method = examId ? "PUT" : "POST";
+    const url = examId
+      ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
+      : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/`;
+
+    try {
+      const res = await fetch(url, {
+        method,
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
+        body: JSON.stringify(data),
+      });
+
+      const resText = await res.text();
+
+      if (res.ok) {
+        const result = JSON.parse(resText);
+        alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
+        if (!examId) {
+          // Khi tạo mới thành công, điều hướng thẳng sang trang chỉnh sửa
+          navigate(`/teacher/exams/exam_management/exam_add/${result.id}`);
+        }
+      } else {
+        const errorJson = JSON.parse(resText);
+        alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lưu kỳ thi:", error);
+      alert("Không thể kết nối tới server.");
+    }
   };
 
-  console.log("📤 Dữ liệu gửi lên backend:", data); // ✅ In dữ liệu gửi đi
 
-  const method = examId ? "PUT" : "POST";
-  const url = examId
-    ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
-    : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/`;
-
-  try {
-    const res = await fetch(url, {
-      method,
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${token}`,
-      },
-      body: JSON.stringify(data),
-    });
-
-    const resText = await res.text();
-    if (res.ok) {
-      alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
-      // navigate("/teacher/exams");
-    } else {
-      const errorJson = JSON.parse(resText);
-      alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
-    }
-  } catch (error) {
-    console.error("Lỗi khi lưu kỳ thi:", error);
-    alert("Không thể kết nối tới server.");
-  }
-};
-
- 
   return (
     <div className="add-exam-container">
       <div className="exam-section">
@@ -286,7 +291,7 @@ const handleSave = async () => {
             </div>
           </div>
         </div>
- 
+
         <div className="exam-row">
           <div className="form-group half-width">
             <label>Thời gian mở kỳ thi</label>
@@ -328,7 +333,7 @@ const handleSave = async () => {
               ))}
             </div>
           </div>
- 
+
           <style>
             {`
               .scrollable-box {
@@ -378,33 +383,46 @@ const handleSave = async () => {
             </div>
           </div>
         </div>
- 
+
         <div style={{ display: "flex", justifyContent: "flex-end", marginTop: "16px" }}>
           <button className="btn addcode" onClick={handleSave}>
             <FaSave className="btn-icon" /> {examId ? "Cập nhật" : "Lưu"}
           </button>
         </div>
       </div>
- 
+
       <div className="exam-section">
         <div className="exam-section-title">Danh sách đề thi</div>
- 
+
         <div className="exam-header">
           <button
-              className="btn addcode"
-              onClick={() => navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/`)}
-            >
-              <img src={iconAddCodeExam} alt="icon" className="btn-icon" /> Thêm bài thi thủ công
-            </button>
- 
-            <button
-              className="btn addcode"
-              onClick={() => navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_upload/`)}
-            >
-              <AiOutlineUpload size={20} style={{ marginRight: 6 }} className="btn-icon" /> Thêm bài thi sẵn có
-            </button>
+            className="btn addcode"
+            onClick={() => {
+              if (!examId) {
+                alert("Vui lòng tạo kỳ thi trước khi thêm bài thi!");
+                return;
+              }
+              navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/`);
+            }}
+          >
+            <img src={iconAddCodeExam} alt="icon" className="btn-icon" /> Thêm bài thi thủ công
+          </button>
+
+          <button
+            className="btn addcode"
+            onClick={() => {
+              if (!examId) {
+                alert("Vui lòng tạo kỳ thi trước khi thêm bài thi!");
+                return;
+              }
+              navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_upload/`);
+            }}
+          >
+            <AiOutlineUpload size={20} style={{ marginRight: 6 }} className="btn-icon" /> Thêm bài thi sẵn có
+          </button>
         </div>
- 
+
+
         <table className="exam-table">
           <thead>
             <tr>
@@ -442,8 +460,8 @@ const handleSave = async () => {
                       />
                       Sửa
                     </button>
- 
- 
+
+
                     <button
                       className="btn btn-sm btn-delete"
                       onClick={() => handleDelete(test.test_id)}
@@ -466,11 +484,11 @@ const handleSave = async () => {
               </tr>
             )}
           </tbody>
- 
+
         </table>
       </div>
     </div>
   );
 };
- 
+
 export default TeacherExamAdd;

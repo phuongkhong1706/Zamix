@@ -20,8 +20,7 @@ class TeacherManageQuestionView(APIView):
 
             data = request.data
             print("📥 Dữ liệu đầu vào:", data)
-            
-            # ✅ Kiểm tra có file image không
+
             image_file = request.FILES.get('image', None)
             if image_file:
                 print(f"📷 File ảnh nhận được: {image_file.name}, Size: {image_file.size} bytes")
@@ -34,7 +33,6 @@ class TeacherManageQuestionView(APIView):
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # Kiểm tra test có tồn tại và thuộc quyền sở hữu
             test = get_object_or_404(Test, test_id=data['test'])
             if test.user.id != user_from_token.id:
                 return Response(
@@ -42,39 +40,48 @@ class TeacherManageQuestionView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # Lấy đối tượng user từ ID gửi lên
             user_obj = get_object_or_404(User, id=data['user'])
 
-            # ✅ Xử lý boolean fields từ FormData
             is_gened_by_model = data.get('is_gened_by_model', False)
             created_by_question = data.get('created_by_question', False)
-            
-            # Convert string boolean values từ FormData thành Python boolean
+
+            # Convert string → boolean
             if isinstance(is_gened_by_model, str):
                 is_gened_by_model = is_gened_by_model.lower() in ['true', '1', 'yes']
             if isinstance(created_by_question, str):
                 created_by_question = created_by_question.lower() in ['true', '1', 'yes']
 
-            # ✅ Tạo câu hỏi với image
+            # ✅ Check duplicate câu hỏi
+            existing_question = Question.objects.filter(
+                test=test,
+                content=data['content'].strip()
+            ).first()
+            if existing_question:
+                print(
+                    f"⚠️ Câu hỏi đã tồn tại (question_id={existing_question.question_id}), không tạo mới"
+                )
+                serialized = QuestionSerializer(existing_question)
+                return Response(serialized.data, status=status.HTTP_200_OK)
+
+            # ✅ Tạo câu hỏi mới
             question = Question.objects.create(
                 test=test,
                 content=data['content'],
                 type=data.get('type', 'single'),
-                score=float(data.get('score', 1.0)),  # Đảm bảo score là float
-                level=int(data.get('level', 1)),      # Đảm bảo level là int
+                score=float(data.get('score', 1.0)),
+                level=int(data.get('level', 1)),
                 is_gened_by_model=is_gened_by_model,
                 created_by_question=created_by_question,
                 user=user_obj,
-                image=image_file  # ✅ Thêm image vào câu hỏi
+                image=image_file
             )
 
             serialized = QuestionSerializer(question)
             print("✅ Tạo câu hỏi thành công:", serialized.data)
-            
-            # ✅ Log thông tin image nếu có
+
             if question.image:
                 print(f"📷 Ảnh đã được lưu: {question.image.url}")
-            
+
             return Response(serialized.data, status=status.HTTP_201_CREATED)
 
         except ValueError as ve:
@@ -90,7 +97,6 @@ class TeacherManageQuestionView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
     def put(self, request, question_id):
         try:
             print("✏️ PUT cập nhật câu hỏi")
@@ -104,7 +110,7 @@ class TeacherManageQuestionView(APIView):
             print("📥 Dữ liệu đầu vào:", data)
 
             # Lấy câu hỏi
-            question = get_object_or_404(Question, id=question_id)
+            question = get_object_or_404(Question, question_id=question_id)
 
             # Kiểm tra quyền chỉnh sửa
             if question.test.user.id != user_from_token.id:

@@ -13,10 +13,8 @@ class TeacherManageAnswerView(APIView):
     def post(self, request):
         try:
             print("📝 POST tạo đáp án mới")
-
             user_from_token, error_response = get_authenticated_user(request)
             if error_response:
-                print("❌ Lỗi xác thực token:", error_response.content.decode())
                 return error_response
 
             data = request.data
@@ -38,9 +36,22 @@ class TeacherManageAnswerView(APIView):
                     status=status.HTTP_403_FORBIDDEN,
                 )
 
-            # Lấy user từ request nếu có
+            # Lấy user nếu được truyền
             user_obj = get_object_or_404(User, id=data['user']) if 'user' in data else question.user
 
+            # ✅ Check trùng đáp án
+            existing_answer = Answer.objects.filter(
+                question=question,
+                content=data['content'].strip(),
+            ).first()
+            if existing_answer:
+                print(
+                    f"⚠️ Đáp án đã tồn tại (answer_id={existing_answer.answer_id}), không tạo mới"
+                )
+                serialized = AnswerSerializer(existing_answer)
+                return Response(serialized.data, status=status.HTTP_200_OK)
+
+            # ✅ Tạo đáp án mới
             answer = Answer.objects.create(
                 question=question,
                 content=data['content'],
@@ -60,6 +71,7 @@ class TeacherManageAnswerView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
 
+
     def put(self, request, answer_id):
         try:
             print("✏️ PUT cập nhật đáp án")
@@ -72,7 +84,7 @@ class TeacherManageAnswerView(APIView):
             data = request.data
             print("📥 Dữ liệu đầu vào:", data)
 
-            answer = get_object_or_404(Answer, id=answer_id)
+            answer = get_object_or_404(Answer, answer_id=answer_id)
 
             if answer.question.test.user.id != user_from_token.id:
                 return Response(

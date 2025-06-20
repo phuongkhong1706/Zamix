@@ -141,13 +141,13 @@ class TeacherDetailExamView(APIView):
                 )
 
             data = request.data.copy()
-            updatable_fields = ["name", "grade", "type", "time_start", "time_end"]
+            updatable_fields = ["name", "grade", "type", "time_start", "time_end", "regrade_start_time", "regrade_end_time"]
 
             for field in updatable_fields:
                 if field in data and data[field] is not None:
                     value = data[field]
 
-                    if field in ["time_start", "time_end"]:
+                    if field in ["time_start", "time_end", "regrade_start_time", "regrade_end_time"]:
                         dt = Exam._meta.get_field(field).to_python(value)
                         if timezone.is_naive(dt):
                             dt = timezone.make_aware(dt)

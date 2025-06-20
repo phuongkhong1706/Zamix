@@ -151,135 +151,134 @@ function TeacherExamCode() {
   };
 
   const handleSaveTest = async () => {
-    const userJson = localStorage.getItem("user");
+    const userJson = localStorage.getItem('user');
     let token = null;
     let userId = null;
 
-    if (userJson) {
-      try {
+    try {
+      if (userJson) {
         const userObj = JSON.parse(userJson);
         token = userObj.token;
         userId = userObj.user_id;
-      } catch (error) {
-        console.error("Lỗi khi parse user từ localStorage:", error);
       }
+    } catch (error) {
+      console.error('❌ Lỗi parse user:', error);
     }
 
     if (!token) {
-      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+      alert('❌ Token không tồn tại. Vui lòng đăng nhập lại.');
       return;
     }
 
     if (!testId) {
-      alert("Chưa có testId! Hãy tạo đề thi trước khi lưu câu hỏi.");
+      alert('❌ Vui lòng điền thông tin đề thi trước.');
       return;
     }
 
-    for (const question of newQuestions) {
-      const method = question.id ? "PUT" : "POST";
-      const questionUrl = question.id
-        ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.id}/`
-        : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`;
+    // ✅ Deep copy toàn bộ questions và options
+    let updatedQuestions = newQuestions.map(q => ({
+      ...q,
+      options: q.options ? q.options.map(opt => ({ ...opt })) : [],
+    }));
+    console.log('📋 Câu hỏi trước khi lưu:', updatedQuestions);
+
+    // ✅ Vòng lặp xử lý từng câu hỏi
+    for (let qIndex = 0; qIndex < updatedQuestions.length; qIndex++) {
+      const question = updatedQuestions[qIndex];
+      const isNewQuestion = !question.question_id;
+      const questionUrl = isNewQuestion
+        ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/`
+        : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.question_id}/`;
+      const questionMethod = isNewQuestion ? 'POST' : 'PUT';
 
       try {
-        console.log("📤 Gửi câu hỏi:", method, questionUrl);
-
-        // ✅ Sử dụng FormData để gửi cả text và file
+        // 📝 Gửi câu hỏi
         const formData = new FormData();
         formData.append('test', testId);
-        formData.append('content', question.content);
-        formData.append('type', question.type || "single");
+        formData.append('content', question.content || '');
+        formData.append('type', question.type || 'single');
         formData.append('score', question.score || 1.0);
         formData.append('level', question.level || 1);
-
-        // ✅ FIX: Convert boolean thành string đúng định dạng
-        // ✅ Gửi 1/0 thay vì true/false
-        formData.append('is_gened_by_model', (question.is_gened_by_model || false) ? 1 : 0);
-        formData.append('created_by_question', (question.created_by_question || false) ? 1 : 0);
-
+        formData.append('is_gened_by_model', question.is_gened_by_model ? 1 : 0);
+        formData.append('created_by_question', question.created_by_question ? 1 : 0);
         formData.append('user', userId);
+        if (question.image) formData.append('image', question.image);
 
-        // ✅ Thêm file ảnh nếu có
-        if (question.image) {
-          formData.append('image', question.image);
-          console.log("📷 Đã thêm ảnh:", question.image.name);
-        }
-
-        console.log("📦 Dữ liệu câu hỏi (FormData):", {
-          test: testId,
-          content: question.content,
-          type: question.type || "single",
-          score: question.score || 1.0,
-          level: question.level || 1,
-          hasImage: !!question.image,
-          imageName: question.image?.name
+        console.log(`\n📝 ${questionMethod} câu hỏi:`, questionUrl, question.content);
+        const qRes = await fetch(questionUrl, {
+          method: questionMethod,
+          headers: { Authorization: `Bearer ${token}` },
+          body: formData,
         });
 
-        const res = await fetch(questionUrl, {
-          method,
-          headers: {
-            // ✅ KHÔNG set Content-Type cho FormData, để browser tự set
-            Authorization: `Bearer ${token}`,
-          },
-          body: formData, // ✅ Gửi FormData thay vì JSON
-        });
-
-        const resJson = await res.json();
-        console.log("✅ Phản hồi câu hỏi:", resJson);
-
-        if (!res.ok) {
-          console.error("❌ Lỗi khi lưu câu hỏi:", resJson);
-          alert(`Lỗi khi lưu câu hỏi: ${resJson.detail || "Không rõ lỗi"}`);
+        const qJson = await qRes.json();
+        if (!qRes.ok) {
+          console.error('❌ Lỗi lưu câu hỏi:', qJson);
           return;
         }
 
-        const questionId = resJson.id || resJson.question_id;
+        if (isNewQuestion) {
+          updatedQuestions[qIndex].question_id = qJson.question_id;
+          console.log(`✅ Gán question_id mới: ${qJson.question_id}`);
+        }
 
-        // ✅ Lưu đáp án (giữ nguyên logic cũ)
-        for (const option of question.options || []) {
+        const questionId = updatedQuestions[qIndex].question_id;
+
+        // 🧭 Vòng lặp xử lý options (answers)
+        for (let optIndex = 0; optIndex < updatedQuestions[qIndex].options.length; optIndex++) {
+          const option = updatedQuestions[qIndex].options[optIndex];
+          const isNewAnswer = !option.answer_id;
+          const answerUrl = isNewAnswer
+            ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`
+            : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`;
+          const answerMethod = isNewAnswer ? 'POST' : 'PUT';
+
           const answerData = {
             question: questionId,
             content: option.text,
             is_correct: option.id === question.correct_option_id,
             user: userId,
           };
+          console.log(
+            `📦 ${answerMethod} đáp án index ${optIndex}:`,
+            answerUrl,
+            answerData,
+            `\n▶️ isNewAnswer? ${isNewAnswer}, answer_id: ${option.answer_id}`
+          );
 
-          const answerMethod = option.answer_id ? "PUT" : "POST";
-          const answerUrl = option.answer_id
-            ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${option.answer_id}/`
-            : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/`;
-
-          console.log("📤 Gửi đáp án:", answerMethod, answerUrl);
-          console.log("📦 Dữ liệu đáp án:", answerData);
-
-          const answerRes = await fetch(answerUrl, {
+          const aRes = await fetch(answerUrl, {
             method: answerMethod,
             headers: {
-              "Content-Type": "application/json",
+              'Content-Type': 'application/json',
               Authorization: `Bearer ${token}`,
             },
             body: JSON.stringify(answerData),
           });
 
-          const answerResJson = await answerRes.json();
-          console.log("✅ Phản hồi đáp án:", answerResJson);
-
-          if (!answerRes.ok) {
-            console.error("❌ Lỗi khi lưu đáp án:", answerResJson);
-            alert(`Lỗi lưu đáp án: ${answerResJson.detail || "Không rõ lỗi"}`);
+          const aJson = await aRes.json();
+          if (!aRes.ok) {
+            console.error(`❌ Lỗi ${answerMethod} đáp án index ${optIndex}:`, aJson);
             return;
           }
-        }
 
+          if (isNewAnswer) {
+            updatedQuestions[qIndex].options[optIndex].answer_id = aJson.answer_id;
+            console.log(`✅ Gán answer_id mới: ${aJson.answer_id} cho option index ${optIndex}`);
+          } else {
+            console.log(`✅ Đáp án ${option.answer_id} đã được PUT thành công.`);
+          }
+        }
       } catch (error) {
-        console.error("❌ Lỗi khi lưu câu hỏi/đáp án:", error);
-        alert("Không thể kết nối tới server.");
+        console.error('❌ Lỗi xử lý câu hỏi/đáp án:', error);
         return;
       }
     }
 
-    alert("✅ Lưu toàn bộ câu hỏi và đáp án thành công!");
+    setNewQuestions(updatedQuestions);
+    console.log('🎯 newQuestions sau khi lưu:', updatedQuestions);
+    alert('✅ Lưu toàn bộ câu hỏi và đáp án thành công không duplicate!');
   };
+
 
 
 
@@ -341,17 +340,17 @@ function TeacherExamCode() {
             type: question.type,
             level: question.level,
             score: question.score,
-            image: question.image,
-            // sửa tạm để chụp giao diện
-            correct_answer: "abc",
+            image: question.image || null,
+            correct_option_id: question.answers.find(a => a.is_correct)?.answer_id || null,
             is_gened_by_model: question.is_gened_by_model,
             created_by_question: question.created_by_question,
-            correct_option_id: question.answers.find(a => a.is_correct)?.answer_id || null,
-            options: question.answers?.map((answer) => ({
-              id: answer.answer_id,
+            options: question.answers.map((answer) => ({
+              id: answer.answer_id,        // Dùng luôn answer_id làm id (hoặc thêm id riêng)
+              answer_id: answer.answer_id, // ✅ Thêm rõ ràng answer_id để PUT
               text: answer.content,
               is_correct: answer.is_correct,
               user: answer.user,
+
             })) || [],
           }));
 
