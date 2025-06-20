@@ -192,64 +192,66 @@ const TeacherExamAdd = () => {
     fetchTestList(); // Lấy danh sách đề thi khi component load
   }, [examId]);
  
-  const handleSave = async () => {
-    const userJson = localStorage.getItem("user");
-    let token = null;
- 
-    if (userJson) {
-      try {
-        const userObj = JSON.parse(userJson);
-        token = userObj.token;
-      } catch (error) {
-        console.error("Lỗi khi parse user từ localStorage:", error);
-      }
-    }
- 
-    if (!token) {
-      alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
-      return;
-    }
- 
-    const data = {
-      name: examName,
-      grade: parseInt(grade),
-      type: examType,
-      time_start: timeStart,
-      time_end: timeEnd,
-      topic_ids: selectedTopics,  // ✅ thêm danh sách topic được chọn
-      regrade_time_start: timeStartRv,
-      regrade_time_end: timeEndRv
-    };
- 
-    const method = examId ? "PUT" : "POST";
-    const url = examId
-      ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
-      : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/`;
- 
+const handleSave = async () => {
+  const userJson = localStorage.getItem("user");
+  let token = null;
+
+  if (userJson) {
     try {
-      const res = await fetch(url, {
-        method,
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(data),
-      });
- 
-      const resText = await res.text();
-      if (res.ok) {
-        alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
-        // navigate("/teacher/exams");
-      } else {
-        const errorJson = JSON.parse(resText);
-        alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
-      }
+      const userObj = JSON.parse(userJson);
+      token = userObj.token;
     } catch (error) {
-      console.error("Lỗi khi lưu kỳ thi:", error);
-      alert("Không thể kết nối tới server.");
+      console.error("Lỗi khi parse user từ localStorage:", error);
     }
+  }
+
+  if (!token) {
+    alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+    return;
+  }
+
+  const data = {
+    name: examName,
+    grade: parseInt(grade),
+    type: examType,
+    time_start: timeStart,
+    time_end: timeEnd,
+    topic_ids: selectedTopics,  // ✅ thêm danh sách topic được chọn
+    regrade_start_time: timeStartRv,
+    regrade_end_time: timeEndRv
   };
- 
+
+  console.log("📤 Dữ liệu gửi lên backend:", data); // ✅ In dữ liệu gửi đi
+
+  const method = examId ? "PUT" : "POST";
+  const url = examId
+    ? `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`
+    : `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/`;
+
+  try {
+    const res = await fetch(url, {
+      method,
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${token}`,
+      },
+      body: JSON.stringify(data),
+    });
+
+    const resText = await res.text();
+    if (res.ok) {
+      alert(examId ? "Cập nhật kỳ thi thành công!" : "Tạo kỳ thi thành công!");
+      // navigate("/teacher/exams");
+    } else {
+      const errorJson = JSON.parse(resText);
+      alert(`Lỗi: ${errorJson.error || "Không xác định"}`);
+    }
+  } catch (error) {
+    console.error("Lỗi khi lưu kỳ thi:", error);
+    alert("Không thể kết nối tới server.");
+  }
+};
+
  
   return (
     <div className="add-exam-container">

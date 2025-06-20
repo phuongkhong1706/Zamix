@@ -57,7 +57,7 @@ class TeacherDetailExamView(APIView):
             print("User xác thực thành công:", user, type(user))
 
             data = request.data.copy()
-            required_fields = ["name", "grade", "type", "time_start", "time_end"]
+            required_fields = ["name", "grade", "type", "time_start", "time_end", "regrade_start_time", "regrade_end_time"]
             for field in required_fields:
                 if field not in data:
                     return Response(
@@ -68,6 +68,8 @@ class TeacherDetailExamView(APIView):
             # Chuyển đổi thời gian và xác định trạng thái kỳ thi
             time_start = Exam._meta.get_field("time_start").to_python(data["time_start"])
             time_end = Exam._meta.get_field("time_end").to_python(data["time_end"])
+            regrade_start_time = Exam._meta.get_field("regrade_start_time").to_python(data["regrade_start_time"])
+            regrade_end_time = Exam._meta.get_field("regrade_end_time").to_python(data["regrade_end_time"])
 
             if timezone.is_naive(time_start):
                 time_start = timezone.make_aware(time_start)
@@ -89,6 +91,8 @@ class TeacherDetailExamView(APIView):
                 type=data["type"],
                 time_start=time_start,
                 time_end=time_end,
+                regrade_start_time=regrade_start_time,
+                regrade_end_time=regrade_end_time,
                 status=exam_status,
                 user=user
             )
