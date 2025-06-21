@@ -300,7 +300,8 @@ function TeacherExamCode() {
 
     setNewQuestions(updatedQuestions);
     console.log('🎯 newQuestions sau khi lưu:', updatedQuestions);
-    alert('✅ Lưu toàn bộ câu hỏi và đáp án thành công không duplicate!');
+    alert('✅ Lưu toàn bộ câu hỏi và đáp án thành công!');
+    window.location.reload();
   };
 
 
@@ -420,36 +421,39 @@ function TeacherExamCode() {
 
   const handleAddOrEditQuestion = () => {
     if (!newQuestion.content.trim()) {
-      alert("Vui lòng nhập nội dung câu hỏi.");
+      alert('Vui lòng nhập nội dung câu hỏi.');
       return;
     }
 
-    // Validation cho câu hỏi trắc nghiệm
     if (newQuestion.type === 'multiple_choice') {
       if (newQuestion.options.some((opt) => !opt.text.trim())) {
-        alert("Vui lòng nhập đầy đủ nội dung các đáp án.");
+        alert('Vui lòng nhập đầy đủ nội dung các đáp án.');
         return;
       }
       if (!newQuestion.correct_option_id) {
-        alert("Vui lòng chọn đáp án đúng.");
+        alert('Vui lòng chọn đáp án đúng.');
         return;
       }
     }
 
-    // Validation cho câu hỏi tự luận
     if (newQuestion.type === 'essay') {
       if (!newQuestion.correct_answer.trim()) {
-        alert("Vui lòng nhập đáp án đúng cho câu hỏi tự luận.");
+        alert('Vui lòng nhập đáp án đúng cho câu hỏi tự luận.');
         return;
       }
     }
+
+    const updatedQuestion = {
+      ...newQuestion,
+      imagePreview: newQuestion.imagePreview || null,
+    };
 
     if (editingIndex !== null) {
       const updated = [...newQuestions];
-      updated[editingIndex] = newQuestion;
+      updated[editingIndex] = updatedQuestion;
       setNewQuestions(updated);
     } else {
-      setNewQuestions((prev) => [...prev, newQuestion]);
+      setNewQuestions((prev) => [...prev, updatedQuestion]);
     }
 
     setNewQuestion(createNewQuestion());
@@ -458,25 +462,88 @@ function TeacherExamCode() {
     setQuestionType('multiple_choice');
   };
 
+
   const handleEditQuestion = (index) => {
-    // Kiểm tra nếu đang chỉnh sửa câu hỏi khác
     if (showNewQuestionForm) {
-      alert("Bạn đang chỉnh sửa 1 câu hỏi. Hãy lưu câu hỏi trước!");
+      alert('Bạn đang chỉnh sửa 1 câu hỏi. Hãy lưu câu hỏi trước!');
       return;
     }
 
     const questionToEdit = newQuestions[index];
-    setNewQuestion(questionToEdit);
+
+    setNewQuestion({
+      ...questionToEdit,
+      image: questionToEdit.image instanceof File ? questionToEdit.image : null,
+      imagePreview:
+        questionToEdit.imagePreview || // Ưu tiên preview đã lưu
+        (questionToEdit.image && typeof questionToEdit.image === 'string'
+          ? `http://localhost:8000${questionToEdit.image}`
+          : null),
+    });
+
     setQuestionType(questionToEdit.type);
     setEditingIndex(index);
     setShowNewQuestionForm(true);
   };
 
-  const handleDeleteQuestion = (index) => {
-    if (window.confirm("Bạn có chắc muốn xoá câu hỏi này không?")) {
-      setNewQuestions((prev) => prev.filter((_, i) => i !== index));
+
+  const handleDeleteQuestion = async (index) => {
+  if (!window.confirm('Bạn có chắc muốn xoá câu hỏi này không?')) {
+    return;
+  }
+
+  const question = newQuestions[index];
+  if (!question || !question.question_id) {
+    alert('❌ Không tìm thấy question_id của câu hỏi để xóa.');
+    return;
+  }
+
+  const userJson = localStorage.getItem('user');
+  let token = null;
+
+  if (userJson) {
+    try {
+      const userObj = JSON.parse(userJson);
+      token = userObj.token;
+    } catch (error) {
+      console.error('❌ Lỗi parse user:', error);
     }
-  };
+  }
+
+  if (!token) {
+    alert('⚠️ Token không tồn tại. Vui lòng đăng nhập lại.');
+    return;
+  }
+
+  const deleteUrl = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.question_id}/`;
+
+  try {
+    const res = await fetch(deleteUrl, {
+      method: 'DELETE',
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.ok) {
+      alert('✅ Xoá câu hỏi thành công!');
+      setNewQuestions((prev) => prev.filter((_, i) => i !== index));
+    } else {
+      const resText = await res.text();
+      let errorJson = {};
+      try {
+        errorJson = JSON.parse(resText);
+      } catch (_) {
+        errorJson = { message: resText };
+      }
+      alert(`❌ Lỗi: ${errorJson.message || errorJson.error || 'Không xác định'}`);
+    }
+  } catch (error) {
+    console.error('❌ Lỗi khi xoá câu hỏi:', error);
+    alert('🚫 Không thể kết nối tới server.');
+  }
+};
+
 
   const handleToggleQuestionForm = (type = null) => {
     if (showNewQuestionForm) {
@@ -536,6 +603,42 @@ function TeacherExamCode() {
 
             {/* ✅ FIX: Kiểm tra q.content trước khi render */}
             <p><strong>Câu {index + 1}:</strong> {renderWithLatex(q.content || '')}</p>
+            {q.imagePreview ? (
+              <img
+                src={q.imagePreview}
+                alt={`Hình minh hoạ câu hỏi ${index + 1}`}
+                style={{
+                  maxWidth: '100%',        // ✅ Giảm kích thước xuống 50%
+                  width: '100%',           // ✅ Đảm bảo ảnh luôn 50% kích thước gốc
+                  height: 'auto',         // Giữ tỷ lệ khung hình
+                  marginTop: '10px',
+                  marginBottom: '15px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  display: 'block',       // Đảm bảo ảnh hiển thị như block element
+                  margin: '10px auto'     // Center ảnh
+                }}
+              />
+            ) : q.image ? (
+              // Nếu đã lưu image path trên server
+              <img
+                src={`http://localhost:8000${q.image}`}
+                alt={`Hình minh hoạ câu hỏi ${index + 1}`}
+                style={{
+                  maxWidth: '100%',        // ✅ Giảm kích thước xuống 50%
+                  width: '100%',           // ✅ Đảm bảo ảnh luôn 50% kích thước gốc
+                  height: 'auto',         // Giữ tỷ lệ khung hình
+                  marginTop: '10px',
+                  marginBottom: '15px',
+                  border: '1px solid #ddd',
+                  borderRadius: '8px',
+                  boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
+                  display: 'block',       // Đảm bảo ảnh hiển thị như block element
+                  margin: '10px auto'     // Center ảnh
+                }}
+              />
+            ) : null}
             {showNewQuestionForm && editingIndex === index && (
               <div className="question-form">
                 <h4>
@@ -713,7 +816,7 @@ function TeacherExamCode() {
                       style={{
                         marginTop: "12px",
                         padding: "12px 18px", // Tăng padding so với mặc định
-                           // Tăng cỡ chữ lên 1.2 lần
+                        // Tăng cỡ chữ lên 1.2 lần
                         transform: "scale(1.0)", // Phóng to toàn bộ nút
                         transformOrigin: "center",
                       }}
@@ -739,35 +842,6 @@ function TeacherExamCode() {
                   </div>
 
                 </div>
-              </div>
-            )}
-            {/* ✅ Hiển thị ảnh nếu có - dưới content */}
-            {q.image && (
-              <div style={{
-                textAlign: 'center',
-                margin: '15px 0',
-                padding: '10px'
-              }}>
-                <img
-                  src={`http://localhost:8000${q.image}`}
-                  alt="Hình ảnh câu hỏi"
-                  style={{
-                    maxWidth: '100%',        // ✅ Giảm kích thước xuống 50%
-                    width: '100%',           // ✅ Đảm bảo ảnh luôn 50% kích thước gốc
-                    height: 'auto',         // Giữ tỷ lệ khung hình
-                    marginTop: '10px',
-                    marginBottom: '15px',
-                    border: '1px solid #ddd',
-                    borderRadius: '8px',
-                    boxShadow: '0 2px 8px rgba(0,0,0,0.15)',
-                    display: 'block',       // Đảm bảo ảnh hiển thị như block element
-                    margin: '10px auto'     // Center ảnh
-                  }}
-                  onError={(e) => {
-                    console.error('Lỗi tải ảnh:', e.target.src);
-                    e.target.style.display = 'none';
-                  }}
-                />
               </div>
             )}
 
@@ -1016,7 +1090,7 @@ function TeacherExamCode() {
                 alt="toggle"
                 className="btn-icon"
               />
-              {showNewQuestionForm ?  "Huỷ thêm" : "Thêm câu hỏi"}
+              {showNewQuestionForm ? (editingIndex !== null ? "Huỷ sửa" : "Huỷ thêm") : "Thêm câu hỏi"}
             </button>
 
             {/* SUBMENU */}
@@ -1178,9 +1252,6 @@ function TeacherExamCode() {
           </button>
         </div>
       </div>
-
-
-
     </div>
   );
 }

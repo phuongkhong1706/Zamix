@@ -151,3 +151,39 @@ class TeacherDetailTestView(APIView):
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
  
+    def delete(self, request, id):
+        try:
+            print(f"🗑️ DELETE đề thi ID = {id}")
+
+            # ✅ Xác thực người dùng
+            user, error_response = get_authenticated_user(request)
+            if error_response:
+                print("❌ Lỗi xác thực token:", error_response.content.decode())
+                return error_response
+
+            # ✅ Lấy đề thi
+            test = get_object_or_404(Test, test_id=id)
+
+            # ✅ Kiểm tra quyền xóa (theo ca thi hoặc người tạo đề)
+            if not test.shift or test.user.id != user.id:
+                return Response(
+                    {"message": "Bạn không có quyền xóa đề thi này."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # ✅ Xóa đề thi
+            test.delete()
+
+            print(f"✅ Đã xóa đề thi ID={id} và toàn bộ câu hỏi, đáp án liên quan.")
+            return Response(
+                {"message": "Xóa đề thi thành công!"},
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+        except Exception as e:
+            print("❌ Lỗi bất ngờ trong DELETE đề thi:")
+            traceback.print_exc()
+            return Response(
+                {"message": "Internal Server Error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

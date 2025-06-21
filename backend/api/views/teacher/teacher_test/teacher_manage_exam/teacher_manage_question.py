@@ -119,15 +119,24 @@ class TeacherManageQuestionView(APIView):
                     status=status.HTTP_403_FORBIDDEN
                 )
 
-            # Cập nhật trường
+            # Nếu client gửi file image mới
+            image_file = request.FILES.get('image', None)
+            if image_file:
+                print(f"📷 Ảnh mới nhận được: {image_file.name}, Size: {image_file.size} bytes")
+                question.image = image_file
+            else:
+                # Nếu client không gửi image thì không thay đổi image cũ
+                pass
+
+            # Cập nhật các trường thông thường
             question.content = data.get('content', question.content)
             question.type = data.get('type', question.type)
-            question.score = data.get('score', question.score)
-            question.level = data.get('level', question.level)
+            question.score = float(data.get('score', question.score))
+            question.level = int(data.get('level', question.level))
             question.is_gened_by_model = data.get('is_gened_by_model', question.is_gened_by_model)
             question.created_by_question = data.get('created_by_question', question.created_by_question)
 
-            # Nếu có trường `user` được gửi lên thì cập nhật
+            # Nếu client gửi trường `user` thì update user
             if 'user' in data:
                 user_obj = get_object_or_404(User, id=data['user'])
                 question.user = user_obj
@@ -136,10 +145,53 @@ class TeacherManageQuestionView(APIView):
 
             serialized = QuestionSerializer(question)
             print("✅ Cập nhật câu hỏi thành công:", serialized.data)
+
+            if question.image:
+                print(f"📷 Ảnh sau khi lưu: {question.image.url}")
+
             return Response(serialized.data, status=status.HTTP_200_OK)
 
         except Exception as e:
             print("❌ Lỗi bất ngờ khi cập nhật câu hỏi:")
+            traceback.print_exc()
+            return Response(
+                {"message": "Internal Server Error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )
+
+    def delete(self, request, question_id):
+        try:
+            print(f"🗑️ DELETE câu hỏi {question_id}")
+
+            user_from_token, error_response = get_authenticated_user(request)
+            if error_response:
+                print("❌ Lỗi xác thực token:", error_response.content.decode())
+                return error_response
+
+            # Lấy câu hỏi
+            question = get_object_or_404(Question, question_id=question_id)
+
+            # Kiểm tra quyền
+            if question.test.user.id != user_from_token.id:
+                return Response(
+                    {"message": "Bạn không có quyền xóa câu hỏi này."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
+            # ✅ Xóa các đáp án liên quan (có thể không cần vì on_delete=CASCADE đã xử lý)
+            deleted_answers_count = question.answers.all().delete()[0]
+            print(f"🧹 Đã xóa {deleted_answers_count} đáp án liên quan")
+
+            # ✅ Xóa câu hỏi
+            question.delete()
+
+            return Response(
+                {"message": "🗑️ Xóa câu hỏi và các đáp án liên quan thành công!"},
+                status=status.HTTP_204_NO_CONTENT
+            )
+
+        except Exception as e:
+            print("❌ Lỗi bất ngờ khi xóa câu hỏi:")
             traceback.print_exc()
             return Response(
                 {"message": "Internal Server Error", "detail": str(e)},
