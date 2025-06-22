@@ -124,8 +124,8 @@ function App() {
         <Route path="/student/practice/do_practice/:id" element={<StudentPracticeDetail />}/>
         <Route path="/student/practice/review" element={<StudentPracticeReview />}/>
         <Route path="/student/result/score" element={<StudentLayout> <StudentScoreExam /> </StudentLayout>}/>
-        <Route path="/student/result/score/review_exam" element={<StudentLayout> <StudentScoreReviewExam /> </StudentLayout>}/>
-        <Route path="/student/result/score/remark_exam" element={<StudentLayout> <StudentScoreRemarkExam /> </StudentLayout>}/>
+        <Route path="/student/result/score/review_exam/:testId" element={<StudentLayout> <StudentScoreReviewExam /> </StudentLayout>}/>
+        <Route path="/student/result/score/remark_exam/:testId" element={<StudentLayout> <StudentScoreRemarkExam /> </StudentLayout>}/>
         <Route path="/student/result/statistics" element={<StudentLayout> <StudentStatistics /> </StudentLayout>}/>
  
  

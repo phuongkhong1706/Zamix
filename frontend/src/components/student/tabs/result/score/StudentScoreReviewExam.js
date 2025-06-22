@@ -1,58 +1,56 @@
 import React, { useEffect, useRef, useState } from "react";
+import { useParams } from "react-router-dom"; // ✅ lấy test_id
 import "../../../../../styles/CountdownTimer.css";
 import "../../../../../styles/SidebarNavigation.css";
 
 function StudentScoreReviewExam() {
+  const { testId } = useParams(); // ✅ lấy test_id từ URL
   const [reviewData, setReviewData] = useState(null);
   const questionRefs = useRef([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const mockReviewData = {
-      score: 8.5,
-      wrongCount: 1,
-      questions: [
-        {
-          id_question: 1,
-          content: "Ngôn ngữ lập trình nào sau đây được sử dụng phổ biến trong phát triển web?",
-          option_a: "Python",
-          option_b: "C++",
-          option_c: "HTML",
-          option_d: "Java",
-          correct_answer: "C",
-          student_answer: "C",
-          explanation: "HTML là ngôn ngữ đánh dấu, không phải lập trình, nhưng rất phổ biến cho giao diện web.",
-        },
-        {
-          id_question: 2,
-          content: "React là thư viện dùng cho:",
-          option_a: "Back-end",
-          option_b: "Front-end",
-          option_c: "Database",
-          option_d: "AI",
-          correct_answer: "B",
-          student_answer: "A",
-          explanation: "React là thư viện JavaScript mạnh mẽ dùng để xây dựng giao diện người dùng (UI) phía Front-end.",
-        },
-        {
-          id_question: 3,
-          content: "Lệnh nào dùng để khai báo biến trong JavaScript?",
-          option_a: "var",
-          option_b: "int",
-          option_c: "string",
-          option_d: "const",
-          correct_answer: "D",
-          student_answer: "D",
-          explanation: "`const` được sử dụng để khai báo biến không thể thay đổi giá trị sau khi gán.",
-        },
-      ],
-    };
+    async function fetchReviewData() {
+      try {
+        setLoading(true);
+        const userJson = localStorage.getItem("user");
+        if (!userJson) {
+          alert("❌ Người dùng chưa đăng nhập.");
+          return;
+        }
+        const { token } = JSON.parse(userJson);
 
-    setTimeout(() => {
-      setReviewData(mockReviewData);
-    }, 1000);
-  }, []);
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/student/student_result/student_review_exam/${testId}/`,
+          {
+            headers: {
+              Authorization: `Bearer ${token}`,
+            },
+          }
+        );
 
-  if (!reviewData) return <div style={{ marginTop: "40px" }}>Đang tải kết quả...</div>;
+        if (!response.ok) throw new Error(`❌ Fetch error: ${await response.text()}`);
+
+        const data = await response.json();
+        console.log("📥 Dữ liệu review trả về:", data); // Xem log
+
+        setReviewData({
+          score: data.total_score,
+          wrongCount: data.num_wrong,
+          questions: data.review_data,
+        });
+      } catch (error) {
+        alert(error.message || "❌ Không thể lấy thông tin bài làm.");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchReviewData();
+  }, [testId]);
+
+  if (loading) return <div style={{ marginTop: "40px" }}>Đang tải kết quả...</div>;
+  if (!reviewData) return null; // tránh lỗi undefined
 
   return (
     <div style={{ display: "flex", padding: "20px", marginTop: "40px" }}>
@@ -93,7 +91,7 @@ function StudentScoreReviewExam() {
         </div>
       </div>
 
-      {/* MAIN CONTENT - Danh sách câu hỏi */}
+      {/* MAIN CONTENT */}
       <div style={{ width: "calc(100% - 340px)", paddingLeft: "30px" }}>
         {reviewData.questions.map((q, index) => {
           const isCorrect = q.student_answer === q.correct_answer;
@@ -108,11 +106,7 @@ function StudentScoreReviewExam() {
                 {["A", "B", "C", "D"].map((option) => {
                   const selected = q.student_answer === option;
                   const isAnswerCorrect = q.correct_answer === option;
-                  const color = selected
-                    ? isAnswerCorrect
-                      ? "green"
-                      : "red"
-                    : undefined;
+                  const color = selected ? (isAnswerCorrect ? "green" : "red") : undefined;
 
                   return (
                     <li key={option} style={{ marginBottom: "6px", color }}>
@@ -131,17 +125,19 @@ function StudentScoreReviewExam() {
                   );
                 })}
               </ul>
-              {/* Khung Đáp án đúng */}
+
               {!isCorrect && (
                 <p style={{ color: "red", fontWeight: "bold" }}>
-                  Đáp án đúng: <span style={{ color: "black", fontWeight: "normal" }}>{q.correct_answer}</span>
+                  Đáp án đúng:{" "}
+                  <span style={{ color: "black", fontWeight: "normal" }}>{q.correct_answer}</span>
                 </p>
               )}
-              {/* Khung Lời giải */}
+
               {q.explanation && (
                 <div style={explanationStyle}>
                   <p style={{ color: "green", fontWeight: "bold" }}>
-                    Lời giải: <span style={{ color: "black", fontWeight: "normal" }}>{q.explanation}</span>
+                    Lời giải:{" "}
+                    <span style={{ color: "black", fontWeight: "normal" }}>{q.explanation}</span>
                   </p>
                 </div>
               )}

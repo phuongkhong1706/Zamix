@@ -12,6 +12,7 @@ from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_question 
 from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_answer import TeacherManageAnswerView
 from api.views.teacher.teacher_document.teacher_manage_document import TeacherManageDocumentView
 from api.views.teacher.teacher_document.teacher_detail_document import TeacherDetailDocumentView
+from api.views.teacher.teacher_result.teacher_score import TeacherExamScoreView
 urlpatterns = [
     path('teacher/home/', TeacherHomeView.as_view(), name='teacher_home'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_exam/', TeacherManageExamView.as_view(), name='teacher_manage_exam'),
@@ -28,7 +29,8 @@ urlpatterns = [
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/<int:answer_id>/', TeacherManageAnswerView.as_view(), name='teacher_manage_answer'),
     path('teacher/teacher_document/teacher_detail_document/', TeacherDetailDocumentView.as_view(), name='teacher_detail_document'),
     path('teacher/teacher_document/teacher_detail_document/<int:id>/', TeacherDetailDocumentView.as_view(), name='teacher_detail_document_id'),
-    path('teacher/teacher_document/teacher_manage_document/', TeacherManageDocumentView.as_view(), name='teacher_manage_document')
+    path('teacher/teacher_document/teacher_manage_document/', TeacherManageDocumentView.as_view(), name='teacher_manage_document'),
+    path('teacher/teacher_result/teacher_score/', TeacherExamScoreView.as_view(), name='teacher_exam_score'),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

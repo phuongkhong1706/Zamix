@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaSearch } from "react-icons/fa";
 
@@ -8,52 +8,76 @@ function StudentScoreExam() {
   const [selectedSemester, setSelectedSemester] = useState("");
   const [selectedSlot, setSelectedSlot] = useState("");
   const [selectedDate, setSelectedDate] = useState("");
-  const [selectedGrade, setSelectedGrade] = useState(""); // Bộ lọc khối (Lớp 10,11,12)
-
-  const handleReviewExam = () => {
-    navigate("/student/result/score/review_exam");
-  };
-
-  const handleRemarkExam = () => {
-    navigate("/student/result/score/remark_exam");
-  };
+  const [selectedGrade, setSelectedGrade] = useState("");
+  const [examScores, setExamScores] = useState([]);
+  const [loading, setLoading] = useState(true);
 
   const inputWrapperStyle = {
     position: "relative",
     display: "inline-block",
   };
-
   const inputStyle = {
-    paddingRight: "30px", // chừa chỗ cho icon
     ...filterInputStyle,
   };
-
   const iconStyle = {
     position: "absolute",
     right: "10px",
     top: "50%",
     transform: "translateY(-50%)",
     color: "#999",
-    pointerEvents: "none", // icon không ảnh hưởng khi click
+    pointerEvents: "none",
   };
 
-  // Dữ liệu giả gồm 10 dòng với các cột bạn yêu cầu và bổ sung thêm khối (grade)
-  const examScores = [
-    { id: 1, examTitle: "Kiểm tra Toán giữa kỳ lần 1", semester: "Giữa kỳ", examDate: "2025-03-10", slot: "1", score: 9.1, grade: "12" },
-    { id: 2, examTitle: "Kiểm tra Toán giữa kỳ lần 2", semester: "Giữa kỳ", examDate: "2025-03-11", slot: "2", score: 8.3, grade: "12" },
-    { id: 3, examTitle: "Kiểm tra Toán cuối kỳ lần 1", semester: "Cuối kỳ", examDate: "2025-06-18", slot: "3", score: 7.8, grade: "12" },
-    { id: 4, examTitle: "Kiểm tra Toán cuối kỳ lần 2", semester: "Cuối kỳ", examDate: "2025-07-18", slot: "3", score: 7.8, grade: "12" },
-  ];
+  // Fetch exam scores data
+  useEffect(() => {
+    async function fetchScores() {
+      setLoading(true);
+      try {
+        const userJson = localStorage.getItem("user");
+        if (!userJson) {
+          alert("❌ Người dùng chưa đăng nhập.");
+          return;
+        }
+        const { token } = JSON.parse(userJson);
+        const response = await fetch(`http://127.0.0.1:8000/api/student/student_result/student_score/`, {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
 
-  // Filter theo tên học sinh, kỳ thi, đợt thi, ca thi, ngày thi và khối (grade)
+        if (!response.ok) throw new Error(`❌ Fetch error: ${await response.text()}`);
+        const data = await response.json();
+        console.log("📥 Dữ liệu trả về:", data); // ✅ Log toàn bộ data
+        setExamScores(data.examScores || []);
+      } catch (error) {
+        alert(error.message || "❌ Không thể lấy danh sách điểm thi.");
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchScores();
+  }, []);
+
+  // Apply filters
   const filteredScores = examScores.filter((item) => {
     return (
+      (studentName ? item.examTitle.toLowerCase().includes(studentName.toLowerCase()) : true) &&
       (selectedSemester ? item.semester === selectedSemester : true) &&
       (selectedSlot ? item.slot === selectedSlot : true) &&
       (selectedDate ? item.examDate === selectedDate : true) &&
       (selectedGrade ? item.grade === selectedGrade : true)
     );
   });
+
+const handleReviewExam = (test_id) => {
+  navigate(`/student/result/score/review_exam/${test_id}`);
+};
+
+const handleRemarkExam = (test_id) => {
+  navigate(`/student/result/score/remark_exam/${test_id}`);
+};
+
+  if (loading) return <div style={{ padding: "1rem" }}>Đang tải danh sách điểm thi...</div>;
 
   return (
     <div style={outerContainerStyle}>
@@ -62,7 +86,7 @@ function StudentScoreExam() {
           <div style={inputWrapperStyle}>
             <input
               type="text"
-              placeholder="Kỳ thi..."
+              placeholder="Tìm kỳ thi..."
               value={studentName}
               onChange={(e) => setStudentName(e.target.value)}
               style={inputStyle}
@@ -99,7 +123,6 @@ function StudentScoreExam() {
             style={filterSelectStyle}
           />
 
-          {/* Bộ lọc khối (grade) */}
           <select
             value={selectedGrade}
             onChange={(e) => setSelectedGrade(e.target.value)}
@@ -121,7 +144,7 @@ function StudentScoreExam() {
               <th style={tableCellStyle}>Đợt thi</th>
               <th style={tableCellStyle}>Ngày thi</th>
               <th style={tableCellStyle}>Ca thi</th>
-              <th style={tableCellStyle}>Khối</th> {/* Cột mới */}
+              <th style={tableCellStyle}>Khối</th>
               <th style={tableCellStyle}>Điểm</th>
               <th style={tableCellStyle}>Thao tác</th>
             </tr>
@@ -133,27 +156,19 @@ function StudentScoreExam() {
                   <td style={tableCellStyle}>{index + 1}</td>
                   <td style={tableCellStyle}>{item.examTitle}</td>
                   <td style={tableCellStyle}>{item.semester}</td>
-                  <td style={tableCellStyle}>
-                    {new Date(item.examDate).toLocaleDateString("vi-VN")}
-                  </td>
+                  <td style={tableCellStyle}>{new Date(item.examDate).toLocaleDateString("vi-VN")}</td>
                   <td style={tableCellStyle}>{item.slot}</td>
-                  <td style={tableCellStyle}>Lớp {item.grade}</td> {/* Hiển thị khối */}
+                  <td style={tableCellStyle}>Lớp {item.grade}</td>
                   <td style={tableCellStyle}>{item.score}</td>
                   <td style={tableCellStyle}>
-                    <button style={actionButtonStyle} onClick={handleReviewExam}>
-                      Xem
-                    </button>{" "}
-                    <button style={appealButtonStyle} onClick={handleRemarkExam}>
-                      Phúc tra
-                    </button>
+                    <button style={actionButtonStyle} onClick={() => handleReviewExam(item.test_id)}>Xem</button>{" "}
+                    <button style={appealButtonStyle} onClick={() => handleRemarkExam(item.test_id)}>Phúc tra</button>
                   </td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td style={tableCellStyle} colSpan="9">
-                  Không có dữ liệu phù hợp.
-                </td>
+                <td style={tableCellStyle} colSpan="8">Không có dữ liệu phù hợp.</td>
               </tr>
             )}
           </tbody>

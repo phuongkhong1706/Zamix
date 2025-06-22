@@ -1,17 +1,15 @@
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import "../../../../styles/CountdownTimer.css";
-import LatexInputKaTeX, { renderWithLatex } from "./../../../teacher/tabs/exams/LatexInputKaTeX";
+import { renderWithLatex } from "./../../../teacher/tabs/exams/LatexInputKaTeX";
+
 function CountdownTimer({ durationInSeconds, onEnd }) {
   const [timeLeft, setTimeLeft] = useState(durationInSeconds * 60);
 
   useEffect(() => {
     if (!durationInSeconds || isNaN(durationInSeconds)) return;
-
-    const start = Date.now();
-    const end = start + durationInSeconds * 60 * 1000;
-
-    const tick = () => {
+    const end = Date.now() + durationInSeconds * 60 * 1000;
+    const interval = setInterval(() => {
       const now = Date.now();
       const remaining = Math.max(0, Math.round((end - now) / 1000));
       setTimeLeft(remaining);
@@ -19,15 +17,11 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
         clearInterval(interval);
         onEnd?.();
       }
-    };
-
-    tick();
-    const interval = setInterval(tick, 1000);
+    }, 1000);
     return () => clearInterval(interval);
   }, [durationInSeconds, onEnd]);
 
   const percentage = ((durationInSeconds * 60 - timeLeft) / (durationInSeconds * 60)) * 100;
-
   const formatTime = (seconds) => {
     const mins = Math.floor(seconds / 60);
     const secs = seconds % 60;
@@ -42,17 +36,14 @@ function CountdownTimer({ durationInSeconds, onEnd }) {
   );
 }
 
-function StudentDoExamDetail() {
+export default function StudentDoExamDetail() {
   const navigate = useNavigate();
   const { id } = useParams();
   const [examData, setExamData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [chosenTestId, setChosenTestId] = useState(null);
-  const [violationCount, setViolationCount] = useState(0);
   const handleSubmitExamRef = useRef();
-  const lastViolationTimeRef = useRef(0); // Dùng để giới hạn thời gian giữa 2 lần vi phạm
   const questionRefs = useRef([]);
-
 
   const handleAnswerChange = (questionIndex, answer) => {
     setAnswers((prev) => ({ ...prev, [questionIndex]: answer }));
@@ -60,73 +51,39 @@ function StudentDoExamDetail() {
 
   const handleSubmitExam = useCallback(async () => {
     if (!examData || !chosenTestId) {
-      alert("❌ Không thể gửi bài vì chưa có dữ liệu đề thi.");
+      alert("❌ Không thể gửi bài.");
       return;
     }
-
     const userJson = localStorage.getItem("user");
-    let token = null;
-    let studentId = null;
-
-    if (userJson) {
-      try {
-        const userObj = JSON.parse(userJson);
-        token = userObj.token;
-        studentId = userObj.user_id;
-      } catch (error) {
-        alert("Lỗi khi đọc thông tin người dùng. Vui lòng đăng nhập lại.");
-        return;
-      }
-    }
-
-    if (!token) {
-      alert("❌ Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
-      return;
-    }
-
-    const formattedAnswers = examData.questions.map((question, index) => ({
-      question_id: question.question_id,
+    if (!userJson) return alert("❌ Người dùng chưa đăng nhập.");
+    const { token, user_id: studentId } = JSON.parse(userJson);
+    const formattedAnswers = examData.questions.map((q, index) => ({
+      question_id: q.question_id,
       selected_option: answers[index] || null,
     }));
-
-    const submissionData = {
-      test_id: chosenTestId,
-      student_id: studentId,
-      answers: formattedAnswers,
-    };
+    const submissionData = { test_id: chosenTestId, student_id: studentId, answers: formattedAnswers };
 
     try {
       const res = await fetch("http://127.0.0.1:8000/api/student/student_test/student_do_exam/", {
         method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
         body: JSON.stringify(submissionData),
       });
-
       if (!res.ok) throw new Error(await res.text());
-
-      const scoreRes = await fetch(
-        `http://127.0.0.1:8000/api/student/student_test/student_do_exam/?student_id=${studentId}&test_id=${chosenTestId}`,
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-
+      const scoreRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_do_exam/?student_id=${studentId}&test_id=${chosenTestId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (!scoreRes.ok) throw new Error(await scoreRes.text());
-
       const scoreData = await scoreRes.json();
-      const examName = examData.exam_name || examData.exam?.name || "Tên đề thi";
-
-      localStorage.removeItem("examSession");
       navigate("/student/do_exam/result_exam", {
         state: {
           correctAnswers: scoreData.correct_answers,
           totalQuestions: scoreData.total_questions,
-          examName,
+          examName: examData.exam_name || "Tên đề thi",
         },
       });
-    } catch (err) {
-      alert("❌ Gửi bài thất bại hoặc không thể lấy kết quả. Vui lòng thử lại.");
+    } catch (error) {
+      alert("❌ Gửi bài thất bại hoặc không thể lấy kết quả.");
     }
   }, [examData, chosenTestId, answers, navigate]);
 
@@ -138,7 +95,6 @@ function StudentDoExamDetail() {
     alert("⏰ Hết giờ làm bài!");
     handleSubmitExamRef.current?.();
   }, []);
-
   useEffect(() => {
     // Kiểm soát chỉ cho phép 1 tab thi hoạt động
     if (!window.name) {
@@ -147,19 +103,18 @@ function StudentDoExamDetail() {
 
     localStorage.setItem("examTabActive", window.name);
 
+    /*
     const handleViolation = () => {
       const now = Date.now();
-      // Nếu lần vi phạm trước < 1.5 giây (1500ms) thì bỏ qua (tránh đếm 2 lần)
+      // Nếu lần vi phạm trước < 1.5 giây thì bỏ qua
       if (now - lastViolationTimeRef.current < 1500) return;
-
+  
       lastViolationTimeRef.current = now;
-
+  
       setViolationCount((prev) => {
         const newCount = prev + 1;
-
         if (newCount >= 3) {
           alert("🚨 Bạn đã vi phạm quá 3 lần. Bài thi sẽ được nộp tự động!");
-          // Delay một chút cho alert hiển thị trước khi nộp bài
           setTimeout(() => {
             handleSubmitExamRef.current?.();
           }, 3000);
@@ -169,57 +124,82 @@ function StudentDoExamDetail() {
         return newCount;
       });
     };
-
+  
     const handleVisibilityChange = () => {
       if (document.hidden) handleViolation();
     };
-
+  
     const handleBlur = () => {
       handleViolation();
     };
-
+  
     document.addEventListener("visibilitychange", handleVisibilityChange);
     window.addEventListener("blur", handleBlur);
-
+  
     return () => {
       document.removeEventListener("visibilitychange", handleVisibilityChange);
       window.removeEventListener("blur", handleBlur);
       localStorage.removeItem("examTabActive");
     };
+    */
+
+    return () => {
+      localStorage.removeItem("examTabActive");
+    };
   }, []);
 
+
   useEffect(() => {
-    if (!id) return;
-    const savedSession = localStorage.getItem("examSession");
+    async function fetchExamData() {
+      const savedSession = localStorage.getItem("examSession");
+      let cachedData = null;
 
-    if (savedSession) {
-      const { testId, examData } = JSON.parse(savedSession);
-      setChosenTestId(testId);
-      setExamData(examData);
-    } else {
-      const fetchExam = async () => {
-        try {
-          const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
-          const testList = await res.json();
-          const validTests = testList.filter(test => test && test.test_id);
-          const testId = validTests[Math.floor(Math.random() * validTests.length)].test_id;
+      if (savedSession) {
+        const { testId, examData } = JSON.parse(savedSession);
+        cachedData = examData?.questions?.length ? { testId, examData } : null;
+      }
 
-          const detailRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`);
-          const detailData = await detailRes.json();
+      // 1️⃣ FETCH DỮ LIỆU SERVER
+      const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
+      const testList = await res.json();
+      const validTests = testList.filter((test) => test && test.test_id);
+      const testId = validTests[Math.floor(Math.random() * validTests.length)]?.test_id;
 
-          console.log('Chi tiết dữ liệu trả về:', detailData);
-          setChosenTestId(testId);
-          setExamData(detailData);
+      if (!testId) {
+        alert("❌ Không có đề thi!");
+        localStorage.removeItem("examSession");
+        return;
+      }
 
-          localStorage.setItem("examSession", JSON.stringify({ testId, examData: detailData }));
-        } catch (err) {
-          console.error("❌ Lỗi khi lấy đề thi:", err);
-        }
-      };
+      const detailRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`);
+      const serverData = await detailRes.json();
 
-      fetchExam();
+      if (!serverData?.questions?.length) {
+        alert("⚠️ Đề thi không có câu hỏi nào.");
+        localStorage.removeItem("examSession");
+        return;
+      }
+
+      // 2️⃣ SO SÁNH SERVER vs CACHE
+      if (!cachedData || JSON.stringify(cachedData.examData) !== JSON.stringify(serverData)) {
+        console.log("✅ Server khác cache --> Cập nhật cache");
+        localStorage.setItem("examSession", JSON.stringify({ testId, examData: serverData }));
+        setChosenTestId(testId);
+        setExamData(serverData);
+      } else {
+        console.log("✅ Cache còn mới, sử dụng cache");
+        setChosenTestId(cachedData.testId);
+        setExamData(cachedData.examData);
+      }
+    }
+
+    if (id) {
+      fetchExamData();
     }
   }, [id]);
+
+
+
 
   if (!examData) return <div style={{ marginTop: "40px" }}>Đang tải đề thi...</div>;
 
@@ -355,5 +335,3 @@ const questionStyle = {
   borderRadius: "10px",
   boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
 };
-
-export default StudentDoExamDetail;

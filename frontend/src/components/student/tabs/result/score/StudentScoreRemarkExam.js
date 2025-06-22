@@ -1,6 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
+import { useParams, useNavigate } from "react-router-dom";
 
 function StudentScoreRemarkExam() {
+  const { testId } = useParams();
+  const navigate = useNavigate(); // 👈 thêm navigate
   const [formData, setFormData] = useState({
     fullName: "",
     className: "",
@@ -10,26 +13,102 @@ function StudentScoreRemarkExam() {
     remarkReason: "",
   });
 
-  const examData = {
-    id: "EX001",
-    title: "Kỳ thi cuối kỳ môn Toán",
-    type: "final",
-    time_start: "2025-03-10T08:00:00",
-    time_end: "2025-03-10T10:00:00",
-    duration: 7200,
-  };
+  const [examData, setExamData] = useState({
+    title: "",
+    type: "",
+    time_start: "",
+    time_end: "",
+    duration: 0,
+  });
+
+  useEffect(() => {
+    async function fetchRemarkInfo() {
+      const userJson = localStorage.getItem("user");
+      if (!userJson) {
+        alert("❌ Người dùng chưa đăng nhập.");
+        return;
+      }
+      const { user_id } = JSON.parse(userJson);
+
+      try {
+        const response = await fetch(
+          `http://127.0.0.1:8000/api/student/student_result/student_remark_exam/${testId}/?user_id=${user_id}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`❌ Lỗi lấy thông tin: ${response.statusText}`);
+        }
+
+        const data = await response.json();
+        setFormData((prev) => ({
+          ...prev,
+          fullName: data.studentInfo.fullName,
+          className: data.studentInfo.className,
+          dob: data.studentInfo.dob,
+          examDate: data.examInfo.timeStart,
+          currentScore: data.examInfo.score,
+          remarkReason: data.remarkReasonDefault,
+        }));
+        setExamData({
+          title: data.examInfo.title,
+          type: data.examInfo.type,
+          time_start: data.examInfo.timeStart,
+          time_end: data.examInfo.timeEnd,
+          duration: data.examInfo.duration,
+        });
+      } catch (error) {
+        console.error(error);
+        alert(error.message || "❌ Không thể tải thông tin phúc tra");
+      }
+    }
+
+    fetchRemarkInfo();
+  }, [testId]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = () => {
-    const confirmed = window.confirm("⚠️ Bạn chỉ có thể phúc tra 1 lần. Bạn có chắc chắn gửi?");
-    if (confirmed) {
-      alert("✅ Yêu cầu phúc tra đã được gửi.");
-      // Reset form if needed
-      // setFormData({ fullName: "", className: "", dob: "", examDate: "", currentScore: "", remarkReason: "" });
+  const formatTime = (timeStr) => new Date(timeStr).toLocaleString("vi-VN");
+
+  const handleSubmit = async () => {
+    const confirmed = window.confirm(
+      "⚠️ Bạn chỉ có thể phúc tra 1 lần. Bạn có chắc chắn gửi?"
+    );
+    if (!confirmed) return;
+
+    const userJson = localStorage.getItem("user");
+    if (!userJson) {
+      alert("❌ Người dùng chưa đăng nhập.");
+      return;
+    }
+    const { user_id } = JSON.parse(userJson);
+
+    try {
+      const response = await fetch(
+        `http://127.0.0.1:8000/api/student/student_result/student_remark_exam/${testId}/`,
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            user_id: user_id,
+            currentScore: formData.currentScore,
+            remarkReason: formData.remarkReason,
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error(`Bạn chỉ được phúc tra 1 lần!`);
+      }
+
+      const data = await response.json();
+      alert(`✅ Gửi phúc tra thành công (ID ${data.data.id})!`);
+      navigate("/student/result/score");
+    } catch (error) {
+      console.error(error);
+      alert(error.message || "❌ Không thể gửi phúc tra");
     }
   };
 
@@ -37,63 +116,33 @@ function StudentScoreRemarkExam() {
     <div style={outerContainerStyle}>
       <div style={mainCardStyle}>
         <div style={infoWrapperStyle}>
-          {/* Phúc tra (bên trái) */}
+          {/* Phúc tra */}
           <div style={boxStyle}>
             <h3 style={sectionTitleStyle}>Thông tin phúc tra</h3>
 
             <div style={inputGroup}>
               <label>Họ và tên:</label>
-              <input
-                type="text"
-                name="fullName"
-                value={formData.fullName}
-                onChange={handleChange}
-                style={inputStyle}
-              />
+              <input type="text" value={formData.fullName} readOnly style={inputStyle} />
             </div>
 
             <div style={inputGroup}>
               <label>Lớp:</label>
-              <input
-                type="text"
-                name="className"
-                value={formData.className}
-                onChange={handleChange}
-                style={inputStyle}
-              />
+              <input type="text" value={formData.className} readOnly style={inputStyle} />
             </div>
 
             <div style={inputGroup}>
               <label>Ngày sinh:</label>
-              <input
-                type="date"
-                name="dob"
-                value={formData.dob}
-                onChange={handleChange}
-                style={inputStyle}
-              />
+              <input type="date" value={formData.dob} readOnly style={inputStyle} />
             </div>
 
             <div style={inputGroup}>
               <label>Ngày thi:</label>
-              <input
-                type="date"
-                name="examDate"
-                value={formData.examDate}
-                onChange={handleChange}
-                style={inputStyle}
-              />
+              <input type="date" value={formData.examDate} readOnly style={inputStyle} />
             </div>
 
             <div style={inputGroup}>
               <label>Điểm hiện tại:</label>
-              <input
-                type="number"
-                name="currentScore"
-                value={formData.currentScore}
-                onChange={handleChange}
-                style={inputStyle}
-              />
+              <input type="number" value={formData.currentScore} readOnly style={inputStyle} />
             </div>
 
             <div style={inputGroup}>
@@ -107,36 +156,22 @@ function StudentScoreRemarkExam() {
               />
             </div>
 
-            <button
-              onClick={handleSubmit}
-              style={submitButtonStyle}
-            >
-              Gửi
-            </button>
+            <button onClick={handleSubmit} style={submitButtonStyle}>Gửi</button>
           </div>
 
-          {/* Thông tin kỳ thi (bên phải) */}
+          {/* Thông tin kỳ thi */}
           <div style={boxStyle}>
             <h3 style={sectionTitleStyle}>Thông tin kỳ thi</h3>
             <p><strong>Tiêu đề:</strong> {examData.title}</p>
-            <p><strong>Loại:</strong> {examData.type === "midterm" ? "Giữa kỳ" : "Cuối kỳ"}</p>
+            <p><strong>Loại:</strong> {examData.type === "Thi thử" ? "Giữa kỳ" : "Cuối kỳ"}</p>
             <p><strong>Bắt đầu:</strong> {formatTime(examData.time_start)}</p>
             <p><strong>Kết thúc:</strong> {formatTime(examData.time_end)}</p>
-            <p><strong>Thời gian làm bài:</strong> {examData.duration / 60} phút</p>
+            <p><strong>Thời gian làm bài:</strong> {examData.duration} phút</p>
           </div>
         </div>
       </div>
     </div>
   );
-}
-
-// Utilities
-function formatTime(datetimeString) {
-  const options = {
-    hour: "2-digit", minute: "2-digit",
-    day: "2-digit", month: "2-digit", year: "numeric"
-  };
-  return new Date(datetimeString).toLocaleString("vi-VN", options);
 }
 
 // Styles

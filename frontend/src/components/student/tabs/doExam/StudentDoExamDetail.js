@@ -42,6 +42,7 @@ export default function StudentDoExamDetail() {
   const [examData, setExamData] = useState(null);
   const [answers, setAnswers] = useState({});
   const [chosenTestId, setChosenTestId] = useState(null);
+  const [startTime, setStartTime] = useState(null); // 🔥 thêm state startTime
   const handleSubmitExamRef = useRef();
   const questionRefs = useRef([]);
 
@@ -61,18 +62,30 @@ export default function StudentDoExamDetail() {
       question_id: q.question_id,
       selected_option: answers[index] || null,
     }));
-    const submissionData = { test_id: chosenTestId, student_id: studentId, answers: formattedAnswers };
+    const endTime = new Date().toISOString(); // 🔥 thêm end_time
 
+    const submissionData = {
+      test_id: chosenTestId,
+      student_id: studentId,
+      answers: formattedAnswers,
+      start_time: startTime, // 🔥 thêm start_time
+      end_time: endTime,     // 🔥 thêm end_time
+    };
+    console.log("📤 submissionData:", submissionData); // <=== Thêm log này
     try {
-      const res = await fetch("http://127.0.0.1:8000/api/student/student_test/student_do_exam/", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify(submissionData),
-      });
+      const res = await fetch(
+        "http://127.0.0.1:8000/api/student/student_test/student_do_exam/",
+        {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify(submissionData),
+        }
+      );
       if (!res.ok) throw new Error(await res.text());
-      const scoreRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_do_exam/?student_id=${studentId}&test_id=${chosenTestId}`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const scoreRes = await fetch(
+        `http://127.0.0.1:8000/api/student/student_test/student_do_exam/?student_id=${studentId}&test_id=${chosenTestId}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
       if (!scoreRes.ok) throw new Error(await scoreRes.text());
       const scoreData = await scoreRes.json();
       navigate("/student/do_exam/result_exam", {
@@ -85,7 +98,7 @@ export default function StudentDoExamDetail() {
     } catch (error) {
       alert("❌ Gửi bài thất bại hoặc không thể lấy kết quả.");
     }
-  }, [examData, chosenTestId, answers, navigate]);
+  }, [examData, chosenTestId, answers, navigate, startTime]); // 🔥 thêm startTime vào dependency
 
   useEffect(() => {
     handleSubmitExamRef.current = handleSubmitExam;
@@ -95,59 +108,16 @@ export default function StudentDoExamDetail() {
     alert("⏰ Hết giờ làm bài!");
     handleSubmitExamRef.current?.();
   }, []);
+
   useEffect(() => {
-    // Kiểm soát chỉ cho phép 1 tab thi hoạt động
     if (!window.name) {
       window.name = `exam_tab_${Date.now()}`;
     }
-
     localStorage.setItem("examTabActive", window.name);
-
-    /*
-    const handleViolation = () => {
-      const now = Date.now();
-      // Nếu lần vi phạm trước < 1.5 giây thì bỏ qua
-      if (now - lastViolationTimeRef.current < 1500) return;
-  
-      lastViolationTimeRef.current = now;
-  
-      setViolationCount((prev) => {
-        const newCount = prev + 1;
-        if (newCount >= 3) {
-          alert("🚨 Bạn đã vi phạm quá 3 lần. Bài thi sẽ được nộp tự động!");
-          setTimeout(() => {
-            handleSubmitExamRef.current?.();
-          }, 3000);
-        } else {
-          alert(`⚠️ Phát hiện vi phạm (${newCount}/3)`);
-        }
-        return newCount;
-      });
-    };
-  
-    const handleVisibilityChange = () => {
-      if (document.hidden) handleViolation();
-    };
-  
-    const handleBlur = () => {
-      handleViolation();
-    };
-  
-    document.addEventListener("visibilitychange", handleVisibilityChange);
-    window.addEventListener("blur", handleBlur);
-  
-    return () => {
-      document.removeEventListener("visibilitychange", handleVisibilityChange);
-      window.removeEventListener("blur", handleBlur);
-      localStorage.removeItem("examTabActive");
-    };
-    */
-
     return () => {
       localStorage.removeItem("examTabActive");
     };
   }, []);
-
 
   useEffect(() => {
     async function fetchExamData() {
@@ -159,8 +129,9 @@ export default function StudentDoExamDetail() {
         cachedData = examData?.questions?.length ? { testId, examData } : null;
       }
 
-      // 1️⃣ FETCH DỮ LIỆU SERVER
-      const res = await fetch(`http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`);
+      const res = await fetch(
+        `http://127.0.0.1:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_test/${id}/`
+      );
       const testList = await res.json();
       const validTests = testList.filter((test) => test && test.test_id);
       const testId = validTests[Math.floor(Math.random() * validTests.length)]?.test_id;
@@ -171,7 +142,9 @@ export default function StudentDoExamDetail() {
         return;
       }
 
-      const detailRes = await fetch(`http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`);
+      const detailRes = await fetch(
+        `http://127.0.0.1:8000/api/student/student_test/student_detail_test/${testId}/`
+      );
       const serverData = await detailRes.json();
 
       if (!serverData?.questions?.length) {
@@ -180,16 +153,15 @@ export default function StudentDoExamDetail() {
         return;
       }
 
-      // 2️⃣ SO SÁNH SERVER vs CACHE
       if (!cachedData || JSON.stringify(cachedData.examData) !== JSON.stringify(serverData)) {
-        console.log("✅ Server khác cache --> Cập nhật cache");
         localStorage.setItem("examSession", JSON.stringify({ testId, examData: serverData }));
         setChosenTestId(testId);
         setExamData(serverData);
+        setStartTime(new Date().toISOString()); // 🔥 set start_time khi tải đề
       } else {
-        console.log("✅ Cache còn mới, sử dụng cache");
         setChosenTestId(cachedData.testId);
         setExamData(cachedData.examData);
+        setStartTime(new Date().toISOString()); // 🔥 set start_time khi tải cache
       }
     }
 
@@ -198,10 +170,8 @@ export default function StudentDoExamDetail() {
     }
   }, [id]);
 
-
-
-
   if (!examData) return <div style={{ marginTop: "40px" }}>Đang tải đề thi...</div>;
+
 
   return (
     <div style={{ display: "flex", padding: "20px", marginTop: "40px" }}>

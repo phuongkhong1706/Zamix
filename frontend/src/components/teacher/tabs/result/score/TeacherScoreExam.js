@@ -4,173 +4,57 @@ import { Search, Eye, FileText, TrendingUp, Users, Calendar, Download, CheckCirc
 import '../../../../../styles/teacher/TeacherScoreExam.css';
 
 const TeacherScoreExam = () => {
-  // Mock data - trong thực tế sẽ fetch từ API
-  const [exams, setExams] = useState([
-    {
-      exam_id: 1,
-      name: "Kiểm tra giữa kỳ I - Toán 12",
-      grade: "12",
-      type: "Kiểm tra",
-      start_time: "2024-10-15T08:00:00",
-      end_time: "2024-10-15T09:30:00",
-      teacher_id: 1,
-      total_students: 35,
-      completed_students: 33,
-      avg_score: 7.2
-    },
-    {
-      exam_id: 2,
-      name: "Thi học kỳ I - Toán 11",
-      grade: "11",
-      type: "Thi chính thức",
-      start_time: "2024-11-20T07:30:00",
-      end_time: "2024-11-20T09:00:00",
-      teacher_id: 1,
-      total_students: 42,
-      completed_students: 40,
-      avg_score: 6.8
-    },
-    {
-      exam_id: 3,
-      name: "Kiểm tra cuối kỳ I - Toán 10",
-      grade: "10",
-      type: "Kiểm tra",
-      start_time: "2024-12-10T08:00:00",
-      end_time: "2024-12-10T09:30:00",
-      teacher_id: 1,
-      total_students: 38,
-      completed_students: 38,
-      avg_score: 7.5
-    }
-  ]);
+  const navigate = useNavigate();
 
-  const [results, setResults] = useState([
-    {
-      result_id: 1,
-      student_id: 1,
-      test_id: 1,
-      exam_id: 1,
-      start_time: "2024-10-15T08:00:00",
-      end_time: "2024-10-15T09:25:00",
-      total_score: 8.5,
-      status: "completed",
-      student_name: "Nguyễn Văn An",
-      student_code: "HS001"
-    },
-    {
-      result_id: 2,
-      student_id: 2,
-      test_id: 1,
-      exam_id: 1,
-      start_time: "2024-10-15T08:00:00",
-      end_time: "2024-10-15T09:20:00",
-      total_score: 6.0,
-      status: "completed",
-      student_name: "Trần Thị Bình",
-      student_code: "HS002"
-    },
-    {
-      result_id: 3,
-      student_id: 3,
-      test_id: 1,
-      exam_id: 1,
-      start_time: "2024-10-15T08:00:00",
-      end_time: "2024-10-15T09:30:00",
-      total_score: 7.5,
-      status: "completed",
-      student_name: "Lê Minh Cường",
-      student_code: "HS003"
-    },
-    {
-      result_id: 4,
-      student_id: 4,
-      test_id: 2,
-      exam_id: 2,
-      start_time: "2024-11-20T07:30:00",
-      end_time: "2024-11-20T08:55:00",
-      total_score: 9.2,
-      status: "completed",
-      student_name: "Phạm Minh Đức",
-      student_code: "HS004"
-    },
-    {
-      result_id: 5,
-      student_id: 5,
-      test_id: 2,
-      exam_id: 2,
-      start_time: "2024-11-20T07:30:00",
-      end_time: "2024-11-20T08:45:00",
-      total_score: 4.5,
-      status: "completed",
-      student_name: "Hoàng Thị Em",
-      student_code: "HS005"
-    }
-  ]);
-
-  const [reviews, setReviews] = useState([
-    {
-      test_id: 1,
-      student_id: 1,
-      exam_id: 1,
-      student_name: "Nguyễn Văn An",
-      student_code: "HS001",
-      created_at: "2024-10-16T10:30:00",
-      score: 8.5,
-      reason: "Em thấy câu 5 về hàm số bậc hai, em đã làm đúng phương pháp nhưng kết quả bị trừ điểm. Em xin được xem lại.",
-      status: "pending"
-    },
-    {
-      test_id: 1,
-      student_id: 2,
-      exam_id: 1,
-      student_name: "Trần Thị Bình",
-      student_code: "HS002",
-      created_at: "2024-10-16T14:20:00",
-      score: 6.0,
-      reason: "Em nghĩ câu 3 về phương trình lượng giác em làm đúng rồi ạ. Xin cô xem lại giúp em.",
-      status: "pending"
-    },
-    {
-      test_id: 2,
-      student_id: 4,
-      exam_id: 2,
-      student_name: "Phạm Minh Đức",
-      student_code: "HS004",
-      created_at: "2024-11-21T09:15:00",
-      score: 9.2,
-      reason: "Em thấy bài làm của em hoàn toàn chính xác, có thể được điểm tối đa. Xin thầy xem lại.",
-      status: "pending"
-    }
-  ]);
-
+  const [exams, setExams] = useState([]);
+  const [results, setResults] = useState([]);
+  const [reviews, setReviews] = useState([]);
   const [selectedExam, setSelectedExam] = useState(null);
   const [selectedExamForReviews, setSelectedExamForReviews] = useState(null);
   const [activeTab, setActiveTab] = useState('exams');
   const [searchTerm, setSearchTerm] = useState('');
   const [filterGrade, setFilterGrade] = useState('all');
 
+  // Fetch data from backend
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const resp = await fetch('http://127.0.0.1:8000/api/teacher/teacher_result/teacher_score/');
+        if (!resp.ok) {
+          throw new Error(`Error fetching score data: ${resp.statusText}`);
+        }
+        const data = await resp.json();
+        setExams(data.exams || []);
+        setResults(data.results || []);
+        setReviews(data.reviews || []);
+      } catch (error) {
+        console.error(error.message);
+      }
+    };
+    fetchData();
+  }, []);
+
   // Filter functions
   const filteredExams = exams.filter(exam => {
     const matchesSearch = exam.name.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesGrade = filterGrade === 'all' || exam.grade === filterGrade;
+    const matchesGrade = filterGrade === 'all' || String(exam.grade) === filterGrade;
     return matchesSearch && matchesGrade;
   });
 
-  const filteredResults = results.filter(result => 
-    selectedExam ? result.exam_id === selectedExam.exam_id : false
+  const filteredResults = results.filter(
+    result => selectedExam ? result.exam_id === selectedExam.exam_id : false
   );
 
   const getReviewsForExam = (examId) => {
-    return reviews.filter(review => review.exam_id === examId && review.status === 'pending');
+    return reviews.filter(
+      review => review.exam_id === examId && review.status === 'pending'
+    );
   };
-
   const totalPendingReviews = reviews.filter(review => review.status === 'pending').length;
 
-  // Statistics calculation
   const getExamStatistics = (examId) => {
     const examResults = results.filter(r => r.exam_id === examId);
     const scores = examResults.map(r => r.total_score);
-    
     if (scores.length === 0) return null;
 
     const avg = scores.reduce((a, b) => a + b, 0) / scores.length;
@@ -180,12 +64,10 @@ const TeacherScoreExam = () => {
     const good = scores.filter(s => s >= 6.5 && s < 8).length;
     const average = scores.filter(s => s >= 5 && s < 6.5).length;
     const poor = scores.filter(s => s < 5).length;
-
-    // Tìm học sinh có điểm cao nhất và thấp nhất
     const topStudent = examResults.find(r => r.total_score === max);
     const bottomStudent = examResults.find(r => r.total_score === min);
 
-    return { 
+    return {
       avg, max, min, excellent, good, average, poor, total: scores.length,
       topStudent, bottomStudent
     };
@@ -193,23 +75,21 @@ const TeacherScoreExam = () => {
 
   const handleReviewAction = (reviewIndex, action) => {
     const updatedReviews = [...reviews];
-    const reviewToUpdate = selectedExamForReviews ? 
-      getReviewsForExam(selectedExamForReviews.exam_id)[reviewIndex] : 
-      reviews[reviewIndex];
-    
-    const globalIndex = reviews.findIndex(r => 
-      r.test_id === reviewToUpdate.test_id && 
-      r.student_id === reviewToUpdate.student_id && 
-      r.exam_id === reviewToUpdate.exam_id
+    const reviewList = selectedExamForReviews ? getReviewsForExam(selectedExamForReviews.exam_id) : reviews;
+    const reviewToUpdate = reviewList[reviewIndex];
+
+    const globalIndex = reviews.findIndex(
+      r => r.test_id === reviewToUpdate.test_id &&
+           r.student_id === reviewToUpdate.student_id &&
+           r.exam_id === reviewToUpdate.exam_id
     );
-    
+
     if (globalIndex !== -1) {
       updatedReviews[globalIndex].status = action;
       setReviews(updatedReviews);
     }
   };
 
-  const navigate = useNavigate();
   const handleReviewExam = () => {
     navigate("/teacher/result/score/review_exam");
   };
@@ -223,13 +103,13 @@ const TeacherScoreExam = () => {
       minute: '2-digit'
     });
   };
-
   const getScoreColor = (score) => {
     if (score >= 8) return 'teagrade-score-excellent';
     if (score >= 6.5) return 'teagrade-score-good';
     if (score >= 5) return 'teagrade-score-average';
     return 'teagrade-score-poor';
   };
+
 
   return (
     <div className="teagrade-container">

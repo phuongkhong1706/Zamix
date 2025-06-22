@@ -296,3 +296,132 @@ class StudentAnswer(models.Model):
         verbose_name = 'Câu trả lời của sinh viên'
         verbose_name_plural = 'Danh sách câu trả lời sinh viên'
         unique_together = ('student', 'test', 'question')
+
+class Result(models.Model):
+    result_id = models.BigAutoField(primary_key=True)
+
+    user = models.ForeignKey(
+        User,  # auth_user
+        on_delete=models.CASCADE,
+        verbose_name='Người dùng'
+    )
+
+    test = models.ForeignKey(
+        'Test',
+        to_field='test_id',
+        on_delete=models.CASCADE,
+        verbose_name='Bài thi'
+    )
+
+    start_time = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name='Thời gian bắt đầu'
+    )
+    end_time = models.DateTimeField(
+        null=True, blank=True,
+        verbose_name='Thời gian nộp bài'
+    )
+    total_score = models.FloatField(
+        default=0,
+        verbose_name='Điểm số'
+    )
+    status = models.SmallIntegerField(
+        default=0,
+        verbose_name='Trạng thái'
+    )
+    remarks = models.TextField(
+        default='Không',
+        blank=True,
+        verbose_name='Ghi chú'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Thời gian tạo'
+    )
+
+    def __str__(self):
+        return f"Kết quả #{self.result_id} - User {self.user_id} - Test {self.test_id}"
+
+    class Meta:
+        db_table = 'result'
+        verbose_name = 'Kết quả bài thi'
+        verbose_name_plural = 'Danh sách kết quả bài thi'
+
+class StudentReviewTest(models.Model):
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='student_review_tests'
+    )
+    test = models.ForeignKey(
+        'Test',
+        on_delete=models.CASCADE,
+        related_name='student_review_tests'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Thời điểm gửi yêu cầu'
+    )
+    score = models.FloatField(
+        verbose_name='Điểm số hiện tại',
+        null=True, blank=True
+    )
+    reason = models.TextField(
+        verbose_name='Lý do xin phúc tra'
+    )
+    teacher = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True, blank=True,
+        related_name='review_requests',
+        verbose_name='Giáo viên tạo đề thi'
+    )
+
+    class Meta:
+        db_table = 'student_review_test'
+        verbose_name = 'Phúc tra bài thi (sinh viên)'
+        verbose_name_plural = 'Danh sách phúc tra bài thi (sinh viên)'
+        unique_together = ('student', 'test')
+
+    def __str__(self):
+        return f"Phúc tra Test {self.test_id} của {self.student.username}"
+
+
+class TeacherReviewTest(models.Model):
+    test = models.ForeignKey(
+        'Test',
+        on_delete=models.CASCADE,
+        related_name='teacher_review_tests'
+    )
+    teacher = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='teacher_review_tests',
+        verbose_name='Giáo viên xử lý phúc tra'
+    )
+    created_at = models.DateTimeField(
+        auto_now_add=True,
+        verbose_name='Thời điểm phúc tra'
+    )
+    score = models.FloatField(
+        verbose_name='Điểm số cuối cùng sau phúc tra',
+        null=True, blank=True
+    )
+    reason = models.TextField(
+        verbose_name='Ghi chú/lý do của giáo viên'
+    )
+    student = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='handled_review_tests',
+        verbose_name='Học sinh được phúc tra'
+    )
+
+    class Meta:
+        db_table = 'teacher_review_test'
+        verbose_name = 'Phúc tra bài thi (giáo viên)'
+        verbose_name_plural = 'Danh sách phúc tra bài thi (giáo viên)'
+        unique_together = ('test', 'teacher')
+
+    def __str__(self):
+        return f"Kết quả phúc tra Test {self.test_id} - Giáo viên {self.teacher.username}"
