@@ -11,6 +11,9 @@ import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png";
 import iconSave from "../../../../assets/icon/icon-save-white.png"
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
+import iconUpload from "../../../../assets/icon/icon-camera-white.png";
+import iconEssay from "../../../../assets/icon/icon-essay-questions.png";
+import iconMulti from "../../../../assets/icon/icon-multiple-choice.png";
 import { FaSave } from "react-icons/fa";
 
 
@@ -405,19 +408,54 @@ function TeacherExamCode() {
     }));
   };
 
-  const handleDeleteOption = (id) => {
-    if (newQuestion.options.length <= 2) {
-      alert("Mỗi câu hỏi phải có ít nhất 2 đáp án.");
-      return;
+  const handleDeleteOption = async (id) => {
+  if (newQuestion.options.length <= 2) {
+    alert("Mỗi câu hỏi phải có ít nhất 2 đáp án.");
+    return;
+  }
+
+  if (!window.confirm("Bạn chắc chắn muốn xoá đáp án này?")) return;
+
+  const userJson = localStorage.getItem("user");
+  let token = null;
+  if (userJson) {
+    try {
+      token = JSON.parse(userJson)?.token;
+    } catch (err) {
+      console.error("Lỗi parse token:", err);
     }
-    setNewQuestion((prev) => ({
-      ...prev,
-      options: prev.options.filter((opt) => opt.id !== id),
-    }));
-    if (newQuestion.correct_option_id === id) {
-      setNewQuestion((prev) => ({ ...prev, correct_option_id: "" }));
+  }
+
+  if (!token) {
+    alert("Token không tồn tại, vui lòng đăng nhập lại.");
+    return;
+  }
+
+  try {
+    const res = await fetch(`http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${id}/`, {
+      method: "DELETE",
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    if (res.status === 204) {
+      setNewQuestion((prev) => ({
+        ...prev,
+        options: prev.options.filter((opt) => opt.id !== id),
+        correct_option_id:
+          prev.correct_option_id === id ? "" : prev.correct_option_id,
+      }));
+    } else {
+      const data = await res.json();
+      alert(data.message || "Xóa đáp án thất bại.");
     }
-  };
+  } catch (err) {
+    console.error("Lỗi khi gọi API xoá đáp án:", err);
+    alert("Xảy ra lỗi khi xoá đáp án.");
+  }
+};
+
 
   const handleAddOrEditQuestion = () => {
     if (!newQuestion.content.trim()) {
@@ -663,19 +701,19 @@ function TeacherExamCode() {
                       <label
                         htmlFor="question-image-upload"
                         style={{
-                          padding: "8px 16px",
-                          backgroundColor: "#007bff",
+                          padding: "8px 10px",
+                          backgroundColor: "#6e3f76",
                           color: "white",
-                          borderRadius: "4px",
+                          borderRadius: "5px",
                           cursor: "pointer",
-                          fontSize: "14px",
+                          fontSize: "13px",
                           border: "none",
                           display: "flex",
                           alignItems: "center",
                           gap: "5px"
                         }}
                       >
-                        📷 Tải ảnh
+                        <img src={iconUpload} alt="upload" className="btn-icon" /> Tải ảnh
                       </label>
 
                       {/* Hiển thị tên file đã chọn */}
@@ -922,19 +960,19 @@ function TeacherExamCode() {
                   <label
                     htmlFor="question-image-upload"
                     style={{
-                      padding: "8px 16px",
-                      backgroundColor: "#007bff",
+                      padding: "8px 10px",
+                      backgroundColor: "#6e3f76",
                       color: "white",
-                      borderRadius: "4px",
+                      borderRadius: "5px",
                       cursor: "pointer",
-                      fontSize: "14px",
+                      fontSize: "13px",
                       border: "none",
                       display: "flex",
                       alignItems: "center",
                       gap: "5px"
                     }}
                   >
-                    📷 Tải ảnh
+                    <img src={iconUpload} alt="upload2" className="btn-icon" /> Tải ảnh
                   </label>
 
                   {/* Hiển thị tên file đã chọn */}
@@ -1068,7 +1106,7 @@ function TeacherExamCode() {
             {/* Nút hành động */}
             <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
               <button onClick={handleAddOrEditQuestion} className="save-btn">
-                ✅ {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+                <img src={iconSave} alt="save2" className="btn-icon" /> {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
               </button>
             </div>
           </div>
@@ -1111,35 +1149,39 @@ function TeacherExamCode() {
                 <button
                   onClick={() => handleToggleQuestionForm('multiple_choice')}
                   style={{
-                    display: "block",
+                    display: "flex",
                     width: "100%",
-                    padding: "10px 15px",
+                    alignItems: "center",
+                    padding: "8px 10px",
                     border: "none",
                     backgroundColor: "transparent",
                     textAlign: "left",
                     cursor: "pointer",
-                    borderBottom: "1px solid #eee"
+                    borderBottom: "1px solid #eee",
+                    gap: "5px"
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = "#f5f5f5"}
                   onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                 >
-                  📝 Câu hỏi trắc nghiệm
+                  <img src={iconMulti} alt="multi" className="btn-icon" /> Câu hỏi trắc nghiệm
                 </button>
                 <button
                   onClick={() => handleToggleQuestionForm('essay')}
                   style={{
-                    display: "block",
+                    display: "flex",
                     width: "100%",
-                    padding: "10px 15px",
+                    alignItems: "center",
+                    padding: "8px 10px",
                     border: "none",
                     backgroundColor: "transparent",
                     textAlign: "left",
-                    cursor: "pointer"
+                    cursor: "pointer",
+                    gap: "5px"
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = "#f5f5f5"}
                   onMouseLeave={(e) => e.target.style.backgroundColor = "transparent"}
                 >
-                  ✍️ Câu hỏi tự luận
+                  <img src={iconEssay} alt="essay" className="btn-icon" /> Câu hỏi tự luận
                 </button>
               </div>
             )}

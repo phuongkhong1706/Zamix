@@ -111,7 +111,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = 'en-us'
 
-TIME_ZONE = 'UTC'
+TIME_ZONE = 'Asia/Ho_Chi_Minh'  # Dùng múi giờ Việt Nam
 
 USE_I18N = True
 
@@ -150,7 +150,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.mysql',
         'NAME': 'db_exam',
         'USER': 'root',
-        'PASSWORD': 'dotrungquan183@',
+        'PASSWORD': 'phuongkhong1706',
         'HOST': 'localhost',
         'PORT': '3306',
     }

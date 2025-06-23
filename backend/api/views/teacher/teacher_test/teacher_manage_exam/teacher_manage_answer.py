@@ -114,3 +114,33 @@ class TeacherManageAnswerView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
+    def delete(self, request, answer_id):
+        try:
+            print(f"🗑️ DELETE xoá đáp án ID = {answer_id}")
+
+            user_from_token, error_response = get_authenticated_user(request)
+            if error_response:
+                print("❌ Lỗi xác thực token:", error_response.content.decode())
+                return error_response
+
+            answer = get_object_or_404(Answer, answer_id=answer_id)
+
+            # Kiểm tra quyền: chỉ giáo viên sở hữu bài test mới được xoá
+            if answer.question.test.user.id != user_from_token.id:
+                return Response(
+                    {"message": "Bạn không có quyền xoá đáp án này."},
+                    status=status.HTTP_403_FORBIDDEN,
+                )
+
+            answer.delete()
+            print("✅ Đáp án đã được xoá thành công.")
+            return Response({"message": "Đáp án đã được xoá thành công."}, status=status.HTTP_204_NO_CONTENT)
+
+        except Exception as e:
+            print("❌ Lỗi khi xoá đáp án:")
+            traceback.print_exc()
+            return Response(
+                {"message": "Internal Server Error", "detail": str(e)},
+                status=status.HTTP_500_INTERNAL_SERVER_ERROR
+            )

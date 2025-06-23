@@ -124,13 +124,52 @@ export default function TeacherExamManagement() {
     navigate(`/teacher/exams/exam_management/exam_add/${examId}`);
   };
 
-  const handleDeleteClick = async (examId) => {
-    // logic của bạn để delete
-    if (window.confirm("Bạn chắc chắn muốn xóa kỳ thi này?")) {
-      // Xóa qua API
-      // Cập nhật lại danh sách exams
+const handleDeleteClick = async (examId) => {
+  const userJson = localStorage.getItem("user");
+  let token = null;
+
+  if (userJson) {
+    try {
+      const userObj = JSON.parse(userJson);
+      token = userObj.token;
+    } catch (error) {
+      console.error("Lỗi khi parse user từ localStorage:", error);
     }
-  };
+  }
+
+  if (!token) {
+    alert("Token không tồn tại hoặc lỗi khi đọc token. Vui lòng đăng nhập lại.");
+    return;
+  }
+
+  const url = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_detail_exam/${examId}/`;
+
+  if (!window.confirm("Bạn chắc chắn muốn xóa kỳ thi này?")) return;
+
+  try {
+    const res = await fetch(url, {
+      method: "DELETE",
+      headers: {
+        "Authorization": `Bearer ${token}`,
+      },
+    });
+
+    if (res.status === 204) {
+      alert("Xóa kỳ thi thành công!");
+      window.location.reload(); // hoặc update lại danh sách nếu bạn muốn
+    } else {
+      const resText = await res.text();
+      const errorJson = JSON.parse(resText);
+      alert(`Lỗi khi xóa: ${errorJson.message || "Không xác định"}`);
+    }
+  } catch (error) {
+    console.error("Lỗi khi xóa kỳ thi:", error);
+    alert("Không thể kết nối tới server.");
+  }
+};
+
+
+
 
   return (
     <div className="exam-container">
