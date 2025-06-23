@@ -756,10 +756,11 @@ function TeacherExamCode() {
                           border: "none",
                           borderRadius: "4px",
                           cursor: "pointer",
-                          fontSize: "12px"
+                          fontSize: "12px",
+                          fontWeight: "bold"
                         }}
                       >
-                        ✕ Xóa
+                        ✕ Xoá
                       </button>
                     </div>
                   )}
@@ -846,7 +847,6 @@ function TeacherExamCode() {
 
                 {/* Nút hành động */}
                 <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
-                  <div style={{ display: "flex", gap: "10px", justifyContent: "flex-end", marginTop: "20px" }}>
                     {/* Nút Hủy sửa / Hủy thêm */}
                     <button
                       onClick={handleToggleQuestionForm}
@@ -875,10 +875,8 @@ function TeacherExamCode() {
 
                     {/* Nút Lưu chỉnh sửa / Lưu câu hỏi */}
                     <button onClick={handleAddOrEditQuestion} className="save-btn">
-                      ✅ {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+                      <img src={iconSave} alt="save3" className="btn-icon" />  {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
                     </button>
-                  </div>
-
                 </div>
               </div>
             )}
