@@ -71,19 +71,53 @@ function TeacherExamCode() {
   };
 
   // Hàm xóa ảnh
-  const handleRemoveImage = () => {
-    setNewQuestion({
-      ...newQuestion,
-      image: null,
-      imagePreview: null
-    });
+const handleRemoveImage = async (questionId) => {
+  const userJson = localStorage.getItem("user");
+  let token = null;
+  try {
+    token = JSON.parse(userJson)?.token;
+  } catch (err) {
+    console.error("Lỗi khi đọc token:", err);
+    return;
+  }
 
-    // Reset input file
-    const fileInput = document.getElementById('question-image-upload');
-    if (fileInput) {
-      fileInput.value = '';
+  if (!token) {
+    alert("Vui lòng đăng nhập lại.");
+    return;
+  }
+
+  const confirmDelete = window.confirm("Bạn có chắc chắn muốn xoá ảnh này?");
+  if (!confirmDelete) return;
+
+  try {
+    const res = await fetch(
+      `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${questionId}/remove_image/`,
+      {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      }
+    );
+
+    const result = await res.json();
+    if (res.status === 200) {
+      alert(result.message);
+      setNewQuestion((prev) => ({
+        ...prev,
+        image: null,
+        imagePreview: null
+      }));
+    } else {
+      alert(result.message || "Lỗi không xác định khi xoá ảnh.");
     }
-  };
+  } catch (error) {
+    console.error("Lỗi khi gọi API xoá ảnh:", error);
+    alert("Không thể kết nối server để xoá ảnh.");
+  }
+};
+
+
 
   const handleSave = async () => {
     const userJson = localStorage.getItem('user');
@@ -747,7 +781,7 @@ function TeacherExamCode() {
                       />
                       <button
                         type="button"
-                        onClick={handleRemoveImage}
+                        onClick={() => handleRemoveImage(newQuestion.question_id)}
                         style={{
                           marginLeft: "10px",
                           padding: "4px 8px",
@@ -1004,7 +1038,7 @@ function TeacherExamCode() {
                   />
                   <button
                     type="button"
-                    onClick={handleRemoveImage}
+                    onClick={() => handleRemoveImage(newQuestion.question_id)}
                     style={{
                       marginLeft: "10px",
                       padding: "4px 8px",

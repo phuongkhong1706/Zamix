@@ -9,6 +9,7 @@ from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_test impo
 from api.views.teacher.teacher_test.teacher_manage_exam.teacher_detail_test import TeacherDetailTestView
 from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_topic_exam import TeacherManageTopicExam
 from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_question import TeacherManageQuestionView
+from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_question_remove_img import TeacherRemoveQuestionImageView
 from api.views.teacher.teacher_test.teacher_manage_exam.teacher_manage_answer import TeacherManageAnswerView
 from api.views.teacher.teacher_document.teacher_manage_document import TeacherManageDocumentView
 from api.views.teacher.teacher_document.teacher_detail_document import TeacherDetailDocumentView
@@ -25,6 +26,7 @@ urlpatterns = [
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_topic_exam/', TeacherManageTopicExam.as_view(), name='teacher_manage_topic_exam'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_question/', TeacherManageQuestionView.as_view(), name='teacher_manage_question'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_question/<int:question_id>/', TeacherManageQuestionView.as_view(), name='teacher_manage_question'),
+    path('teacher/teacher_test/teacher_manage_exam/teacher_manage_question/<int:question_id>/remove_image/', TeacherRemoveQuestionImageView.as_view(), name="remove_question_image"),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/', TeacherManageAnswerView.as_view(), name='teacher_manage_answer'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/<int:answer_id>/', TeacherManageAnswerView.as_view(), name='teacher_manage_answer'),
     path('teacher/teacher_document/teacher_detail_document/', TeacherDetailDocumentView.as_view(), name='teacher_detail_document'),
