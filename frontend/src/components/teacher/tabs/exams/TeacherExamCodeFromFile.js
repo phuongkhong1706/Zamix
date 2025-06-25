@@ -9,8 +9,12 @@ import "../../../../styles/teacher/TeacherExamCode.css";
 import iconAddQuestion from "../../../../assets/icon/icon-add.png";
 import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png";
 import iconCorrect from "../../../../assets/icon/icon-correct.png";
+import iconSave from "../../../../assets/icon/icon-save-white.png"
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
+import iconUpload from "../../../../assets/icon/icon-camera-white.png";
+import iconEssay from "../../../../assets/icon/icon-essay-questions.png";
+import iconMulti from "../../../../assets/icon/icon-multiple-choice.png";
 import { FaSave } from "react-icons/fa";
 import mammoth from "mammoth";
  
@@ -150,11 +154,6 @@ function TeacherExamCodeFromFile() {
  
     return questions;
   };
- 
- 
- 
- 
- 
  
   const handleSave = async () => {
     const userJson = localStorage.getItem("user");
