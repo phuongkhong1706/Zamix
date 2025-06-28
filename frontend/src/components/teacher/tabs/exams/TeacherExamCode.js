@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from "react";
-import { useNavigate } from 'react-router-dom';
 import LatexInputKaTeX, { renderWithLatex } from "./LatexInputKaTeX.js";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from 'react-router-dom';
@@ -9,6 +8,7 @@ import "../../../../styles/SidebarNavigation.css";
 import "../../../../styles/teacher/TeacherExamCode.css";
 import iconAddQuestion from "../../../../assets/icon/icon-add.png";
 import iconCancelQuestion from "../../../../assets/icon/icon-cancel.png";
+import iconCorrect from "../../../../assets/icon/icon-correct.png";
 import iconSave from "../../../../assets/icon/icon-save-white.png"
 import iconEdit from "../../../../assets/icon/icon-edit.png";
 import iconDelete from "../../../../assets/icon/icon-delete.png";
@@ -20,7 +20,7 @@ import { FaSave } from "react-icons/fa";
 
 function TeacherExamCode() {
   const [newQuestions, setNewQuestions] = useState([]);
-  const navigate = useNavigate();
+
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [questionType, setQuestionType] = useState('multiple_choice'); // 'multiple_choice' hoặc 'essay'
@@ -29,7 +29,6 @@ function TeacherExamCode() {
   const { examId, testId: paramTestId } = useParams();
   const [testId, setTestId] = useState(paramTestId); // copy giá trị ban đầu từ param
   const [examData, setExamData] = useState({
-    exam_name: "",
     name: "",
     type: "",
     duration_minutes: 0,
@@ -340,8 +339,12 @@ function TeacherExamCode() {
     setNewQuestions(updatedQuestions);
     console.log('🎯 newQuestions sau khi lưu:', updatedQuestions);
     alert('✅ Lưu toàn bộ câu hỏi và đáp án thành công!');
-    navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/${testId}`);
+    window.location.reload();
   };
+
+
+
+
 
   useEffect(() => {
     const fetchTestDetail = async () => {
@@ -364,7 +367,6 @@ function TeacherExamCode() {
 
         const data = response.data;
         setExamData({
-          exam_name: data.exam_name || '',
           name: data.name || '',
           type: data.type || '',
           duration_minutes: data.duration_minutes || '',
@@ -852,7 +854,7 @@ function TeacherExamCode() {
                     className="btn addquestion"
                     style={{
                       marginTop: "12px",
-                      padding: "12px 18px", // Tăng padding so với mặc định
+                      padding: "8px 12px", // Tăng padding so với mặc định
                       // Tăng cỡ chữ lên 1.2 lần
                       transform: "scale(1.0)", // Phóng to toàn bộ nút
                       transformOrigin: "center",
@@ -888,7 +890,7 @@ function TeacherExamCode() {
                     <strong>{String.fromCharCode(65 + idx)}</strong>. {renderWithLatex(opt.text || '')}
                     {q.correct_option_id === opt.id && (
                       <span className="correct-answer">
-                        ✔ Đáp án đúng
+                        <img src={iconCorrect} alt="correct" className="btn-icon" /> Đáp án đúng
                       </span>
                     )}
                   </li>
@@ -916,7 +918,7 @@ function TeacherExamCode() {
                   }}
                 >
                   {renderWithLatex(
-                    q.content ? q.content : ''
+                    q.options && q.options.length > 0 ? q.options[0].text || '' : ''
                   )}
                 </div>
               </div>
@@ -1101,11 +1103,11 @@ function TeacherExamCode() {
             )}
 
             {/* Nút hành động */}
-
-            <button onClick={handleAddOrEditQuestion} className="save-btn">
-              <img src={iconSave} alt="save2" className="btn-icon" /> {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
-            </button>
-
+            <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
+              <button onClick={handleAddOrEditQuestion} className="save-btn">
+                <img src={iconSave} alt="save2" className="btn-icon" /> {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+              </button>
+            </div>
           </div>
         )}
         {/* NÚT THÊM CÂU HỎI VỚI SUBMENU */}
@@ -1197,7 +1199,7 @@ function TeacherExamCode() {
 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
-        <div className="exam-form-title">{examData.exam_name}</div>
+        <div className="exam-form-title">Kỳ thi giữa kỳ toán 12</div>
 
         {/* Loại đề thi */}
         <div className="exam-form-row">

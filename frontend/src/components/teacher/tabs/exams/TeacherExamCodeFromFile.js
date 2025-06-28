@@ -30,7 +30,7 @@ function TeacherExamCodeFromFile() {
 
   const { examId, testId } = useParams();
   const [questions, setQuestions] = useState([]);
-  const [, setCurrentQuestionIndex] = useState(0);
+  const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [examData, setExamData] = useState({
     exam_name: "",
     name: "",
@@ -137,6 +137,7 @@ function TeacherExamCodeFromFile() {
       // Sử dụng mammoth để extract cả text và hình ảnh
       const result = await mammoth.convertToHtml({ arrayBuffer });
       const htmlContent = result.value;
+      const messages = result.messages;
 
       // Extract text content
       const { value: textContent } = await mammoth.extractRawText({ arrayBuffer });
