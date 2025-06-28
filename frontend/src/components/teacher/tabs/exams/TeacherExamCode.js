@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
 import LatexInputKaTeX, { renderWithLatex } from "./LatexInputKaTeX.js";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from 'react-router-dom';
@@ -19,7 +20,7 @@ import { FaSave } from "react-icons/fa";
 
 function TeacherExamCode() {
   const [newQuestions, setNewQuestions] = useState([]);
-
+  const navigate = useNavigate();
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [questionType, setQuestionType] = useState('multiple_choice'); // 'multiple_choice' hoặc 'essay'
@@ -28,6 +29,7 @@ function TeacherExamCode() {
   const { examId, testId: paramTestId } = useParams();
   const [testId, setTestId] = useState(paramTestId); // copy giá trị ban đầu từ param
   const [examData, setExamData] = useState({
+    exam_name: "",
     name: "",
     type: "",
     duration_minutes: 0,
@@ -71,51 +73,51 @@ function TeacherExamCode() {
   };
 
   // Hàm xóa ảnh
-const handleRemoveImage = async (questionId) => {
-  const userJson = localStorage.getItem("user");
-  let token = null;
-  try {
-    token = JSON.parse(userJson)?.token;
-  } catch (err) {
-    console.error("Lỗi khi đọc token:", err);
-    return;
-  }
-
-  if (!token) {
-    alert("Vui lòng đăng nhập lại.");
-    return;
-  }
-
-  const confirmDelete = window.confirm("Bạn có chắc chắn muốn xoá ảnh này?");
-  if (!confirmDelete) return;
-
-  try {
-    const res = await fetch(
-      `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${questionId}/remove_image/`,
-      {
-        method: 'DELETE',
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      }
-    );
-
-    const result = await res.json();
-    if (res.status === 200) {
-      alert(result.message);
-      setNewQuestion((prev) => ({
-        ...prev,
-        image: null,
-        imagePreview: null
-      }));
-    } else {
-      alert(result.message || "Lỗi không xác định khi xoá ảnh.");
+  const handleRemoveImage = async (questionId) => {
+    const userJson = localStorage.getItem("user");
+    let token = null;
+    try {
+      token = JSON.parse(userJson)?.token;
+    } catch (err) {
+      console.error("Lỗi khi đọc token:", err);
+      return;
     }
-  } catch (error) {
-    console.error("Lỗi khi gọi API xoá ảnh:", error);
-    alert("Không thể kết nối server để xoá ảnh.");
-  }
-};
+
+    if (!token) {
+      alert("Vui lòng đăng nhập lại.");
+      return;
+    }
+
+    const confirmDelete = window.confirm("Bạn có chắc chắn muốn xoá ảnh này?");
+    if (!confirmDelete) return;
+
+    try {
+      const res = await fetch(
+        `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${questionId}/remove_image/`,
+        {
+          method: 'DELETE',
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      const result = await res.json();
+      if (res.status === 200) {
+        alert(result.message);
+        setNewQuestion((prev) => ({
+          ...prev,
+          image: null,
+          imagePreview: null
+        }));
+      } else {
+        alert(result.message || "Lỗi không xác định khi xoá ảnh.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi gọi API xoá ảnh:", error);
+      alert("Không thể kết nối server để xoá ảnh.");
+    }
+  };
 
 
 
@@ -338,12 +340,8 @@ const handleRemoveImage = async (questionId) => {
     setNewQuestions(updatedQuestions);
     console.log('🎯 newQuestions sau khi lưu:', updatedQuestions);
     alert('✅ Lưu toàn bộ câu hỏi và đáp án thành công!');
-    window.location.reload();
+    navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/${testId}`);
   };
-
-
-
-
 
   useEffect(() => {
     const fetchTestDetail = async () => {
@@ -366,6 +364,7 @@ const handleRemoveImage = async (questionId) => {
 
         const data = response.data;
         setExamData({
+          exam_name: data.exam_name || '',
           name: data.name || '',
           type: data.type || '',
           duration_minutes: data.duration_minutes || '',
@@ -442,53 +441,19 @@ const handleRemoveImage = async (questionId) => {
     }));
   };
 
-  const handleDeleteOption = async (id) => {
-  if (newQuestion.options.length <= 2) {
-    alert("Mỗi câu hỏi phải có ít nhất 2 đáp án.");
-    return;
-  }
-
-  if (!window.confirm("Bạn chắc chắn muốn xoá đáp án này?")) return;
-
-  const userJson = localStorage.getItem("user");
-  let token = null;
-  if (userJson) {
-    try {
-      token = JSON.parse(userJson)?.token;
-    } catch (err) {
-      console.error("Lỗi parse token:", err);
+  const handleDeleteOption = (id) => {
+    if (newQuestion.options.length <= 2) {
+      alert("Mỗi câu hỏi phải có ít nhất 2 đáp án.");
+      return;
     }
-  }
-
-  if (!token) {
-    alert("Token không tồn tại, vui lòng đăng nhập lại.");
-    return;
-  }
-
-  try {
-    const res = await fetch(`http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_answer/${id}/`, {
-      method: "DELETE",
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.status === 204) {
-      setNewQuestion((prev) => ({
-        ...prev,
-        options: prev.options.filter((opt) => opt.id !== id),
-        correct_option_id:
-          prev.correct_option_id === id ? "" : prev.correct_option_id,
-      }));
-    } else {
-      const data = await res.json();
-      alert(data.message || "Xóa đáp án thất bại.");
+    setNewQuestion((prev) => ({
+      ...prev,
+      options: prev.options.filter((opt) => opt.id !== id),
+    }));
+    if (newQuestion.correct_option_id === id) {
+      setNewQuestion((prev) => ({ ...prev, correct_option_id: "" }));
     }
-  } catch (err) {
-    console.error("Lỗi khi gọi API xoá đáp án:", err);
-    alert("Xảy ra lỗi khi xoá đáp án.");
-  }
-};
+  };
 
 
   const handleAddOrEditQuestion = () => {
@@ -560,61 +525,61 @@ const handleRemoveImage = async (questionId) => {
 
 
   const handleDeleteQuestion = async (index) => {
-  if (!window.confirm('Bạn có chắc muốn xoá câu hỏi này không?')) {
-    return;
-  }
-
-  const question = newQuestions[index];
-  if (!question || !question.question_id) {
-    alert('❌ Không tìm thấy question_id của câu hỏi để xóa.');
-    return;
-  }
-
-  const userJson = localStorage.getItem('user');
-  let token = null;
-
-  if (userJson) {
-    try {
-      const userObj = JSON.parse(userJson);
-      token = userObj.token;
-    } catch (error) {
-      console.error('❌ Lỗi parse user:', error);
+    if (!window.confirm('Bạn có chắc muốn xoá câu hỏi này không?')) {
+      return;
     }
-  }
 
-  if (!token) {
-    alert('⚠️ Token không tồn tại. Vui lòng đăng nhập lại.');
-    return;
-  }
+    const question = newQuestions[index];
+    if (!question || !question.question_id) {
+      alert('❌ Không tìm thấy question_id của câu hỏi để xóa.');
+      return;
+    }
 
-  const deleteUrl = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.question_id}/`;
+    const userJson = localStorage.getItem('user');
+    let token = null;
 
-  try {
-    const res = await fetch(deleteUrl, {
-      method: 'DELETE',
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
-
-    if (res.ok) {
-      alert('✅ Xoá câu hỏi thành công!');
-      setNewQuestions((prev) => prev.filter((_, i) => i !== index));
-    } else {
-      const resText = await res.text();
-      let errorJson = {};
+    if (userJson) {
       try {
-        errorJson = JSON.parse(resText);
-      } catch (_) {
-        errorJson = { message: resText };
+        const userObj = JSON.parse(userJson);
+        token = userObj.token;
+      } catch (error) {
+        console.error('❌ Lỗi parse user:', error);
       }
-      alert(`❌ Lỗi: ${errorJson.message || errorJson.error || 'Không xác định'}`);
     }
-  } catch (error) {
-    console.error('❌ Lỗi khi xoá câu hỏi:', error);
-    alert('🚫 Không thể kết nối tới server.');
-  }
-};
+
+    if (!token) {
+      alert('⚠️ Token không tồn tại. Vui lòng đăng nhập lại.');
+      return;
+    }
+
+    const deleteUrl = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_question/${question.question_id}/`;
+
+    try {
+      const res = await fetch(deleteUrl, {
+        method: 'DELETE',
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+
+      if (res.ok) {
+        alert('✅ Xoá câu hỏi thành công!');
+        setNewQuestions((prev) => prev.filter((_, i) => i !== index));
+      } else {
+        const resText = await res.text();
+        let errorJson = {};
+        try {
+          errorJson = JSON.parse(resText);
+        } catch (_) {
+          errorJson = { message: resText };
+        }
+        alert(`❌ Lỗi: ${errorJson.message || errorJson.error || 'Không xác định'}`);
+      }
+    } catch (error) {
+      console.error('❌ Lỗi khi xoá câu hỏi:', error);
+      alert('🚫 Không thể kết nối tới server.');
+    }
+  };
 
 
   const handleToggleQuestionForm = (type = null) => {
@@ -881,36 +846,36 @@ const handleRemoveImage = async (questionId) => {
 
                 {/* Nút hành động */}
                 <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
-                    {/* Nút Hủy sửa / Hủy thêm */}
-                    <button
-                      onClick={handleToggleQuestionForm}
-                      className="btn addquestion"
-                      style={{
-                        marginTop: "12px",
-                        padding: "12px 18px", // Tăng padding so với mặc định
-                        // Tăng cỡ chữ lên 1.2 lần
-                        transform: "scale(1.0)", // Phóng to toàn bộ nút
-                        transformOrigin: "center",
-                      }}
-                    >
-                      <img
-                        src={showNewQuestionForm ? iconCancelQuestion : iconAddQuestion}
-                        alt="toggle"
-                        className="btn-icon"
-                        style={{ width: "10px", height: "10px" }} // Tăng kích thước icon
-                      />
-                      {showNewQuestionForm
-                        ? editingIndex !== null
-                          ? "Hủy sửa"
-                          : "Hủy thêm"
-                        : "Thêm câu hỏi"}
-                    </button>
+                  {/* Nút Hủy sửa / Hủy thêm */}
+                  <button
+                    onClick={handleToggleQuestionForm}
+                    className="btn addquestion"
+                    style={{
+                      marginTop: "12px",
+                      padding: "12px 18px", // Tăng padding so với mặc định
+                      // Tăng cỡ chữ lên 1.2 lần
+                      transform: "scale(1.0)", // Phóng to toàn bộ nút
+                      transformOrigin: "center",
+                    }}
+                  >
+                    <img
+                      src={showNewQuestionForm ? iconCancelQuestion : iconAddQuestion}
+                      alt="toggle"
+                      className="btn-icon"
+                      style={{ width: "10px", height: "10px" }} // Tăng kích thước icon
+                    />
+                    {showNewQuestionForm
+                      ? editingIndex !== null
+                        ? "Hủy sửa"
+                        : "Hủy thêm"
+                      : "Thêm câu hỏi"}
+                  </button>
 
 
-                    {/* Nút Lưu chỉnh sửa / Lưu câu hỏi */}
-                    <button onClick={handleAddOrEditQuestion} className="save-btn">
-                      <img src={iconSave} alt="save3" className="btn-icon" />  {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
-                    </button>
+                  {/* Nút Lưu chỉnh sửa / Lưu câu hỏi */}
+                  <button onClick={handleAddOrEditQuestion} className="save-btn">
+                    <img src={iconSave} alt="save3" className="btn-icon" />  {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+                  </button>
                 </div>
               </div>
             )}
@@ -951,7 +916,7 @@ const handleRemoveImage = async (questionId) => {
                   }}
                 >
                   {renderWithLatex(
-                    q.options && q.options.length > 0 ? q.options[0].text || '' : ''
+                    q.content ? q.content : ''
                   )}
                 </div>
               </div>
@@ -1136,11 +1101,11 @@ const handleRemoveImage = async (questionId) => {
             )}
 
             {/* Nút hành động */}
-            <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
-              <button onClick={handleAddOrEditQuestion} className="save-btn">
-                <img src={iconSave} alt="save2" className="btn-icon" /> {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
-              </button>
-            </div>
+
+            <button onClick={handleAddOrEditQuestion} className="save-btn">
+              <img src={iconSave} alt="save2" className="btn-icon" /> {editingIndex !== null ? "Lưu chỉnh sửa" : "Lưu câu hỏi"}
+            </button>
+
           </div>
         )}
         {/* NÚT THÊM CÂU HỎI VỚI SUBMENU */}
@@ -1232,7 +1197,7 @@ const handleRemoveImage = async (questionId) => {
 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
       <div className="sidebar-container">
-        <div className="exam-form-title">Kỳ thi giữa kỳ toán 12</div>
+        <div className="exam-form-title">{examData.exam_name}</div>
 
         {/* Loại đề thi */}
         <div className="exam-form-row">

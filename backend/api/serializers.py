@@ -124,7 +124,7 @@ class TestSerializer(serializers.ModelSerializer):
             'shift',
             'shift_id',
             'exam_id',
-            'exam_name',   # 👈 thêm field này để lấy tên exam
+            'exam_name',
             'questions',
         ]
 

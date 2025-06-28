@@ -1,0 +1,8 @@
+Thực trạng: mô tả ngắn gọn, từ khóa.
+Sau bài toán: tóm tắt những gì đã làm được.
+Cơ sở dữ liệu: tách ra slide
+Bổ sung báo cáo thống kê khóa học
+Footnote tài liệu tham khảo
+Bỏ logo fami ở góc, bỏ logo fami thẳng logo hust
+
+

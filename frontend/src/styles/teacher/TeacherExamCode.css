@@ -90,6 +90,7 @@
   }
   
   .question-form button.save-btn {
+    height: 35px;           /* chiều cao cố định */
     background-color: #22c55e; /* tương đương bg-green-500 */
     color: white;
     font-weight: bold;
@@ -101,6 +102,7 @@
     border-radius: 6px;
     font-size: 13px;
     cursor: pointer;
+    margin-top: 12px; /* hoặc 10px, 12px... tùy bạn */
   }
   
   .question-form button.save-btn:hover {

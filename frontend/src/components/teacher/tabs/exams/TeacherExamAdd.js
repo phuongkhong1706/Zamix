@@ -256,7 +256,7 @@ const TeacherExamAdd = () => {
       alert("Không thể kết nối tới server.");
     }
   };
-  
+
 
 
   return (
@@ -301,16 +301,31 @@ const TeacherExamAdd = () => {
               <input
                 type="datetime-local"
                 value={timeStart}
-                onChange={(e) => setTimeStart(e.target.value)}
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  if (timeEnd && newStart > timeEnd) {
+                    alert('❌ Thời gian bắt đầu không thể sau thời gian kết thúc.');
+                    return;
+                  }
+                  setTimeStart(newStart);
+                }}
               />
               <span>đến</span>
               <input
                 type="datetime-local"
                 value={timeEnd}
-                onChange={(e) => setTimeEnd(e.target.value)}
+                onChange={(e) => {
+                  const newEnd = e.target.value;
+                  if (timeStart && newEnd < timeStart) {
+                    alert('❌ Thời gian kết thúc không thể trước thời gian bắt đầu.');
+                    return;
+                  }
+                  setTimeEnd(newEnd);
+                }}
               />
             </div>
           </div>
+
           <div className="form-group quarter-width">
             <label>Chủ đề</label>
             <div className="topic-checkbox-list scrollable-box">
@@ -373,15 +388,30 @@ const TeacherExamAdd = () => {
               <input
                 type="datetime-local"
                 value={timeStartRv}
-                onChange={(e) => setTimeStartRv(e.target.value)}
+                onChange={(e) => {
+                  const newStart = e.target.value;
+                  if (timeEndRv && newStart > timeEndRv) {
+                    alert('❌ Thời gian bắt đầu không thể sau thời gian kết thúc.');
+                    return;
+                  }
+                  setTimeStartRv(newStart);
+                }}
               />
               <span>đến</span>
               <input
                 type="datetime-local"
                 value={timeEndRv}
-                onChange={(e) => setTimeEndRv(e.target.value)}
+                onChange={(e) => {
+                  const newEnd = e.target.value;
+                  if (timeStartRv && newEnd < timeStartRv) {
+                    alert('❌ Thời gian kết thúc không thể trước thời gian bắt đầu.');
+                    return;
+                  }
+                  setTimeEndRv(newEnd);
+                }}
               />
             </div>
+
           </div>
         </div>
 

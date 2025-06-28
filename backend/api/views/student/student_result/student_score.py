@@ -34,6 +34,7 @@ class StudentExamScoresView(APIView):
                         "slot": str(shift.shift_id) if shift else "",
                         "score": result.total_score,
                         "grade": str(exam.grade) if exam else "",
+                        "status": result.status,  # ✅ Trả về status (int)
                     }
                 )
 
@@ -43,6 +44,7 @@ class StudentExamScoresView(APIView):
             )
 
         except Exception as e:
+            import traceback
             traceback.print_exc()
             return Response(
                 {"message": "❌ Lỗi hệ thống.", "detail": str(e)},

@@ -69,13 +69,13 @@ function StudentScoreExam() {
     );
   });
 
-const handleReviewExam = (test_id) => {
-  navigate(`/student/result/score/review_exam/${test_id}`);
-};
+  const handleReviewExam = (test_id) => {
+    navigate(`/student/result/score/review_exam/${test_id}`);
+  };
 
-const handleRemarkExam = (test_id) => {
-  navigate(`/student/result/score/remark_exam/${test_id}`);
-};
+  const handleRemarkExam = (test_id) => {
+    navigate(`/student/result/score/remark_exam/${test_id}`);
+  };
 
   if (loading) return <div style={{ padding: "1rem" }}>Đang tải danh sách điểm thi...</div>;
 
@@ -156,13 +156,17 @@ const handleRemarkExam = (test_id) => {
                   <td style={tableCellStyle}>{index + 1}</td>
                   <td style={tableCellStyle}>{item.examTitle}</td>
                   <td style={tableCellStyle}>{item.semester}</td>
-                  <td style={tableCellStyle}>{new Date(item.examDate).toLocaleDateString("vi-VN")}</td>
+                  <td style={tableCellStyle}>
+                    {new Date(item.examDate).toLocaleDateString("vi-VN")}
+                  </td>
                   <td style={tableCellStyle}>{item.slot}</td>
                   <td style={tableCellStyle}>Lớp {item.grade}</td>
                   <td style={tableCellStyle}>{item.score}</td>
                   <td style={tableCellStyle}>
                     <button style={actionButtonStyle} onClick={() => handleReviewExam(item.test_id)}>Xem</button>{" "}
-                    <button style={appealButtonStyle} onClick={() => handleRemarkExam(item.test_id)}>Phúc tra</button>
+                    {item.status === 0 && (
+                      <button style={appealButtonStyle} onClick={() => handleRemarkExam(item.test_id)}>Phúc tra</button>
+                    )}
                   </td>
                 </tr>
               ))
@@ -171,6 +175,7 @@ const handleRemarkExam = (test_id) => {
                 <td style={tableCellStyle} colSpan="8">Không có dữ liệu phù hợp.</td>
               </tr>
             )}
+
           </tbody>
         </table>
       </div>

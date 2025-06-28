@@ -73,22 +73,29 @@ const TeacherScoreExam = () => {
     };
   };
 
-  const handleReviewAction = (reviewIndex, action) => {
-    const updatedReviews = [...reviews];
-    const reviewList = selectedExamForReviews ? getReviewsForExam(selectedExamForReviews.exam_id) : reviews;
-    const reviewToUpdate = reviewList[reviewIndex];
+  const handleReviewAction = (reviewIndex, action, testId, studentId) => {
+  const updatedReviews = [...reviews];
+  const reviewList = selectedExamForReviews
+    ? getReviewsForExam(selectedExamForReviews.exam_id)
+    : reviews;
 
-    const globalIndex = reviews.findIndex(
-      r => r.test_id === reviewToUpdate.test_id &&
-           r.student_id === reviewToUpdate.student_id &&
-           r.exam_id === reviewToUpdate.exam_id
-    );
+  const reviewToUpdate = reviewList[reviewIndex];
 
-    if (globalIndex !== -1) {
-      updatedReviews[globalIndex].status = action;
-      setReviews(updatedReviews);
-    }
-  };
+  const globalIndex = reviews.findIndex(
+    r =>
+      r.test_id === reviewToUpdate.test_id &&
+      r.student_id === reviewToUpdate.student_id &&
+      r.exam_id === reviewToUpdate.exam_id
+  );
+
+  if (globalIndex !== -1) {
+    updatedReviews[globalIndex].status = action;
+    setReviews(updatedReviews);
+  }
+
+  // ✅ Navigate theo định dạng: /teacher/result/score/remark_exam/:test_id/:student_id
+  navigate(`/teacher/result/score/remark_exam/${testId}/${studentId}`);
+};
 
   const handleReviewExam = () => {
     navigate("/teacher/result/score/review_exam");
@@ -470,14 +477,16 @@ const TeacherScoreExam = () => {
                         
                         <div className="teagrade-review-actions">
                           <button
-                            onClick={() => handleReviewAction(index, 'approved')}
+                            onClick={() => handleReviewAction(index, 'approved', review.test_id, review.student_id)}
                             className="teagrade-action-btn teagrade-approve-btn"
                           >
                             <CheckCircle className="teagrade-btn-icon" />
                             Chấp nhận
                           </button>
+
+                          {/* Nút Từ chối */}
                           <button
-                            onClick={() => handleReviewAction(index, 'rejected')}
+                            onClick={() => handleReviewAction(index, 'rejected', review.test_id, review.student_id)}
                             className="teagrade-action-btn teagrade-reject-btn"
                           >
                             <XCircle className="teagrade-btn-icon" />

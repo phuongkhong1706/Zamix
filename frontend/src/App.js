@@ -142,7 +142,7 @@ function App() {
         <Route path="/teacher/rules" element={<TeacherLayout> <TeacherRule/> </TeacherLayout>} />
         <Route path="/teacher/result/score" element={<TeacherLayout> <TeacherScoreExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/score/review_exam" element={<TeacherLayout> <TeacherScoreReviewExam /> </TeacherLayout>}/>
-        <Route path="/teacher/result/score/remark_exam" element={<TeacherLayout> <TeacherScoreRemarkExam /> </TeacherLayout>}/>
+        <Route path="/teacher/result/score/remark_exam/:studentId/:testId" element={<TeacherLayout> <TeacherScoreRemarkExam /> </TeacherLayout>}/>
         <Route path="/teacher/result/statistics" element={<TeacherLayout> <TeacherStatistics /> </TeacherLayout>}/>
         <Route path="/teacher/exams/question_bank" element={<TeacherLayout> <TeacherQuestionGenerate /> </TeacherLayout>}/>
         <Route path="/teacher/exams/exam_management/exam_add/:examId/exam_upload/" element={<TeacherExamCodeFromFile />} />

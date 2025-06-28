@@ -59,35 +59,38 @@ class StudentExamRemarkView(APIView):
 
     def post(self, request, test_id):
         try:
-            user_id = request.data.get('user_id')
+            user_id = request.data.get('user_id') or request.data.get('student_id')
             reason = request.data.get('remarkReason', 'thắc mắc')
             score = request.data.get('currentScore')
 
+            # Kiểm tra đầu vào
             if not user_id:
                 return Response({"message": "❌ Thiếu user_id"}, status=status.HTTP_400_BAD_REQUEST)
-
             if not reason:
                 return Response({"message": "❌ Thiếu lý do phúc tra"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Fetch user and test
+            # Lấy dữ liệu
             user = get_object_or_404(User, id=user_id)
             test = get_object_or_404(Test, test_id=test_id)
 
-            # Check duplicate
+            # Kiểm tra đã tồn tại phúc tra chưa
             if StudentReviewTest.objects.filter(student=user, test=test).exists():
                 return Response({"message": "❌ Bạn đã gửi phúc tra cho bài thi này trước đó"}, status=status.HTTP_400_BAD_REQUEST)
 
-            # Get teacher (người tạo đề thi)
-            teacher = test.user
-
-            # Save review request
+            # Tạo phúc tra
             review = StudentReviewTest.objects.create(
                 student=user,
                 test=test,
                 score=score,
                 reason=reason,
-                teacher=teacher
+                teacher=test.user  # người tạo đề
             )
+
+            # Cập nhật status = 1 trong bảng Result
+            result = Result.objects.filter(user=user, test=test).first()
+            if result:
+                result.status = 1
+                result.save()
 
             return Response(
                 {
@@ -103,7 +106,8 @@ class StudentExamRemarkView(APIView):
             )
 
         except Exception as e:
-            import traceback; traceback.print_exc()
+            import traceback
+            traceback.print_exc()
             return Response(
                 {"message": "❌ Lỗi hệ thống.", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR

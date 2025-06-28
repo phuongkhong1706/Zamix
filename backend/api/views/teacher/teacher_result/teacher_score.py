@@ -15,22 +15,16 @@ class TeacherExamScoreView(APIView):
             exams = Exam.objects.all().select_related('user')
             exams_data = []
             for exam in exams:
-                # Tìm teacher_id
                 teacher_id = exam.user_id
-                
-                # Total tests trong kỳ thi
+
                 tests = Test.objects.filter(exam=exam)
                 test_ids = tests.values_list('test_id', flat=True)
 
-                # Total students tham gia kỳ thi
                 total_students = Result.objects.filter(test__exam=exam).values('user').distinct().count()
-
-                # Total students hoàn thành (status = completed: giả sử status=0 nghĩa là đã nộp bài)
                 completed_students = Result.objects.filter(
                     test__exam=exam, status=0
                 ).values('user').distinct().count()
 
-                # Average score
                 avg_score = Result.objects.filter(
                     test__exam=exam
                 ).aggregate(avg_score=Avg('total_score'))['avg_score'] or 0.0
@@ -52,7 +46,6 @@ class TeacherExamScoreView(APIView):
             results = Result.objects.select_related('user', 'test', 'test__exam')
             results_data = []
             for result in results:
-                # Lấy UserInformation
                 user_info = UserInformation.objects.filter(id=result.user_id).first()
                 results_data.append({
                     "result_id": result.pk,
@@ -67,10 +60,14 @@ class TeacherExamScoreView(APIView):
                     "student_code": user_info.id if user_info else ""
                 })
 
-            # 3. Lấy danh sách reviews
+            # 3. Lấy danh sách reviews chỉ khi Result.remark == "Không"
             reviews = StudentReviewTest.objects.select_related('test', 'student')
             reviews_data = []
             for review in reviews:
+                result = Result.objects.filter(test=review.test, user=review.student, remarks="Không").first()
+                if not result:
+                    continue  # Bỏ qua nếu remarks khác "Không"
+
                 user_info = UserInformation.objects.filter(id=review.student_id).first()
                 reviews_data.append({
                     "test_id": review.test_id,
@@ -83,7 +80,7 @@ class TeacherExamScoreView(APIView):
                     "reason": review.reason,
                     "status": "pending"
                 })
-            
+
             return Response(
                 {"exams": exams_data, "results": results_data, "reviews": reviews_data},
                 status=status.HTTP_200_OK
