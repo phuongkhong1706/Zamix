@@ -25,38 +25,41 @@ class TeacherManageQuestionView(APIView):
             if image_file:
                 print(f"📷 File ảnh nhận được: {image_file.name}, Size: {image_file.size} bytes")
 
-            # ✅ Các trường bắt buộc
-            required_fields = ['content', 'user']
+            required_fields = ['test', 'content', 'user']
             for field in required_fields:
-                if field not in data or not data[field]:
+                if field not in data:
                     return Response(
                         {"message": f"Thiếu trường bắt buộc: {field}"},
                         status=status.HTTP_400_BAD_REQUEST
                     )
 
-            # ✅ Lấy user tạo câu hỏi
+            test = get_object_or_404(Test, test_id=data['test'])
+            if test.user.id != user_from_token.id:
+                return Response(
+                    {"message": "Bạn không có quyền thêm câu hỏi vào đề thi này."},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+
             user_obj = get_object_or_404(User, id=data['user'])
 
-            # ✅ Lấy test nếu có, không bắt buộc
-            test = None
-            test_id = data.get('test')
-            if test_id:
-                try:
-                    test = Test.objects.get(test_id=test_id)
-                    if test.user.id != user_from_token.id:
-                        return Response(
-                            {"message": "Bạn không có quyền thêm câu hỏi vào đề thi này."},
-                            status=status.HTTP_403_FORBIDDEN
-                        )
-                except Test.DoesNotExist:
-                    return Response(
-                        {"message": f"Test ID {test_id} không tồn tại."},
-                        status=status.HTTP_400_BAD_REQUEST
-                    )
+            is_gened_by_model = data.get('is_gened_by_model', False)
+            created_by_question = data.get('created_by_question', False)
 
-            # ✅ Boolean fields
-            is_gened_by_model = str(data.get('is_gened_by_model', '')).lower() in ['true', '1', 'yes']
-            created_by_question = str(data.get('created_by_question', '')).lower() in ['true', '1', 'yes']
+            # Convert string → boolean
+            if isinstance(is_gened_by_model, str):
+                is_gened_by_model = is_gened_by_model.lower() in ['true', '1', 'yes']
+            if isinstance(created_by_question, str):
+                created_by_question = created_by_question.lower() in ['true', '1', 'yes']
+
+            # ✅ Check duplicate câu hỏi
+            existing_question = Question.objects.filter(
+                test=test,
+                content=data['content'].strip()
+            ).first()
+            if existing_question:
+                print(f"⚠️ Câu hỏi đã tồn tại (question_id={existing_question.question_id}), không tạo mới")
+                serialized = QuestionSerializer(existing_question)
+                return Response(serialized.data, status=status.HTTP_200_OK)
 
             # ✅ Lấy topic nếu có
             topic = None
@@ -66,17 +69,7 @@ class TeacherManageQuestionView(APIView):
                 except Topic.DoesNotExist:
                     return Response({"message": "Chủ đề không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
 
-            # ✅ Check trùng nội dung
-            existing_question = Question.objects.filter(
-                content=data['content'].strip(),
-                test=test
-            ).first()
-            if existing_question:
-                print(f"⚠️ Câu hỏi đã tồn tại (question_id={existing_question.question_id}), không tạo mới")
-                serialized = QuestionSerializer(existing_question)
-                return Response(serialized.data, status=status.HTTP_200_OK)
-
-            # ✅ Tạo câu hỏi
+            # ✅ Tạo câu hỏi mới
             question = Question.objects.create(
                 test=test,
                 content=data['content'],
@@ -93,6 +86,9 @@ class TeacherManageQuestionView(APIView):
             serialized = QuestionSerializer(question)
             print("✅ Tạo câu hỏi thành công:", serialized.data)
 
+            if question.image:
+                print(f"📷 Ảnh đã được lưu: {question.image.url}")
+
             return Response(serialized.data, status=status.HTTP_201_CREATED)
 
         except ValueError as ve:
@@ -101,7 +97,6 @@ class TeacherManageQuestionView(APIView):
                 {"message": "Dữ liệu không hợp lệ", "detail": str(ve)},
                 status=status.HTTP_400_BAD_REQUEST
             )
-
         except Exception as e:
             print("❌ Lỗi bất ngờ khi tạo câu hỏi:")
             traceback.print_exc()
@@ -109,8 +104,6 @@ class TeacherManageQuestionView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
-
 
     def put(self, request, question_id):
         try:
@@ -127,14 +120,12 @@ class TeacherManageQuestionView(APIView):
             # Lấy câu hỏi
             question = get_object_or_404(Question, question_id=question_id)
 
-            # Nếu có test thì kiểm tra quyền sở hữu
-            test_obj = getattr(question, 'test', None)
-            if test_obj and test_obj.user.id != user_from_token.id:
+            # Kiểm tra quyền chỉnh sửa
+            if question.test.user.id != user_from_token.id:
                 return Response(
                     {"message": "Bạn không có quyền cập nhật câu hỏi này."},
                     status=status.HTTP_403_FORBIDDEN
                 )
-
 
             # Nếu client gửi file image mới
             image_file = request.FILES.get('image', None)
@@ -142,46 +133,20 @@ class TeacherManageQuestionView(APIView):
                 print(f"📷 Ảnh mới nhận được: {image_file.name}, Size: {image_file.size} bytes")
                 question.image = image_file
 
-            # Cập nhật các trường cơ bản
+            # Cập nhật các trường thông thường
             question.content = data.get('content', question.content)
             question.type = data.get('type', question.type)
             question.score = float(data.get('score', question.score))
             question.level = int(data.get('level', question.level))
+            question.is_gened_by_model = data.get('is_gened_by_model', question.is_gened_by_model)
+            question.created_by_question = data.get('created_by_question', question.created_by_question)
 
-            # Boolean có thể là string nên xử lý
-            def to_bool(val, default=False):
-                if isinstance(val, bool):
-                    return val
-                if isinstance(val, str):
-                    return val.lower() in ['1', 'true', 'yes']
-                return default
-
-            question.is_gened_by_model = to_bool(data.get('is_gened_by_model'), question.is_gened_by_model)
-            question.created_by_question = to_bool(data.get('created_by_question'), question.created_by_question)
-
-            # Cập nhật test nếu gửi test mới
-            if 'test' in data:
-                test_id = data['test']
-                if test_id:
-                    try:
-                        test = Test.objects.get(test_id=test_id)
-                        if test.user.id != user_from_token.id:
-                            return Response({"message": "Bạn không có quyền gán câu hỏi vào đề này."}, status=status.HTTP_403_FORBIDDEN)
-                        question.test = test
-                    except Test.DoesNotExist:
-                        return Response({"message": "Không tìm thấy đề thi."}, status=status.HTTP_400_BAD_REQUEST)
-                else:
-                    question.test = None
-
-            # Cập nhật user nếu được gửi
+            # Nếu client gửi trường `user` thì update user
             if 'user' in data:
-                try:
-                    user_obj = User.objects.get(id=data['user'])
-                    question.user = user_obj
-                except User.DoesNotExist:
-                    return Response({"message": "Người dùng không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
+                user_obj = get_object_or_404(User, id=data['user'])
+                question.user = user_obj
 
-            # Cập nhật topic
+            # ✅ Nếu có cập nhật topic
             if 'topic' in data:
                 if data['topic']:
                     try:
@@ -190,6 +155,7 @@ class TeacherManageQuestionView(APIView):
                     except Topic.DoesNotExist:
                         return Response({"message": "Chủ đề không tồn tại."}, status=status.HTTP_400_BAD_REQUEST)
                 else:
+                    # Nếu gửi topic = null hoặc rỗng thì clear
                     question.topic = None
 
             question.save()
@@ -209,7 +175,6 @@ class TeacherManageQuestionView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
-
 
     def delete(self, request, question_id):
         try:

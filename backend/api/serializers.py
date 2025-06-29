@@ -14,8 +14,8 @@ class AnswerSerializer(serializers.ModelSerializer):
         ]
 
 class QuestionSerializer(serializers.ModelSerializer):
-    answers = AnswerSerializer(many=True, read_only=True)  # 👈 dùng related_name="answers"
-
+    answers = AnswerSerializer(many=True, read_only=True)
+    topic_name = serializers.CharField(source='topic.name', read_only=True)
     class Meta:
         model = Question
         fields = [
@@ -29,7 +29,9 @@ class QuestionSerializer(serializers.ModelSerializer):
             'user',
             'test',
             'answers', 
-            'image',# 👈 thêm vào cuối cùng
+            'image',
+            'topic_id',
+            'topic_name',
         ]
 
 class ItemSerializer(serializers.ModelSerializer):

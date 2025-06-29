@@ -15,6 +15,7 @@ from api.views.teacher.teacher_document.teacher_manage_document import TeacherMa
 from api.views.teacher.teacher_document.teacher_detail_document import TeacherDetailDocumentView
 from api.views.teacher.teacher_result.teacher_score import TeacherExamScoreView
 from api.views.teacher.teacher_result.teacher_remark_exam import TeacherRemarkExamView
+from api.views.teacher.teacher_test.teacher_manage_bank.teacher_get_question_from_bank import TeacherGetQuestionBankView
 urlpatterns = [
     path('teacher/home/', TeacherHomeView.as_view(), name='teacher_home'),
     path('teacher/teacher_test/teacher_manage_exam/teacher_manage_exam/', TeacherManageExamView.as_view(), name='teacher_manage_exam'),
@@ -35,6 +36,7 @@ urlpatterns = [
     path('teacher/teacher_document/teacher_manage_document/', TeacherManageDocumentView.as_view(), name='teacher_manage_document'),
     path('teacher/teacher_result/teacher_score/', TeacherExamScoreView.as_view(), name='teacher_exam_score'),
     path('teacher/teacher_result/teacher_remark_exam/<int:test_id>/<int:student_id>/', TeacherRemarkExamView.as_view()),
+    path('teacher/teacher_test/teacher_manage_bank/teacher_get_question_from_bank/', TeacherGetQuestionBankView.as_view()),
 ]
 if settings.DEBUG:
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

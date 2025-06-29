@@ -244,15 +244,25 @@ class Question(models.Model):
         TEXT = 'text', 'Tự luận'
 
     question_id = models.BigAutoField(primary_key=True)
-    test = models.ForeignKey('Test', on_delete=models.CASCADE)
+    test = models.ForeignKey('Test', on_delete=models.CASCADE, null=True, blank=True)
     content = models.TextField()
-    type = models.CharField(max_length=20, choices=QuestionType.choices)
+    type = models.CharField(max_length=20, choices=QuestionType.choices, null=True, blank=True)
     score = models.FloatField()
     level = models.IntegerField()
     is_gened_by_model = models.BooleanField(default=False)
     created_by_question = models.BooleanField(default=False)
-    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # ✅ Dùng auth_user
-    image = models.FileField(upload_to='image_question/', null=True, blank=True)  # ✅ Trường ảnh mới
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True)  # Người tạo câu hỏi
+    image = models.FileField(upload_to='image_question/', null=True, blank=True)
+
+    # ✅ Khóa ngoại trỏ đến bảng topics
+    topic = models.ForeignKey(
+        'Topic',
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name='questions',
+        verbose_name='Chủ đề chính'
+    )
 
     def __str__(self):
         return f"Câu hỏi {self.question_id} - {self.content[:50]}..."

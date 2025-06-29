@@ -21,14 +21,38 @@ def generate_view(request):
         if not input_text:
             return JsonResponse({"error": "Missing input_text"}, status=400)
 
-        # Gửi yêu cầu đến DeepSeek API để sinh ra 10 câu hỏi + lời giải
         prompt = (
             f"Đề bài gốc: '{input_text}'\n"
-            "Hãy tạo 5 câu hỏi toán học khác nhau dành cho học sinh cấp 2, mỗi câu hỏi nên liên quan đến đề bài gốc nhưng sử dụng các khái niệm hoặc phương pháp giải khác.\n"
-            "Sau mỗi câu hỏi, hãy viết lời giải hoặc đáp án ở dòng kế tiếp.\n"
-            "Định dạng:\n"
-            "Câu 1: ...\nĐáp án: ...\nCâu 2: ...\nĐáp án: ...\n...(cho đến Câu 10)"
+            "Hãy tạo 5 câu hỏi trắc nghiệm Toán học dành cho học sinh cấp 2 dựa trên đề bài trên.\n"
+            "Yêu cầu:\n"
+            "- Mỗi câu hỏi bắt đầu bằng 'Câu 1:', 'Câu 2:', v.v.\n"
+            "- Sau đó là 4 lựa chọn trả lời, viết theo định dạng:\n"
+            "  A. ...\n"
+            "  B. ...\n"
+            "  C. ...\n"
+            "  D. ...\n"
+            "- Một dòng 'Đáp án: ' để chỉ lựa chọn đúng, ví dụ: 'Đáp án: B'\n"
+            "- Một dòng 'Mức độ: ' là số nguyên từ 1 đến 3, trong đó:\n"
+            "  + 1: dễ\n"
+            "  + 2: trung bình\n"
+            "  + 3: khó\n"
+            "- Một dòng 'Chủ đề: <số>' chỉ ra mã chủ đề của câu hỏi, ví dụ: 'Chủ đề: 1'\n"
+            "- Nếu có công thức Toán học, hãy viết bằng định dạng LaTeX, ví dụ căn x thì viết là: '$\\sqrt{x}$'\n"
+            "\n"
+            "⚠️ Chỉ sinh ra các câu hỏi theo đúng định dạng sau (không thêm văn bản, lời giải hoặc giải thích nào):\n"
+            "Câu 1: Nội dung câu hỏi\n"
+            "A. ...\n"
+            "B. ...\n"
+            "C. ...\n"
+            "D. ...\n"
+            "Đáp án: A\n"
+            "Mức độ: 1\n"
+            "Chủ đề: 1\n"
+            "(Lặp lại đến Câu 5)\n"
         )
+
+
+
 
         response = client.chat.completions.create(
             model="deepseek-chat",

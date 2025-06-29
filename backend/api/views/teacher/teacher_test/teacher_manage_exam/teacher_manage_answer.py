@@ -30,7 +30,8 @@ class TeacherManageAnswerView(APIView):
 
             question = get_object_or_404(Question, question_id=data['question'])
 
-            if question.test.user.id != user_from_token.id:
+            # ✅ Nếu có test thì check quyền
+            if question.test and question.test.user.id != user_from_token.id:
                 return Response(
                     {"message": "Bạn không có quyền thêm đáp án cho câu hỏi này."},
                     status=status.HTTP_403_FORBIDDEN,
@@ -45,9 +46,7 @@ class TeacherManageAnswerView(APIView):
                 content=data['content'].strip(),
             ).first()
             if existing_answer:
-                print(
-                    f"⚠️ Đáp án đã tồn tại (answer_id={existing_answer.answer_id}), không tạo mới"
-                )
+                print(f"⚠️ Đáp án đã tồn tại (answer_id={existing_answer.answer_id}), không tạo mới")
                 serialized = AnswerSerializer(existing_answer)
                 return Response(serialized.data, status=status.HTTP_200_OK)
 
@@ -70,6 +69,7 @@ class TeacherManageAnswerView(APIView):
                 {"message": "Internal Server Error", "detail": str(e)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
             )
+
 
 
     def put(self, request, answer_id):

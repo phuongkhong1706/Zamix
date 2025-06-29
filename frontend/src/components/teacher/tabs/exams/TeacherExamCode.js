@@ -1,4 +1,6 @@
 import React, { useState, useEffect } from "react";
+import { useNavigate } from 'react-router-dom';
+
 import LatexInputKaTeX, { renderWithLatex } from "./LatexInputKaTeX.js";
 import { v4 as uuidv4 } from "uuid";
 import { useParams } from 'react-router-dom';
@@ -20,11 +22,23 @@ import { FaSave } from "react-icons/fa";
 
 function TeacherExamCode() {
   const [newQuestions, setNewQuestions] = useState([]);
-
+  const navigate = useNavigate();
   const [showNewQuestionForm, setShowNewQuestionForm] = useState(false);
   const [editingIndex, setEditingIndex] = useState(null);
   const [questionType, setQuestionType] = useState('multiple_choice'); // 'multiple_choice' hoặc 'essay'
   const [showSubmenu, setShowSubmenu] = useState(false);
+  const [topics, setTopics] = useState([]);
+  useEffect(() => {
+    axios
+      .get("http://localhost:8000/api/teacher/teacher_test/teacher_manage_exam/teacher_manage_topic_exam/")
+      .then((res) => {
+        console.log("Topics:", res.data);
+        setTopics(res.data);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy danh sách chủ đề:", err);
+      });
+  }, []);
 
   const { examId, testId: paramTestId } = useParams();
   const [testId, setTestId] = useState(paramTestId); // copy giá trị ban đầu từ param
@@ -40,7 +54,12 @@ function TeacherExamCode() {
       end_time: ""
     }
   });
-
+  const [showBankForm, setShowBankForm] = useState(false);
+  const [bankFormData, setBankFormData] = useState({
+    quantity: 1,
+    level: "",
+    mainTopicId: null
+  });
   // Hàm xử lý upload ảnh
   const handleImageUpload = (e) => {
     const file = e.target.files[0];
@@ -232,6 +251,7 @@ function TeacherExamCode() {
         formData.append('created_by_question', question.created_by_question ? 1 : 0);
         formData.append('user', userId);
         if (question.image) formData.append('image', question.image);
+        formData.append('topic', question.mainTopicId || '');
 
         console.log(`\n📝 ${questionMethod} câu hỏi:`, questionUrl, question.content);
         const qRes = await fetch(questionUrl, {
@@ -339,12 +359,8 @@ function TeacherExamCode() {
     setNewQuestions(updatedQuestions);
     console.log('🎯 newQuestions sau khi lưu:', updatedQuestions);
     alert('✅ Lưu toàn bộ câu hỏi và đáp án thành công!');
-    window.location.reload();
+    navigate(`/teacher/exams/exam_management/exam_add/${examId}/exam_code/${testId}`);
   };
-
-
-
-
 
   useEffect(() => {
     const fetchTestDetail = async () => {
@@ -385,6 +401,8 @@ function TeacherExamCode() {
               correct_option_id: question.answers.find((a) => a.is_correct)?.answer_id || null,
               is_gened_by_model: question.is_gened_by_model,
               created_by_question: question.created_by_question,
+              mainTopicId: question.topic_id,
+              mainTopicName: question.topic_name,
               options: question.answers.map((answer) => ({
                 id: answer.answer_id,
                 answer_id: answer.answer_id,
@@ -408,6 +426,62 @@ function TeacherExamCode() {
   }, [paramTestId]);
 
 
+ const handleFetchQuestionsFromBank = async (topicId, level, quantity) => {
+  try {
+    const url = `http://localhost:8000/api/teacher/teacher_test/teacher_manage_bank/teacher_get_question_from_bank/?topic_id=${topicId}&level=${level}&quantity=${quantity}&test_id=${testId}`;
+
+    console.log("📦 Dữ liệu gửi lên backend:", { topic_id: topicId, level, quantity, test_id: testId });
+
+    const response = await fetch(url, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json'
+      }
+    });
+
+    if (!response.ok) throw new Error("Lỗi khi gọi API");
+
+    const result = await response.json();
+
+    console.log("📥 Dữ liệu nhận được từ backend:", result);
+
+    const questions = result.questions;
+
+    if (!Array.isArray(questions) || questions.length === 0) {
+      alert("❌ Không có câu hỏi nào được trả về từ ngân hàng.");
+      return;
+    }
+
+    const mappedQuestions = questions.map((question) => ({
+      question_id: question.question_id,
+      content: question.content,
+      type: question.type,
+      level: question.level,
+      score: question.score,
+      image: question.image || null,
+      correct_option_id: question.answers.find((a) => a.is_correct)?.answer_id || null,
+      is_gened_by_model: question.is_gened_by_model,
+      created_by_question: question.created_by_question,
+      mainTopicId: question.topic_id,
+      mainTopicName: question.topic_name,
+      options: question.answers.map((answer) => ({
+        id: answer.answer_id,
+        answer_id: answer.answer_id,
+        text: answer.content,
+        is_correct: answer.is_correct,
+        user: answer.user,
+      }))
+    }));
+
+    setNewQuestions((prev) => [...prev, ...mappedQuestions]);
+    alert(`✅ Đã lấy ${mappedQuestions.length} câu hỏi từ ngân hàng.`);
+
+  } catch (error) {
+    console.error("❌ Lỗi khi lấy câu hỏi từ ngân hàng:", error);
+    alert("❌ Có lỗi khi lấy câu hỏi từ ngân hàng.");
+  }
+};
+
 
 
   const createNewQuestion = (type = 'multiple_choice') => {
@@ -415,24 +489,37 @@ function TeacherExamCode() {
       return {
         type: 'essay',
         content: "",
+        level: "",
+        mainTopicId: null,
         correct_answer: "",
-        level: ""
+      };
+    } else if (type === 'bank') {
+      return {
+        type: 'bank',
+        quantity: 1,
+        level: "",
+        mainTopicId: null,
+      };
+    } else {
+      // default: multiple_choice
+      return {
+        type: 'multiple_choice',
+        content: "",
+        level: "",
+        mainTopicId: null,
+        options: [
+          { id: uuidv4(), text: "" },
+          { id: uuidv4(), text: "" },
+          { id: uuidv4(), text: "" },
+          { id: uuidv4(), text: "" },
+        ],
+        correct_option_id: "",
       };
     }
-
-    return {
-      type: 'multiple_choice',
-      content: "",
-      options: [
-        { id: uuidv4(), text: "" },
-        { id: uuidv4(), text: "" },
-        { id: uuidv4(), text: "" },
-        { id: uuidv4(), text: "" },
-      ],
-      correct_option_id: "",
-      level: ""
-    };
   };
+
+
+
 
   const [newQuestion, setNewQuestion] = useState(createNewQuestion());
 
@@ -485,7 +572,23 @@ function TeacherExamCode() {
     const updatedQuestion = {
       ...newQuestion,
       imagePreview: newQuestion.imagePreview || null,
+
+      // Nếu là tự luận → gán option chứa đáp án đúng
+      ...(newQuestion.type === 'essay' && {
+        options: [
+          {
+            text: newQuestion.correct_answer,
+            is_correct: true,
+          },
+        ],
+      }),
+
+      // Gán lại tên chủ đề để hiển thị
+      mainTopicId: newQuestion.mainTopicId || null,
+      mainTopicName:
+        topics.find((t) => t.topic_id === newQuestion.mainTopicId)?.name || '',
     };
+
 
     if (editingIndex !== null) {
       const updated = [...newQuestions];
@@ -768,25 +871,49 @@ function TeacherExamCode() {
                 </div>
 
                 {/* Mức độ câu hỏi - ComboBox */}
-                <div className="form-section">
-                  <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
-                  <select
-                    value={newQuestion.level || ""}
-                    onChange={(e) => setNewQuestion({ ...newQuestion, level: parseInt(e.target.value, 10) })}
-                    style={{
-                      width: "100%",
-                      padding: "8px",
-                      borderRadius: "4px",
-                      border: "1px solid #ccc",
-                      marginBottom: "15px",
-                    }}
-                  >
-                    <option value="" disabled>Chọn mức độ</option>
-                    <option value="1">1 - Dễ</option>
-                    <option value="2">2 - Trung bình</option>
-                    <option value="3">3 - Khó</option>
-                    <option value="4">4 - Rất khó</option>
-                  </select>
+                <div style={{ display: "flex", gap: "30px", marginBottom: "20px" }}>
+                  {/* Mức độ câu hỏi - bên trái */}
+                  <div style={{ flex: 1 }}>
+                    <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
+                    <select
+                      value={newQuestion.level || ""}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, level: parseInt(e.target.value, 10) })}
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc",
+                      }}
+                    >
+                      <option value="" disabled>Chọn mức độ</option>
+                      <option value="1">1 - Dễ</option>
+                      <option value="2">2 - Trung bình</option>
+                      <option value="3">3 - Khó</option>
+                      <option value="4">4 - Rất khó</option>
+                    </select>
+                  </div>
+
+                  {/* Chủ đề chính - bên phải */}
+                  <div style={{ flex: 1 }}>
+                    <label style={{ marginBottom: "10px", display: "block" }}>Chủ đề chính:</label>
+                    <select
+                      value={newQuestion.mainTopicId || ""}
+                      onChange={(e) => setNewQuestion({ ...newQuestion, mainTopicId: parseInt(e.target.value, 10) })}
+                      style={{
+                        width: "100%",
+                        padding: "8px",
+                        borderRadius: "4px",
+                        border: "1px solid #ccc",
+                      }}
+                    >
+                      <option value="" disabled>Chọn chủ đề</option>
+                      {topics.map((topic) => (
+                        <option key={topic.topic_id} value={topic.topic_id}>
+                          {topic.name}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
                 </div>
 
                 {/* Nội dung dành cho câu hỏi trắc nghiệm */}
@@ -845,6 +972,7 @@ function TeacherExamCode() {
                     />
                   </div>
                 )}
+
 
                 {/* Nút hành động */}
                 <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
@@ -917,9 +1045,7 @@ function TeacherExamCode() {
                     borderRadius: "4px",
                   }}
                 >
-                  {renderWithLatex(
-                    q.options && q.options.length > 0 ? q.options[0].text || '' : ''
-                  )}
+                  {renderWithLatex(q.correct_answer || (q.options?.[0]?.text || ''))}
                 </div>
               </div>
             )}
@@ -929,6 +1055,11 @@ function TeacherExamCode() {
             {q.level && (
               <div style={{ marginTop: "8px", fontSize: "0.9em", color: "#666" }}>
                 <strong>Mức độ:</strong> {q.level === 1 ? "Dễ" : q.level === 2 ? "Trung bình" : q.level === 3 ? "Khó" : "Rất khó"}
+              </div>
+            )}
+            {q.mainTopicName && (
+              <div style={{ marginTop: "4px", fontSize: "0.9em", color: "#666" }}>
+                <strong>Chủ đề:</strong> {q.mainTopicName}
               </div>
             )}
           </div>
@@ -1024,26 +1155,52 @@ function TeacherExamCode() {
             </div>
 
             {/* Mức độ câu hỏi - ComboBox */}
-            <div className="form-section">
-              <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
-              <select
-                value={newQuestion.level || ""}
-                onChange={(e) => setNewQuestion({ ...newQuestion, level: parseInt(e.target.value, 10) })}
-                style={{
-                  width: "100%",
-                  padding: "8px",
-                  borderRadius: "4px",
-                  border: "1px solid #ccc",
-                  marginBottom: "15px",
-                }}
-              >
-                <option value="" disabled>Chọn mức độ</option>
-                <option value="1">1 - Dễ</option>
-                <option value="2">2 - Trung bình</option>
-                <option value="3">3 - Khó</option>
-                <option value="4">4 - Rất khó</option>
-              </select>
+            <div style={{ display: "flex", gap: "30px", marginBottom: "20px" }}>
+              {/* Mức độ câu hỏi - bên trái */}
+              <div style={{ flex: 1 }}>
+                <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
+                <select
+                  value={newQuestion.level || ""}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, level: parseInt(e.target.value, 10) })}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                  }}
+                >
+                  <option value="" disabled>Chọn mức độ</option>
+                  <option value="1">1 - Dễ</option>
+                  <option value="2">2 - Trung bình</option>
+                  <option value="3">3 - Khó</option>
+                  <option value="4">4 - Rất khó</option>
+                </select>
+              </div>
+
+              {/* Chủ đề chính - bên phải */}
+              <div style={{ flex: 1 }}>
+                <label style={{ marginBottom: "10px", display: "block" }}>Chủ đề chính:</label>
+                <select
+                  value={newQuestion.mainTopicId || ""}
+                  onChange={(e) => setNewQuestion({ ...newQuestion, mainTopicId: parseInt(e.target.value, 10) })}
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc",
+                  }}
+                >
+                  <option value="" disabled>Chọn chủ đề</option>
+                  {topics.map((topic) => (
+                    <option key={topic.topic_id} value={topic.topic_id}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
             </div>
+
+
 
             {/* Nội dung dành cho câu hỏi trắc nghiệm */}
             {questionType === 'multiple_choice' && (
@@ -1101,6 +1258,8 @@ function TeacherExamCode() {
                 />
               </div>
             )}
+
+
 
             {/* Nút hành động */}
             <div style={{ display: "flex", justifyContent: "flex-start", gap: "10px", marginTop: "20px" }}>
@@ -1164,6 +1323,7 @@ function TeacherExamCode() {
                 >
                   <img src={iconMulti} alt="multi" className="btn-icon" /> Câu hỏi trắc nghiệm
                 </button>
+
                 <button
                   onClick={() => handleToggleQuestionForm('essay')}
                   style={{
@@ -1175,6 +1335,7 @@ function TeacherExamCode() {
                     backgroundColor: "transparent",
                     textAlign: "left",
                     cursor: "pointer",
+                    borderBottom: "1px solid #eee",
                     gap: "5px"
                   }}
                   onMouseEnter={(e) => e.target.style.backgroundColor = "#f5f5f5"}
@@ -1184,7 +1345,18 @@ function TeacherExamCode() {
                 </button>
               </div>
             )}
+
           </div>
+
+          <button
+            type="button"
+            onClick={() => setShowBankForm(true)}
+            className="btn addquestion"
+          >
+            <img src={iconSave} alt="save" className="btn-icon" />
+            Chọn từ ngân hàng
+          </button>
+
 
           <button
             type="button"
@@ -1195,6 +1367,137 @@ function TeacherExamCode() {
             Lưu đề thi
           </button>
         </div>
+        {showBankForm && (
+          <div
+            style={{
+              marginTop: "20px",
+              padding: "20px",
+              border: "1px solid #ddd",
+              borderRadius: "8px",
+              backgroundColor: "#f9f9f9",
+              position: "relative"
+            }}
+          >
+            {/* Nút Đóng (X) */}
+            <button
+              onClick={() => setShowBankForm(false)}
+              style={{
+                position: "absolute",
+                top: "10px",
+                right: "10px",
+                background: "transparent",
+                border: "none",
+                fontSize: "18px",
+                cursor: "pointer",
+                fontWeight: "bold",
+                color: "#888"
+              }}
+              title="Đóng"
+            >
+              ❌
+            </button>
+
+            <h3 style={{ marginBottom: "20px" }}>📦 Chọn câu hỏi từ ngân hàng</h3>
+
+            {/* Số lượng câu hỏi */}
+            <div style={{ marginBottom: "20px" }}>
+              <label style={{ display: "block", marginBottom: "8px" }}>Số lượng câu hỏi:</label>
+              <input
+                type="number"
+                min="1"
+                value={bankFormData.quantity}
+                onChange={(e) =>
+                  setBankFormData({ ...bankFormData, quantity: parseInt(e.target.value, 10) || 1 })
+                }
+                style={{
+                  width: "100%",
+                  padding: "8px",
+                  borderRadius: "4px",
+                  border: "1px solid #ccc"
+                }}
+              />
+            </div>
+
+            {/* Mức độ và Chủ đề */}
+            <div style={{ display: "flex", gap: "30px", marginBottom: "20px" }}>
+              {/* Mức độ */}
+              <div style={{ flex: 1 }}>
+                <label style={{ marginBottom: "10px", display: "block" }}>Mức độ câu hỏi:</label>
+                <select
+                  value={bankFormData.level || ""}
+                  onChange={(e) =>
+                    setBankFormData({ ...bankFormData, level: parseInt(e.target.value, 10) })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc"
+                  }}
+                >
+                  <option value="" disabled>Chọn mức độ</option>
+                  <option value="1">1 - Dễ</option>
+                  <option value="2">2 - Trung bình</option>
+                  <option value="3">3 - Khó</option>
+                  <option value="4">4 - Rất khó</option>
+                </select>
+              </div>
+
+              {/* Chủ đề */}
+              <div style={{ flex: 1 }}>
+                <label style={{ marginBottom: "10px", display: "block" }}>Chủ đề chính:</label>
+                <select
+                  value={bankFormData.mainTopicId || ""}
+                  onChange={(e) =>
+                    setBankFormData({ ...bankFormData, mainTopicId: parseInt(e.target.value, 10) })
+                  }
+                  style={{
+                    width: "100%",
+                    padding: "8px",
+                    borderRadius: "4px",
+                    border: "1px solid #ccc"
+                  }}
+                >
+                  <option value="" disabled>Chọn chủ đề</option>
+                  {topics.map((topic) => (
+                    <option key={topic.topic_id} value={topic.topic_id}>
+                      {topic.name}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            </div>
+
+            {/* Nút Lưu */}
+            <div style={{ textAlign: "right" }}>
+              <button
+                onClick={() => {
+                  const { mainTopicId, level, quantity } = bankFormData;
+
+                  if (!mainTopicId || !level || !quantity) {
+                    alert("⚠️ Vui lòng nhập đầy đủ thông tin.");
+                    return;
+                  }
+
+                  handleFetchQuestionsFromBank(mainTopicId, level, quantity);
+                  setShowBankForm(false);
+                }}
+                style={{
+                  padding: "10px 20px",
+                  backgroundColor: "#007bff",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "6px",
+                  fontWeight: "bold",
+                  cursor: "pointer"
+                }}
+              >
+                💾 Lưu
+              </button>
+            </div>
+
+          </div>
+        )}
       </div>
 
       {/* SIDEBAR THÔNG TIN KỲ THI */}
