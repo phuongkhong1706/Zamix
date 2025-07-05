@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiMinus } from "react-icons/fi";
+import ChatbotWidget from "../../../ChatbotWidget";
 
 function StudentPractice() {
   const navigate = useNavigate();
@@ -145,6 +146,7 @@ function StudentPractice() {
           )}
         </div>
       </div>
+      <ChatbotWidget />
     </div>
   );
 }
