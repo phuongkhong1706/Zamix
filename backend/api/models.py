@@ -469,3 +469,29 @@ class LinkReset(models.Model):
 
     def __str__(self):
         return f"LinkReset for {self.for_user.username}"
+    
+class Conversation(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE, related_name='student_conversations')
+    teacher = models.ForeignKey(User, on_delete=models.CASCADE, related_name='teacher_conversations')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        db_table = 'conversation'
+        unique_together = ('student', 'teacher')  # Mỗi cặp chỉ có 1 phiên chat
+
+    def __str__(self):
+        return f"{self.student.username} ↔ {self.teacher.username}"
+    
+class Message(models.Model):
+    conversation = models.ForeignKey(Conversation, on_delete=models.CASCADE, related_name='messages')
+    sender = models.ForeignKey(User, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+    is_read = models.BooleanField(default=False)
+
+    class Meta:
+        db_table = 'message'
+        ordering = ['timestamp']
+
+    def __str__(self):
+        return f"[{self.timestamp.strftime('%H:%M:%S')}] {self.sender.username}: {self.content[:30]}"
