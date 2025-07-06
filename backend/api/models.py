@@ -495,3 +495,18 @@ class Message(models.Model):
 
     def __str__(self):
         return f"[{self.timestamp.strftime('%H:%M:%S')}] {self.sender.username}: {self.content[:30]}"
+
+class StudentProfile(models.Model):
+    student = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    student_code = models.CharField(max_length=100, unique=True)
+    grade = models.CharField(max_length=50)
+
+    def __str__(self):
+        return f"{self.student_code} - {self.student_id.username}"
+
+class TeacherProfile(models.Model):
+    teacher = models.OneToOneField(User, on_delete=models.CASCADE, primary_key=True)
+    teacher_code = models.CharField(max_length=100, unique=True)
+
+    def __str__(self):
+        return f"{self.teacher_code} - {self.teacher_id.username}"
