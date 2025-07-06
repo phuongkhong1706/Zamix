@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { Search, Plus, Edit, Trash2, Eye, Filter, Download, Users, GraduationCap, BookOpen } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, Eye, Download, Users, GraduationCap, BookOpen } from 'lucide-react';
 import '../../../../styles/admin/AccMan.css';
+import axios from "axios";
 
 const AdminAccountManagement = () => {
   const [users, setUsers] = useState([]);
@@ -14,61 +15,16 @@ const AdminAccountManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [usersPerPage] = useState(10);
 
-  // Mock data - trong thực tế sẽ fetch từ API
+
   useEffect(() => {
-    const mockUsers = [
-      {
-        id: 1,
-        username: 'student001',
-        full_name: 'Nguyễn Văn An',
-        email: 'an.nguyen@student.edu.vn',
-        phone_number: '0987654321',
-        user_type: 'student',
-        status: 'active',
-        gender: 'M',
-        dob: '2005-05-15',
-        national_id: '123456789012',
-        address: '123 Đường ABC, Quận 1, TP.HCM',
-        created_at: '2024-01-15',
-        student_code: 'SV001',
-        grade: '12A1'
-      },
-      {
-        id: 2,
-        username: 'teacher001',
-        full_name: 'Trần Thị Bình',
-        email: 'binh.tran@teacher.edu.vn',
-        phone_number: '0912345678',
-        user_type: 'teacher',
-        status: 'active',
-        gender: 'F',
-        dob: '1985-03-20',
-        national_id: '987654321098',
-        address: '456 Đường XYZ, Quận 3, TP.HCM',
-        created_at: '2024-01-10',
-        teacher_code: 'GV001',
-        degree: 'Thạc sĩ',
-        position: 'Giáo viên chủ nhiệm'
-      },
-      {
-        id: 3,
-        username: 'student002',
-        full_name: 'Lê Thị Cúc',
-        email: 'cuc.le@student.edu.vn',
-        phone_number: '0967890123',
-        user_type: 'student',
-        status: 'inactive',
-        gender: 'F',
-        dob: '2004-12-08',
-        national_id: '456789123456',
-        address: '789 Đường DEF, Quận 5, TP.HCM',
-        created_at: '2024-02-01',
-        student_code: 'SV002',
-        grade: '11B2'
-      }
-    ];
-    setUsers(mockUsers);
-    setFilteredUsers(mockUsers);
+    axios.get("http://localhost:8000/api/admin/admin_user/")
+      .then((res) => {
+        setUsers(res.data);
+        setFilteredUsers(res.data);
+      })
+      .catch((err) => {
+        console.error("Lỗi khi lấy danh sách người dùng:", err);
+      });
   }, []);
 
   // Filter và search users
@@ -121,11 +77,26 @@ const AdminAccountManagement = () => {
     setShowModal(true);
   };
 
-  const handleDeleteUser = (userId) => {
-    if (window.confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
-      setUsers(users.filter(user => user.id !== userId));
-    }
-  };
+const handleDeleteUser = (userId) => {
+  if (window.confirm('Bạn có chắc chắn muốn xóa tài khoản này?')) {
+    fetch(`http://localhost:8000/api/admin/admin_user/${userId}/`, {
+      method: 'DELETE',
+    })
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error('Xóa không thành công');
+        }
+        // Cập nhật danh sách users sau khi xóa thành công
+        setUsers(users.filter(user => user.id !== userId));
+        alert('Xóa người dùng thành công');
+      })
+      .catch((error) => {
+        console.error('Lỗi khi xóa người dùng:', error);
+        alert('Đã xảy ra lỗi khi xóa người dùng');
+      });
+  }
+};
+
 
   const getUserTypeLabel = (type) => {
     switch (type) {
@@ -169,16 +140,68 @@ const AdminAccountManagement = () => {
       position: ''
     });
 
-    const handleSubmit = (e) => {
+    const handleSubmit = async (e) => {
       e.preventDefault();
-      if (modalMode === 'create') {
-        const newUser = { ...formData, id: Date.now(), created_at: new Date().toISOString().split('T')[0] };
-        setUsers([...users, newUser]);
-      } else if (modalMode === 'edit') {
-        setUsers(users.map(user => user.id === selectedUser.id ? { ...formData } : user));
+
+      const userJson = localStorage.getItem('user');
+      let token = null;
+
+      try {
+        if (userJson) {
+          const userObj = JSON.parse(userJson);
+          token = userObj.token;
+        }
+      } catch (error) {
+        console.error('❌ Lỗi parse user:', error);
       }
-      setShowModal(false);
+
+      if (!token) {
+        alert('❌ Token không tồn tại. Vui lòng đăng nhập lại.');
+        return;
+      }
+
+      const isNewUser = modalMode === 'create';
+      const url = isNewUser
+        ? `http://localhost:8000/api/admin/admin_user/`
+        : `http://localhost:8000/api/admin/admin_user/${selectedUser.id}/`;
+
+      const method = isNewUser ? 'POST' : 'PUT';
+
+      try {
+        const response = await fetch(url, {
+          method: method,
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(formData),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          console.error('❌ Lỗi từ server:', errorData);
+          alert(`❌ Lỗi khi ${isNewUser ? 'tạo' : 'cập nhật'} tài khoản.`);
+          return;
+        }
+
+        const savedUser = await response.json();
+        console.log(`✅ ${isNewUser ? 'Tạo' : 'Cập nhật'} tài khoản thành công:`, savedUser);
+
+        // Cập nhật lại danh sách users local (nếu cần hiển thị ngay)
+        if (isNewUser) {
+          setUsers(prev => [...prev, savedUser]);
+        } else {
+          setUsers(prev => prev.map(u => (u.id === savedUser.id ? savedUser : u)));
+        }
+
+        setShowModal(false);
+        window.location.reload();
+      } catch (error) {
+        console.error('❌ Lỗi mạng hoặc fetch:', error);
+        alert('❌ Có lỗi xảy ra khi gửi dữ liệu. Vui lòng thử lại.');
+      }
     };
+
 
     const isReadOnly = modalMode === 'view';
 
@@ -398,12 +421,14 @@ const AdminAccountManagement = () => {
               </button>
               {!isReadOnly && (
                 <button
-                  type="submit"
+                  type="button"
                   className="adman-button submit"
+                  onClick={handleSubmit} // ✅ GỌI handleSubmit ở đây
                 >
                   {modalMode === 'create' ? 'Tạo tài khoản' : 'Lưu thay đổi'}
                 </button>
               )}
+
             </div>
           </div>
         </div>
@@ -436,7 +461,7 @@ const AdminAccountManagement = () => {
               <div className="admin-stats-text">
                 <p className="admin-stats-label">Học sinh</p>
                 <p className="admin-stats-value">
-                  {users.filter(u => u.user_type === 'student').length}
+                  {users.filter(u => u.user_type === 'Học sinh').length}
                 </p>
               </div>
             </div>
@@ -450,7 +475,7 @@ const AdminAccountManagement = () => {
               <div className="admin-stats-text">
                 <p className="admin-stats-label">Giáo viên</p>
                 <p className="admin-stats-value">
-                  {users.filter(u => u.user_type === 'teacher').length}
+                  {users.filter(u => u.user_type === 'Giáo viên').length}
                 </p>
               </div>
             </div>

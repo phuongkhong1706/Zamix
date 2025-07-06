@@ -3,5 +3,5 @@ from api.views.forgotpw import forgotpassword_view
 
 
 urlpatterns = [
-    path('forgotpassword/', forgotpassword_view, name='forgotpassword'),
+    path('forgotpw/', forgotpassword_view, name='forgotpw'),
 ]

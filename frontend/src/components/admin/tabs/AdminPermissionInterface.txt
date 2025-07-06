@@ -1,11 +1,11 @@
 import React, { useState, useEffect} from 'react';
-import { Search, CheckCircle, XCircle, UserPlus, Trash2, Users, Calendar, Clock } from 'lucide-react';
+import { Search, CheckCircle, XCircle, UserPlus, Edit, Trash2, Users, Calendar, Clock } from 'lucide-react';
 import '../../../styles/admin/AdminPermissionInterface.css';
 
 const AdminPermissionInterface = () => {
   // Mock data cho kỳ thi
 const [exams, setExams] = useState([]);
-const [, setLoading] = useState(true);
+const [loading, setLoading] = useState(true);
 
 useEffect(() => {
   fetch('http://localhost:8000/api/admin/admin_manage_exam/')
@@ -40,32 +40,13 @@ useEffect(() => {
 }, []);
 
   // Mock data cho học sinh
- const [students, setStudents] = useState([]);
-
-useEffect(() => {
-  fetch('http://localhost:8000/api/admin/admin_user/')
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error('Lỗi khi lấy danh sách học sinh');
-      }
-      return res.json();
-    })
-    .then((data) => {
-      // Lọc những user là học sinh
-      const studentData = data
-        .filter(user => user.user_type === 'Học sinh')
-        .map(student => ({
-          id: student.id,
-          name: student.full_name,
-          class: student.grade || 'Chưa rõ',
-          email: student.email
-        }));
-      setStudents(studentData);
-    })
-    .catch((err) => {
-      console.error('❌ Lỗi khi lấy dữ liệu học sinh:', err);
-    });
-}, []);
+  const [students] = useState([
+    { id: 1, name: 'Nguyễn Văn An', class: '10A1', email: 'an.nguyen@email.com' },
+    { id: 2, name: 'Trần Thị Bình', class: '10A2', email: 'binh.tran@email.com' },
+    { id: 3, name: 'Lê Minh Cường', class: '11B1', email: 'cuong.le@email.com' },
+    { id: 4, name: 'Phạm Thu Dung', class: '11B2', email: 'dung.pham@email.com' },
+    { id: 5, name: 'Hoàng Văn Em', class: '12C1', email: 'em.hoang@email.com' }
+  ]);
 
   const [selectedExam, setSelectedExam] = useState(null);
   const [showAddStudentModal, setShowAddStudentModal] = useState(false);
@@ -73,117 +54,35 @@ useEffect(() => {
   const [selectedStudents, setSelectedStudents] = useState([]);
 
   // Xử lý duyệt kỳ thi
-const approveExam = (examId) => {
-  const confirmApprove = window.confirm('Bạn có chắc chắn muốn duyệt kỳ thi này?');
-
-  if (!confirmApprove) return;
-
-  fetch('http://localhost:8000/api/admin/admin_manage_exam/', {
-    method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ exam_id: examId }),
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error('Duyệt kỳ thi thất bại');
-      }
-      return res.json();
-    })
-    .then((data) => {
-      console.log('✅ Duyệt kỳ thi thành công:', data);
-      setExams((prevExams) =>
-        prevExams.map((exam) =>
-          exam.id === examId ? { ...exam, status: 'approved' } : exam
-        )
-      );
-    })
-    .catch((err) => {
-      console.error('❌ Lỗi khi duyệt kỳ thi:', err);
-    });
-};
-
+  const approveExam = (examId) => {
+    setExams(prev => prev.map(exam => 
+      exam.id === examId ? { ...exam, status: 'approved' } : exam
+    ));
+  };
 
   // Xử lý xóa kỳ thi
-const deleteExam = (examId) => {
-  const confirmDelete = window.confirm('Bạn có chắc chắn muốn xóa kỳ thi này?');
-
-  if (!confirmDelete) return;
-
-  fetch('http://localhost:8000/api/admin/admin_manage_exam/', {
-    method: 'DELETE',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ exam_id: examId }),
-  })
-    .then((res) => {
-      if (!res.ok) {
-        throw new Error('Xóa kỳ thi thất bại');
-      }
-      return res.json();
-    })
-    .then((data) => {
-      console.log('✅ Kỳ thi đã được xóa:', data);
-      setExams((prev) => prev.filter((exam) => exam.id !== examId));
-    })
-    .catch((err) => {
-      console.error('❌ Lỗi khi xóa kỳ thi:', err);
-    });
-};
-
-
+  const deleteExam = (examId) => {
+    if (window.confirm('Bạn có chắc chắn muốn xóa kỳ thi này?')) {
+      setExams(prev => prev.filter(exam => exam.id !== examId));
+    }
+  };
 
   // Xử lý thêm học sinh vào kỳ thi
   const addStudentsToExam = () => {
-  if (selectedStudents.length > 0 && selectedExam) {
-    const payload = {
-      exam_id: selectedExam.id,
-      student_ids: selectedStudents,
-    };
-
-    console.log("📦 Payload gửi lên backend:", payload);
-
-    fetch('http://localhost:8000/api/admin/admin_add_student_to_exam/', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify(payload),
-    })
-      .then((res) => {
-        if (!res.ok) {
-          throw new Error('Thêm học sinh thất bại');
-        }
-        return res.json();
-      })
-      .then((data) => {
-        console.log('✅ Server phản hồi:', data);
-
-        // Cập nhật số lượng học sinh frontend
-        setExams(prev =>
-          prev.map(exam =>
-            exam.id === selectedExam.id
-              ? {
-                  ...exam,
-                  studentCount: exam.studentCount + selectedStudents.length,
-                }
-              : exam
-          )
-        );
-
-        alert(`Đã thêm ${selectedStudents.length} học sinh vào kỳ thi "${selectedExam.name}"`);
-        setSelectedStudents([]);
-        setShowAddStudentModal(false);
-        setSelectedExam(null);
-      })
-      .catch((err) => {
-        console.error('❌ Lỗi khi thêm học sinh:', err);
-      });
-  }
-};
-
+    if (selectedStudents.length > 0 && selectedExam) {
+      // Cập nhật số lượng học sinh trong kỳ thi
+      setExams(prev => prev.map(exam => 
+        exam.id === selectedExam.id 
+          ? { ...exam, studentCount: exam.studentCount + selectedStudents.length }
+          : exam
+      ));
+      
+      alert(`Đã thêm ${selectedStudents.length} học sinh vào kỳ thi "${selectedExam.name}"`);
+      setSelectedStudents([]);
+      setShowAddStudentModal(false);
+      setSelectedExam(null);
+    }
+  };
 
   // Lọc học sinh theo tìm kiếm
   const filteredStudents = students.filter(student =>

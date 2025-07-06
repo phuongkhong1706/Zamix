@@ -3,6 +3,7 @@ from django.core.validators import MinLengthValidator
 from django.utils.timezone import now
 from django.contrib.auth.models import User
 import os
+import datetime
 
 class Item(models.Model):
     name = models.CharField(max_length=200)
@@ -65,6 +66,7 @@ class Exam(models.Model):
     status = models.CharField(max_length=20, choices=StatusChoices.choices, null=False, default='upcoming')
     user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
     topics = models.ManyToManyField('Topic', through='ExamTopic', related_name='exams')
+    is_approve = models.BooleanField(default=False) 
 
     def __str__(self):
         return f"{self.name} - Lớp {self.grade}"
@@ -435,3 +437,35 @@ class TeacherReviewTest(models.Model):
 
     def __str__(self):
         return f"Kết quả phúc tra Test {self.test_id} - Giáo viên {self.teacher.username}"
+    
+class ExamParticipation(models.Model):
+    student = models.ForeignKey(User, on_delete=models.CASCADE)
+    exam = models.ForeignKey(Exam, on_delete=models.CASCADE)
+
+    class Meta:
+        db_table = 'exam_participation'
+        unique_together = ('student', 'exam')  # tránh trùng lặp
+
+    def __str__(self):
+        return f"{self.student.username} - {self.exam.name}"
+    
+class OTP(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE)  # 👉 Liên kết với auth_user
+    otp_code = models.CharField(max_length=6)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        import datetime
+        return (datetime.datetime.now() - self.created_at).total_seconds() < 300
+    
+class LinkReset(models.Model):
+    for_user = models.ForeignKey(User, on_delete=models.CASCADE)
+    link = models.CharField(max_length=255)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def is_valid(self):
+        import datetime
+        return (datetime.datetime.now() - self.created_at).total_seconds() < 1800  # Ví dụ: valid trong 30 phút
+
+    def __str__(self):
+        return f"LinkReset for {self.for_user.username}"

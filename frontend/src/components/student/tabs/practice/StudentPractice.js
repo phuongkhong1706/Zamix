@@ -10,25 +10,20 @@ function StudentPractice() {
 
   useEffect(() => {
     fetch("http://localhost:8000/api/student/student_practice/student_manage_practice/")
-      .then((response) => {
-        if (!response.ok) throw new Error("Lỗi khi gọi API");
-        return response.json();
-      })
+      .then((res) => res.json())
       .then((data) => {
-        console.log("✅ Dữ liệu nhận được từ API:", data);
+        console.log("✅ Dữ liệu:", data);
         setExams(data);
       })
-      .catch((error) => {
-        console.error("❌ Lỗi khi fetch dữ liệu:", error);
-      });
+      .catch((err) => console.error("❌ Lỗi khi fetch:", err));
   }, []);
 
   const handleExamClick = (examId) => {
-    setSelectedExamId((prevId) => (prevId === examId ? null : examId));
+    setSelectedExamId((prev) => (prev === examId ? null : examId));
   };
 
-  const handleMockTestClick = (mockTestId) => {
-    navigate(`/student/practice/verify_practice`);
+  const handleMockTestClick = (testId) => {
+    navigate(`/student/practice/verify_practice/${testId}`);
   };
 
   const handleTopicClick = (topicId) => {
@@ -41,28 +36,52 @@ function StudentPractice() {
   const selectedExam = exams.find((exam) => exam.exam_id === selectedExamId);
 
   return (
-    <div style={mainContentStyle}>
-      <h2 style={headerStyle}>Bạn sắp tham gia {exams.length} kỳ thi</h2>
-      <div style={containerStyle}>
-        <div style={leftPanelStyle}>
+    <div style={{ padding: 30, fontFamily: "Segoe UI, sans-serif" }}>
+      <h2 style={{ marginBottom: 20, color: "#003366" }}>
+        🧠 Danh sách kỳ thi của bạn ({exams.length})
+      </h2>
+
+      <div style={{ display: "flex", gap: 30 }}>
+        {/* KHUNG TRÁI - DANH SÁCH KỲ THI */}
+        <div style={{ flex: 1, borderRight: "2px solid #ddd", paddingRight: 20 }}>
           {exams.map((exam) => (
-            <div key={exam.exam_id} style={examCardStyle}>
+            <div
+              key={exam.exam_id}
+              style={{
+                border: "1px solid #ccc",
+                borderRadius: 8,
+                padding: 12,
+                marginBottom: 10,
+                backgroundColor: "#f9f9f9",
+              }}
+            >
               <div
-                style={{ ...examTitleStyle, cursor: "pointer" }}
+                style={{
+                  fontWeight: "bold",
+                  fontSize: 16,
+                  color: "#003366",
+                  cursor: "pointer",
+                }}
                 onClick={() => handleExamClick(exam.exam_id)}
               >
                 📚 {exam.exam_name}
               </div>
+
               {selectedExamId === exam.exam_id && (
-                <div style={mockTestListStyle}>
+                <div style={{ marginTop: 10, paddingLeft: 10 }}>
                   {exam.test_ids?.map((testId, idx) => (
                     <div
                       key={testId}
-                      style={mockTestLinkContainerStyle}
+                      style={{
+                        padding: 6,
+                        color: "#0b3d91",
+                        textDecoration: "underline",
+                        cursor: "pointer",
+                        fontWeight: 500,
+                      }}
                       onClick={() => handleMockTestClick(testId)}
                     >
-                      <span>📝</span>
-                      <span style={mockTestLinkStyle}>Mock test #{idx + 1}</span>
+                      📝 Mock Test #{idx + 1}
                     </div>
                   ))}
                 </div>
@@ -71,76 +90,100 @@ function StudentPractice() {
           ))}
         </div>
 
-        <div style={rightPanelStyle}>
+        {/* KHUNG PHẢI - CHI TIẾT */}
+        <div
+          style={{
+            flex: 2,
+            padding: 20,
+            border: "1px solid #ddd",
+            borderRadius: 10,
+            boxShadow: "0 0 10px rgba(0,0,0,0.05)",
+            backgroundColor: "#fff",
+            minHeight: 300,
+          }}
+        >
           {selectedExam ? (
             <>
-              <h3 style={titleStyle}>{selectedExam.exam_name}</h3>
-              <p style={{ color: "#003366" }}>
-                <strong>TÀI LIỆU THAM KHẢO</strong>
+              <h3 style={{ fontSize: 22, fontWeight: "bold", marginBottom: 10 }}>
+                🧾 {selectedExam.exam_name}
+              </h3>
+              <p style={{ fontWeight: "bold", marginTop: 10, color: "#003366" }}>
+                📖 Tài liệu tham khảo:
               </p>
 
-              <div className="space-y-2">
-                {selectedExam.topics?.map((topic) => (
-                  <div key={topic.topic_id}>
+              <div style={{ marginTop: 10 }}>
+                {selectedExam.topics.map((topic) => (
+                  <div key={topic.topic_id} style={{ marginBottom: 10 }}>
                     <div
                       style={{
-                        ...topicCardStyle,
                         display: "flex",
                         alignItems: "center",
+                        gap: 8,
+                        fontWeight: "bold",
+                        color: "#003366",
                         cursor: "pointer",
+                        fontSize: 16,
                       }}
                       onClick={() => handleTopicClick(topic.topic_id)}
                     >
-                      <span style={{ marginRight: "8px", color: "#003366", fontSize: "20px" }}>
-                        {expandedTopics[topic.topic_id] ? <FiMinus /> : <FiPlus />}
-                      </span>
-                      {topic.topic_name}
+                      {expandedTopics[topic.topic_id] ? <FiMinus /> : <FiPlus />}
+                      <span>{topic.topic_name}</span>
                     </div>
 
-                    {expandedTopics[topic.topic_id] && topic.list_doc.length > 0 && (
-                      <div style={{ paddingLeft: "20px" }}>
-                        {topic.list_doc.map((doc, index) => {
-                          let fileUrl = doc.file_url;
+                    {expandedTopics[topic.topic_id] && (
+                      <div style={{ paddingLeft: 20, marginTop: 6 }}>
+                        {topic.list_doc.length > 0 ? (
+                          topic.list_doc.map((doc, idx) => {
+                            let fileUrl = doc.file_url;
 
-                          // Sửa lại URL nếu bị lặp "/documents/documents/"
-                          if (fileUrl.startsWith("/media/documents/documents/")) {
-                            fileUrl = fileUrl.replace("/media/documents/documents/", "/media/documents/");
-                          }
+                            if (fileUrl.startsWith("/media/documents/documents/")) {
+                              fileUrl = fileUrl.replace(
+                                "/media/documents/documents/",
+                                "/media/documents/"
+                              );
+                            }
 
-                          // Nếu URL là tương đối, thêm domain vào
-                          if (fileUrl.startsWith("/")) {
-                            fileUrl = `http://localhost:8000${fileUrl}`;
-                          }
+                            if (fileUrl.startsWith("/")) {
+                              fileUrl = `http://localhost:8000${fileUrl}`;
+                            }
 
-                          return (
-                            <div key={doc.doc_id} style={lessonLinkStyle}>
-                              <a
-                                href={fileUrl}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                style={{ color: "#0b3d91", textDecoration: "underline" }}
-                              >
-                                📄 Xem tài liệu #{index + 1}
-                              </a>
-                            </div>
-                          );
-                        })}
+                            return (
+                              <div key={doc.doc_id} style={{ marginBottom: 5 }}>
+                                <a
+                                  href={fileUrl}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  style={{
+                                    color: "#0b3d91",
+                                    textDecoration: "underline",
+                                    fontSize: 15,
+                                  }}
+                                >
+                                  📄 Xem tài liệu #{idx + 1}
+                                </a>
+                              </div>
+                            );
+                          })
+                        ) : (
+                          <p
+                            style={{
+                              paddingLeft: 20,
+                              fontStyle: "italic",
+                              color: "gray",
+                            }}
+                          >
+                            (Chưa có tài liệu)
+                          </p>
+                        )}
                       </div>
-                    )}
-
-
-                    {expandedTopics[topic.topic_id] && topic.list_doc.length === 0 && (
-                      <p style={{ paddingLeft: "30px", fontStyle: "italic", color: "gray" }}>
-                        (Chưa có tài liệu)
-                      </p>
                     )}
                   </div>
                 ))}
               </div>
             </>
           ) : (
-            <p style={{ fontWeight: "bold", color: "#003366" }}>
-              Hãy chọn một kỳ thi để xem tài liệu tham khảo tương ứng.
+            <p style={{ fontStyle: "italic", color: "#888", fontSize: 16 }}>
+              🖱️ Chọn một kỳ thi từ khung bên trái để xem chi tiết và tài liệu.
             </p>
           )}
         </div>
@@ -148,85 +191,5 @@ function StudentPractice() {
     </div>
   );
 }
-
-// 💅 CSS styles
-const mainContentStyle = {
-  padding: "20px",
-  fontFamily: "Arial",
-};
-
-const headerStyle = {
-  fontSize: "24px",
-  marginBottom: "20px",
-  fontWeight: "bold",
-};
-
-const containerStyle = {
-  display: "flex",
-  gap: "20px",
-};
-
-const leftPanelStyle = {
-  flex: 1,
-};
-
-const rightPanelStyle = {
-  flex: 2,
-  backgroundColor: "#f5f8ff",
-  padding: "20px",
-  borderRadius: "12px",
-  boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
-};
-
-const examCardStyle = {
-  backgroundColor: "#f5f8ff",
-  borderRadius: "12px",
-  padding: "15px",
-  marginBottom: "15px",
-  boxShadow: "0 1px 4px rgba(0,0,0,0.1)",
-};
-
-const examTitleStyle = {
-  fontSize: "18px",
-  fontWeight: "bold",
-};
-
-const mockTestListStyle = {
-  marginTop: "10px",
-  paddingLeft: "15px",
-};
-
-const mockTestLinkContainerStyle = {
-  marginBottom: "10px",
-  cursor: "pointer",
-};
-
-const mockTestLinkStyle = {
-  color: "#0b3d91",
-  textDecoration: "underline",
-  fontSize: "16px",
-};
-
-const topicCardStyle = {
-  fontSize: "16px",
-  fontWeight: "bold",
-  marginBottom: "12px",
-  cursor: "pointer",
-};
-
-const lessonLinkStyle = {
-  fontSize: "15px",
-  marginBottom: "8px",
-};
-
-const titleStyle = {
-  backgroundColor: "#0b3d91",
-  color: "white",
-  borderRadius: "8px",
-  padding: "10px",
-  marginBottom: "10px",
-  fontSize: "18px",
-  fontWeight: "bold",
-};
 
 export default StudentPractice;

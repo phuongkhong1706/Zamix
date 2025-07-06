@@ -1,0 +1,31 @@
+class ExamsSerializer(serializers.ModelSerializer):
+    status_display = serializers.SerializerMethodField()
+    grade_display = serializers.SerializerMethodField()
+    full_name = serializers.SerializerMethodField()
+    topics = serializers.SerializerMethodField()
+
+    def get_status_display(self, obj):
+        return obj.get_status_display_custom
+
+    def get_grade_display(self, obj):
+        return f"Lớp {obj.grade}"
+
+    def get_full_name(self, obj):
+        try:
+            user_info = UserInformation.objects.get(id=obj.user_id)
+            return user_info.full_name
+        except UserInformation.DoesNotExist:
+            return None
+
+    def get_topics(self, obj):
+        from .models import ExamTopic  # tránh import vòng lặp
+        exam_topics = ExamTopic.objects.filter(exam=obj).select_related('topic')
+        return TopicSerializer([et.topic for et in exam_topics], many=True).data
+
+    class Meta:
+        model = Exam
+        fields = [
+            'id', 'name', 'grade', 'grade_display', 'type', 'status', 'status_display',
+            'time_start', 'time_end', 'user_id', 'full_name',
+            'regrade_start_time', 'regrade_end_time', 'topics', 'is_approve'
+        ]

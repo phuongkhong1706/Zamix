@@ -104,7 +104,7 @@ function App() {
         <Route path="/signup" element={<Signup />} />
         <Route path="/forgotpassword" element={<ForgotPassword />} />
         <Route path="/resetpassword" element={<ResetPassword />} />
-
+        <Route path="/resetpassword/:token" element={<ResetPassword />} />
 
         {/* Các trang giao diện Admin */}
         <Route path="/admin/home" element={<AdminLayout> <AdminHomeTab /> </AdminLayout>}/>
@@ -121,6 +121,7 @@ function App() {
         <Route path="/student/rules" element={<StudentLayout> <StudentRule/> </StudentLayout>} />
         <Route path="/student/practice" element={<StudentLayout> <StudentPractice /> </StudentLayout>}/>
         <Route path="/student/practice/verify_practice" element={<StudentLayout> <StudentVerifyPractice /> </StudentLayout>}/>
+        <Route path="/student/practice/verify_practice/:id" element={<StudentLayout> <StudentVerifyPractice /> </StudentLayout>}/>
         <Route path="/student/practice/do_practice/:id" element={<StudentPracticeDetail />}/>
         <Route path="/student/practice/review" element={<StudentPracticeReview />}/>
         <Route path="/student/result/score" element={<StudentLayout> <StudentScoreExam /> </StudentLayout>}/>

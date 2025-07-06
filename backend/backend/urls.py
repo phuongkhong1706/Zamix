@@ -33,6 +33,8 @@ urlpatterns = [
     # path('api/', include('api.urls.resetpw')),
     path('api/', include('api.urls.signup')),
     path('api/generate/', generate_view, name='generate'),
+    path('api/', include('api.urls.forgotpw')),
+    path('api/', include('api.urls.resetpw')),
 ]
 
 if settings.DEBUG:

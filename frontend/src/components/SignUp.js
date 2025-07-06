@@ -24,7 +24,7 @@ function Signup() {
     confirmPassword: "",
     birth_date: "",
     gender: "Nam",
-    user_type: "Sinh viên",
+    user_type: "Học sinh",
     address: "",
     avatar: null,
   });
@@ -189,8 +189,8 @@ function Signup() {
                 <option value="" disabled>
                   Loại tài khoản
                 </option>
-                <option value="Sinh viên">Sinh viên</option>
-                <option value="Giảng viên">Giảng viên</option>
+                <option value="Học sinh">Học sinh</option>
+                <option value="Giáo viên">Giáo viên</option>
               </select>
 
               {/* GENDER */}

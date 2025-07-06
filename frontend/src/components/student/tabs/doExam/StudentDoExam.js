@@ -8,17 +8,34 @@ function StudentDoExam() {
   const [searchKeyword, setSearchKeyword] = useState('');
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetch("http://127.0.0.1:8000/api/student/do_exam/")
-      .then((res) => res.json())
-      .then((res) => {
-        setData(Array.isArray(res) ? res : []);
-      })
-      .catch((error) => {
-        console.error("Lỗi khi lấy dữ liệu:", error);
-        setData([]);
-      });
-  }, []);
+useEffect(() => {
+  const userJson = localStorage.getItem("user");
+  let userId = null;
+
+  try {
+    if (userJson) {
+      userId = JSON.parse(userJson).user_id;
+    }
+  } catch (error) {
+    console.error("❌ Lỗi parse user:", error);
+  }
+
+  if (!userId) {
+    alert("❌ Không tìm thấy user_id. Vui lòng đăng nhập.");
+    return;
+  }
+
+  fetch(`http://127.0.0.1:8000/api/student/do_exam/?student_id=${userId}`)
+    .then((res) => res.json())
+    .then((res) => {
+      setData(Array.isArray(res) ? res : []);
+    })
+    .catch((error) => {
+      console.error("❌ Lỗi khi lấy dữ liệu kỳ thi:", error);
+      setData([]);
+    });
+}, []);
+
 
   const handleSearch = () => {
     const keyword = searchKeyword.toLowerCase().trim();

@@ -9,12 +9,12 @@ class TeacherManageExamView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
-        # code get giữ nguyên như trước
         grade_param = request.query_params.get("grade")
         exam_type = request.query_params.get("type")
         status_param = request.query_params.get("status")
 
-        exams = Exam.objects.all()
+        # Chỉ lấy các kỳ thi đã được duyệt (is_approve = 1)
+        exams = Exam.objects.filter(is_approve=1)
 
         if grade_param:
             try:
@@ -31,4 +31,5 @@ class TeacherManageExamView(APIView):
 
         serialized = ExamsSerializer(exams, many=True)
         return Response(serialized.data)
+
 

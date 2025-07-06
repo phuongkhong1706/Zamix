@@ -23,8 +23,8 @@ def login_view(request):
         return Response({"error": "Không tìm thấy thông tin người dùng!"}, status=status.HTTP_404_NOT_FOUND)
 
     role = {
-        "sinh viên": "student",
-        "giảng viên": "teacher",
+        "học sinh": "student",
+        "giáo viên": "teacher",
         "admin": "admin"
     }.get(user_info.user_type.lower(), "user")
 
