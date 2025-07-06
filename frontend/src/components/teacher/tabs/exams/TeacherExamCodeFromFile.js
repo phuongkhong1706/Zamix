@@ -19,6 +19,7 @@ import iconEssay from "../../../../assets/icon/icon-essay-questions.png";
 import iconMulti from "../../../../assets/icon/icon-multiple-choice.png";
 import { FaSave } from "react-icons/fa";
 import mammoth from "mammoth";
+import JSZip from "jszip";
 
 function TeacherExamCodeFromFile() {
   const [newQuestions, setNewQuestions] = useState([]);
@@ -66,112 +67,382 @@ function TeacherExamCodeFromFile() {
       end_time: ""
     }
   });
-  const handleUploadTestFile = async (event) => {
-    const file = event.target.files[0];
-    if (!file) return;
 
-    if (file.type === "application/pdf") {
-      alert("⚠️ Tạm thời chỉ hỗ trợ đọc file Word (.docx). PDF sẽ được hỗ trợ sau.");
+  // bắt đầu đoạn thêm
+  // Import JSZip nếu chưa có
+// npm install jszip
+
+const handleUploadTestFile = async (event) => {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  if (file.type === "application/pdf") {
+    alert("⚠️ Tạm thời chỉ hỗ trợ đọc file Word (.docx). PDF sẽ được hỗ trợ sau.");
+    return;
+  }
+
+  try {
+    const arrayBuffer = await file.arrayBuffer();
+    
+    // === BƯỚC 1: EXTRACT EQUATIONS TỪ XML ===
+    console.log("🔍 Phân tích equations từ DOCX XML...");
+    const xmlEquations = await extractEquationsFromDocxXML(arrayBuffer);
+    console.log(`Found ${xmlEquations.length} equations in XML`);
+
+    // === BƯỚC 2: XỬ LÝ VỚI MAMMOTH ===
+    console.log("📄 Xử lý document với Mammoth...");
+    const mammothOptions = {
+      arrayBuffer,
+      includeEmbeddedStyleMap: true,
+      includeDefaultStyleMap: true,
+      
+      // Custom image handling với unique ID
+      convertImage: mammoth.images.imgElement(function(image) {
+        return image.read("base64").then(function(imageBuffer) {
+          const imageId = `img_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+          return {
+            src: "data:" + image.contentType + ";base64," + imageBuffer,
+            id: imageId,
+            alt: `Image ${imageId}`,
+            class: "docx-image"
+          };
+        });
+      }),
+      
+      // Transform document để xử lý equations
+      transformDocument: (document) => {
+        let equationIndex = 0;
+        
+        const walkElement = (element) => {
+          if (element.children) {
+            element.children.forEach((child, index) => {
+              // Detect các loại equation khác nhau
+              if (child.type === 'equation' || 
+                  child.type === 'mathml' ||
+                  child.type === 'omml' ||
+                  child.type === 'embeddedObject' ||
+                  (child.type === 'run' && child.properties && child.properties.equation)) {
+                
+                console.log(`Found equation ${equationIndex}:`, child);
+                
+                // Tìm equation content từ XML nếu có
+                const xmlEquation = xmlEquations[equationIndex];
+                const equationContent = xmlEquation ? xmlEquation.content : `Công thức ${equationIndex + 1}`;
+                
+                // Thay thế equation bằng text placeholder
+                child.type = 'text';
+                child.value = `📐[${equationContent}]`;
+                
+                equationIndex++;
+              }
+              
+              walkElement(child);
+            });
+          }
+        };
+        
+        walkElement(document);
+        return document;
+      }
+    };
+
+    const mammothResult = await mammoth.convertToHtml(mammothOptions);
+    const htmlContent = mammothResult.value;
+    const messages = mammothResult.messages;
+
+    // Log warnings
+    if (messages.length > 0) {
+      console.warn("Mammoth warnings:", messages);
+    }
+
+    // === BƯỚC 3: EXTRACT RAW TEXT ===
+    console.log("📝 Extract raw text...");
+    const textResult = await mammoth.extractRawText({
+      arrayBuffer,
+      transformDocument: (document) => {
+        let equationIndex = 0;
+        
+        const walkElement = (element) => {
+          if (element.children) {
+            element.children.forEach((child) => {
+              if (child.type === 'equation' || 
+                  child.type === 'mathml' ||
+                  child.type === 'omml' ||
+                  child.type === 'embeddedObject' ||
+                  (child.type === 'run' && child.properties && child.properties.equation)) {
+                
+                const xmlEquation = xmlEquations[equationIndex];
+                const equationContent = xmlEquation ? xmlEquation.content : `Công thức ${equationIndex + 1}`;
+                
+                child.type = 'text';
+                child.value = `📐[${equationContent}]`;
+                
+                equationIndex++;
+              }
+              
+              walkElement(child);
+            });
+          }
+        };
+        
+        walkElement(document);
+        return document;
+      }
+    });
+
+    const textContent = textResult.value;
+    console.log("Processed text content:", textContent.substring(0, 500) + "...");
+
+    // === BƯỚC 4: PARSE QUESTIONS ===
+    console.log("🔍 Parsing questions...");
+    const parsedQuestions = parseQuestionsFromText(textContent);
+
+    if (parsedQuestions.length === 0) {
+      alert("⚠️ Không tìm thấy câu hỏi nào trong file.");
       return;
     }
 
-    try {
-      const arrayBuffer = await file.arrayBuffer();
+    // === BƯỚC 5: EXTRACT VÀ MAP IMAGES ===
+    console.log("🖼️ Mapping images to questions...");
+    const questionsWithImages = mapImagesToQuestions(parsedQuestions, htmlContent);
 
-      // Sử dụng mammoth để extract cả text và hình ảnh
-      const result = await mammoth.convertToHtml({ arrayBuffer });
-      const htmlContent = result.value;
-      const messages = result.messages;
+    // === BƯỚC 6: FORMAT QUESTIONS ===
+    console.log("📋 Formatting questions...");
+    const formattedQuestions = questionsWithImages.map((q, index) => {
+      const questionType = determineQuestionType(q);
+      const mainTopicName = topics.find(t => t.topic_id === q.mainTopicId)?.name || null;
 
-      // Extract text content
-      const { value: textContent } = await mammoth.extractRawText({ arrayBuffer });
+      const baseQuestion = {
+        content: q.question,
+        level: q.level || null,
+        mainTopicId: q.mainTopicId || null,
+        mainTopicName: mainTopicName,
+        is_gened_by_model: false,
+        created_by_question: false,
+        imagePreview: q.imagePreview || null,
+        image: null,
+      };
 
-      // Parse questions từ text content
-      const parsedQuestions = parseQuestionsFromText(textContent);
-
-      // Extract images từ HTML content nếu có
-      const imageMatches = htmlContent.match(/<img[^>]+src="data:image\/[^"]+"/g) || [];
-      const extractedImages = imageMatches.map(match => {
-        const srcMatch = match.match(/src="([^"]+)"/);
-        return srcMatch ? srcMatch[1] : null;
-      }).filter(Boolean);
-
-      if (parsedQuestions.length === 0) {
-        alert("⚠️ Không tìm thấy câu hỏi nào trong file.");
-        return;
+      if (questionType === 'multiple_choice') {
+        return {
+          ...baseQuestion,
+          options: q.answers.map((text, idx) => ({
+            id: idx + 1,
+            text: cleanAnswerText(text),
+          })),
+          correct_option_id: q.correct_option_id || null,
+          type: 'multiple_choice',
+          score: q.score || 1.0,
+        };
+      } else {
+        return {
+          ...baseQuestion,
+          correct_answer: q.correct_answer || q.answers?.[0] || '',
+          type: 'essay',
+          score: q.score || 2.0,
+        };
       }
+    });
 
-      // Format questions với phân biệt loại và xử lý hình ảnh
-      const formattedQuestions = parsedQuestions.map((q, index) => {
-        const questionType = determineQuestionType(q);
-        const questionImage = extractedImages[index] || null;
+    // === BƯỚC 7: SET STATE ===
+    setNewQuestions(formattedQuestions);
+    setQuestions(parsedQuestions);
+    setCurrentQuestionIndex(0);
+    setEditingIndex(null);
 
-        const mainTopicName = topics.find(t => t.topic_id === q.mainTopicId)?.name || null;
-
-        if (questionType === 'multiple_choice') {
-          return {
-            content: q.question,
-            level: q.level || null,
-            mainTopicId: q.mainTopicId || null,
-            mainTopicName: mainTopicName, // 👈 Add this
-            options: q.answers.map((text, idx) => ({
-              id: idx + 1,
-              text: cleanAnswerText(text),
-            })),
-            correct_option_id: q.correct_option_id || null,
-            type: 'multiple_choice',
-            score: q.score || 1.0,
-            is_gened_by_model: false,
-            created_by_question: false,
-            imagePreview: questionImage,
-            image: null,
-          };
-        } else {
-          return {
-            content: q.question,
-            level: q.level || null,
-            mainTopicId: q.mainTopicId || null,
-            mainTopicName: mainTopicName, // 👈 Add this
-            correct_answer: q.correct_answer || q.answers?.[0] || '',
-            type: 'essay',
-            score: q.score || 2.0,
-            is_gened_by_model: false,
-            created_by_question: false,
-            imagePreview: questionImage,
-            image: null,
-          };
-        }
-      });
-
-
-      // Set questions vào state
-      setNewQuestions(formattedQuestions);
-      setQuestions(parsedQuestions);
-      setCurrentQuestionIndex(0);
-      setEditingIndex(null);
-
-      // Load question đầu tiên
-      if (parsedQuestions.length > 0) {
-        loadQuestionAtIndex(0, parsedQuestions);
-      }
-
-      // Thông báo kết quả
-      const multipleChoiceCount = formattedQuestions.filter(q => q.type === 'multiple_choice').length;
-      const essayCount = formattedQuestions.filter(q => q.type === 'essay').length;
-      const imageCount = formattedQuestions.filter(q => q.imagePreview).length;
-
-      alert(
-        `✅ Đã tải và phân tích ${parsedQuestions.length} câu hỏi:\n` +
-        `📝 Trắc nghiệm: ${multipleChoiceCount}\n` +
-        `✍️ Tự luận: ${essayCount}\n` +
-        `🖼️ Có hình ảnh: ${imageCount}`
-      );
-
-    } catch (error) {
-      console.error("Lỗi đọc file:", error);
-      alert("❌ Có lỗi khi đọc file. Kiểm tra lại định dạng hoặc nội dung file.");
+    if (parsedQuestions.length > 0) {
+      loadQuestionAtIndex(0, parsedQuestions);
     }
-  };
+
+    // === BƯỚC 8: THÔNG BÁO KẾT QUẢ ===
+    const multipleChoiceCount = formattedQuestions.filter(q => q.type === 'multiple_choice').length;
+    const essayCount = formattedQuestions.filter(q => q.type === 'essay').length;
+    const imageCount = formattedQuestions.filter(q => q.imagePreview).length;
+    const equationCount = xmlEquations.length;
+
+    alert(
+      `✅ Đã tải và phân tích ${parsedQuestions.length} câu hỏi:\n` +
+      `📝 Trắc nghiệm: ${multipleChoiceCount}\n` +
+      `✍️ Tự luận: ${essayCount}\n` +
+      `🖼️ Có hình ảnh: ${imageCount}\n` +
+      `📐 Phát hiện ${equationCount} công thức toán học\n` +
+      `${messages.length > 0 ? `⚠️ ${messages.length} cảnh báo khi xử lý` : ''}`
+    );
+
+  } catch (error) {
+    console.error("Lỗi đọc file:", error);
+    alert("❌ Có lỗi khi đọc file. Kiểm tra lại định dạng hoặc nội dung file.");
+  }
+};
+
+// === HELPER FUNCTIONS ===
+
+// Extract equations từ DOCX XML
+const extractEquationsFromDocxXML = async (arrayBuffer) => {
+  try {
+    // Dynamic import JSZip
+    const JSZip = (await import('jszip')).default;
+    
+    const zip = new JSZip();
+    const docxContent = await zip.loadAsync(arrayBuffer);
+    
+    // Đọc document.xml
+    const documentXMLFile = docxContent.file('word/document.xml');
+    if (!documentXMLFile) {
+      console.warn("Không tìm thấy document.xml");
+      return [];
+    }
+    
+    const documentXML = await documentXMLFile.async('string');
+    
+    // Parse XML
+    const parser = new DOMParser();
+    const xmlDoc = parser.parseFromString(documentXML, 'text/xml');
+    
+    const equations = [];
+    
+    // Tìm Office Math elements
+    const mathElements = xmlDoc.querySelectorAll('m\\:oMath, oMath');
+    mathElements.forEach((mathEl, index) => {
+      // Extract text content từ math element
+      const mathText = extractMathText(mathEl);
+      equations.push({
+        index: index,
+        type: 'oMath',
+        content: mathText || `Công thức ${index + 1}`,
+        xml: mathEl.outerHTML
+      });
+    });
+    
+    // Tìm equation objects
+    const objectElements = xmlDoc.querySelectorAll('w\\:object, object');
+    objectElements.forEach((objEl, index) => {
+      const objData = objEl.querySelector('w\\:objectEmbed, objectEmbed');
+      if (objData) {
+        equations.push({
+          index: mathElements.length + index,
+          type: 'object',
+          content: `Equation Object ${index + 1}`,
+          xml: objEl.outerHTML
+        });
+      }
+    });
+    
+    return equations;
+  } catch (error) {
+    console.error("Error parsing DOCX XML:", error);
+    return [];
+  }
+};
+
+// Extract math text từ math element
+const extractMathText = (mathElement) => {
+  try {
+    // Tìm text content trong math element
+    const textNodes = mathElement.querySelectorAll('m\\:t, t');
+    if (textNodes.length > 0) {
+      return Array.from(textNodes).map(node => node.textContent).join('');
+    }
+    
+    // Fallback: lấy toàn bộ text content
+    const textContent = mathElement.textContent?.trim();
+    if (textContent && textContent.length > 0) {
+      return textContent;
+    }
+    
+    return null;
+  } catch (error) {
+    console.error("Error extracting math text:", error);
+    return null;
+  }
+};
+
+// Map images to questions với logic cải tiến
+const mapImagesToQuestions = (questions, htmlContent) => {
+  try {
+    const parser = new DOMParser();
+    const doc = parser.parseFromString(htmlContent, 'text/html');
+    
+    // Tạo array chứa tất cả elements theo thứ tự
+    const allElements = [];
+    const walker = document.createTreeWalker(
+      doc.body,
+      NodeFilter.SHOW_TEXT | NodeFilter.SHOW_ELEMENT,
+      {
+        acceptNode: (node) => {
+          if (node.nodeType === Node.TEXT_NODE) {
+            const text = node.textContent.trim();
+            if (text.length > 10) { // Chỉ lấy text nodes có ý nghĩa
+              return NodeFilter.FILTER_ACCEPT;
+            }
+          }
+          if (node.nodeType === Node.ELEMENT_NODE && node.tagName === 'IMG') {
+            return NodeFilter.FILTER_ACCEPT;
+          }
+          return NodeFilter.FILTER_SKIP;
+        }
+      }
+    );
+    
+    let node;
+    while (node = walker.nextNode()) {
+      if (node.nodeType === Node.TEXT_NODE) {
+        allElements.push({
+          type: 'text',
+          content: node.textContent.trim(),
+          element: node
+        });
+      } else if (node.tagName === 'IMG') {
+        allElements.push({
+          type: 'image',
+          src: node.src,
+          id: node.id,
+          alt: node.alt,
+          element: node
+        });
+      }
+    }
+    
+    console.log(`Found ${allElements.length} elements in HTML`);
+    
+    // Map questions to positions
+    const questionPositions = questions.map((question, qIndex) => {
+      const questionStart = question.question.substring(0, 50).trim();
+      const elementIndex = allElements.findIndex(el => 
+        el.type === 'text' && el.content.includes(questionStart)
+      );
+      
+      return {
+        questionIndex: qIndex,
+        elementIndex: elementIndex,
+        question: question
+      };
+    });
+    
+    // Map images to questions
+    const questionsWithImages = questions.map(q => ({ ...q, imagePreview: null }));
+    
+    questionPositions.forEach((qPos, index) => {
+      if (qPos.elementIndex === -1) return;
+      
+      // Tìm image tiếp theo sau question này
+      const nextQuestionIndex = questionPositions[index + 1]?.elementIndex || allElements.length;
+      const imageElement = allElements.slice(qPos.elementIndex, nextQuestionIndex)
+        .find(el => el.type === 'image');
+      
+      if (imageElement) {
+        questionsWithImages[qPos.questionIndex].imagePreview = imageElement.src;
+        console.log(`Mapped image to question ${qPos.questionIndex}`);
+      }
+    });
+    
+    return questionsWithImages;
+  } catch (error) {
+    console.error("Error mapping images:", error);
+    return questions.map(q => ({ ...q, imagePreview: null }));
+  }
+};
+  // kết thúc đoạn thêm
 
   // Hàm xác định loại câu hỏi được cải thiện
   const determineQuestionType = (question) => {

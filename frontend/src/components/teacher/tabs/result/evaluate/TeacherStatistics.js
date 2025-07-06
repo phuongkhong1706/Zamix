@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, BarChart, Bar, PieChart, Pie, Cell, ResponsiveContainer, ScatterChart, Scatter, AreaChart, Area } from 'recharts';
-import { Users, BookOpen, FileText, TrendingUp, Award, Clock, AlertCircle, CheckCircle } from 'lucide-react';
+import { Users, FileText, TrendingUp, Award, AlertCircle, CheckCircle } from 'lucide-react';
 import '../../../../../styles/teacher/TeacherStatistics.css';
+import axios from 'axios';
 
 const TeacherStatistics = () => {
   const [selectedTimeRange, setSelectedTimeRange] = useState('month');
@@ -23,12 +24,21 @@ const TeacherStatistics = () => {
     { grade: 'Lớp 12', students: 350, exams: 48, avgScore: 8.1 }
   ];
 
-  const questionTypeStats = [
-    { type: 'Trắc nghiệm', count: 1250, avgScore: 7.8, color: '#8884d8' },
-    { type: 'Tự luận', count: 680, avgScore: 6.9, color: '#82ca9d' },
-    { type: 'Ứng dụng', count: 420, avgScore: 6.2, color: '#ffc658' },
-    { type: 'Tổng hợp', count: 320, avgScore: 5.8, color: '#ff7300' }
-  ];
+const [questionTypeStats, setQuestionTypeStats] = useState([]);
+
+  useEffect(() => {
+    const fetchStats = async () => {
+      try {
+        const response = await axios.get('http://localhost:8000/api/teacher/teacher_result/statistics/teacher_questype/');
+        console.log('Dữ liệu backend:', response.data);
+        setQuestionTypeStats(response.data);
+      } catch (error) {
+        console.error('Lỗi khi lấy dữ liệu từ backend:', error);
+      }
+    };
+    
+    fetchStats();
+  }, []);
 
   const reviewStats = [
     { status: 'Chờ xử lý', count: 12, color: '#ff4d4f' },

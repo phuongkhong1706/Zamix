@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { FiPlus, FiMinus } from "react-icons/fi";
+import ChatbotWidget from "../../../ChatbotWidget";
 
 function StudentPractice() {
   const navigate = useNavigate();
+  const chatbotRef = useRef(); // 👈 Ref để điều khiển chatbot
   const [exams, setExams] = useState([]);
   const [selectedExamId, setSelectedExamId] = useState(null);
   const [expandedTopics, setExpandedTopics] = useState({});
@@ -14,6 +16,12 @@ function StudentPractice() {
       .then((data) => {
         console.log("✅ Dữ liệu:", data);
         setExams(data);
+
+        // 👇 Tự động mở chatbot và gửi tin nhắn đầu tiên
+        setTimeout(() => {
+          chatbotRef.current?.toggleChat();
+          chatbotRef.current?.triggerSend("Em cần hỗ trợ về kỳ thi ạ!");
+        }, 1000);
       })
       .catch((err) => console.error("❌ Lỗi khi fetch:", err));
   }, []);
@@ -42,7 +50,7 @@ function StudentPractice() {
       </h2>
 
       <div style={{ display: "flex", gap: 30 }}>
-        {/* KHUNG TRÁI - DANH SÁCH KỲ THI */}
+        {/* DANH SÁCH KỲ THI */}
         <div style={{ flex: 1, borderRight: "2px solid #ddd", paddingRight: 20 }}>
           {exams.map((exam) => (
             <div
@@ -90,7 +98,7 @@ function StudentPractice() {
           ))}
         </div>
 
-        {/* KHUNG PHẢI - CHI TIẾT */}
+        {/* CHI TIẾT KỲ THI */}
         <div
           style={{
             flex: 2,
@@ -188,6 +196,9 @@ function StudentPractice() {
           )}
         </div>
       </div>
+
+      {/* GẮN CHATBOT */}
+      <ChatbotWidget ref={chatbotRef} />
     </div>
   );
 }
