@@ -13,8 +13,8 @@ class TeacherManageTestView(APIView):
         level_param = request.query_params.get("level")
         shift_param = request.query_params.get("shift_id")
 
-        # Lọc theo exam_id trước
-        tests = Test.objects.filter(exam_id=exam_id)
+        # Lọc theo exam_id và type trước
+        tests = Test.objects.filter(exam_id=exam_id, type="Thi chính thức")
 
         if grade_param:
             tests = tests.filter(shift__exam__grade=grade_param)

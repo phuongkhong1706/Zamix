@@ -24,7 +24,7 @@ const ForgotPassword = () => {
       const data = await res.json();
 
       if (res.ok) {
-        setStatusMessage(data.message || 'OTP đã được gửi về email của bạn.');
+        setStatusMessage(data.message || 'Link reset đã được gửi về email của bạn.');
       } else {
         setStatusMessage(data.error || 'Đã xảy ra lỗi. Vui lòng thử lại.');
       }
@@ -42,7 +42,7 @@ const ForgotPassword = () => {
       <div className="forgot-password-form">
         <h2>Quên Mật Khẩu? 🤔</h2>
         <p>
-          Nhập địa chỉ email đã đăng ký. Chúng tôi sẽ gửi mã OTP đặt lại mật khẩu.
+          Nhập địa chỉ email đã đăng ký. Chúng tôi sẽ gửi link đặt lại mật khẩu.
         </p>
         <form onSubmit={handleSubmit}>
           <label htmlFor="email">Địa chỉ Email</label>
